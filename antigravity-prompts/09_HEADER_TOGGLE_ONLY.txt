@@ -1,0 +1,48 @@
+﻿[PROMPT 9 — IMPLEMENTAR HEADER (FIXO) COM APENAS TOGGLE DE TEMA — CONFORME BRIEFING]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia briefing (Header) + TXT (anti-bugs).
+- Use ROOT confirmado.
+- NÃO alterar nuxt.config.ts.
+
+OBJETIVO:
+Header:
+1) fixo no topo
+2) visual limpo (sem borda pesada / sem preto)
+3) sem “Nuxt UI”, sem nome, sem links, sem menu/hamburger
+4) apenas toggle dark/light no canto superior direito
+5) sem regressões de hidratação
+
+ARQUIVOS:
+- Editar componente real do header (ex.: app/components/layout/AppHeader.vue ou equivalente)
+- Ajustar layout default apenas se necessário (evitar sobreposição)
+- Ajustar CSS global só se necessário (mínimo)
+
+REQUISITOS:
+- Nuxt UI (UHeader + UButton)
+- Não usar configuração que gere hamburger no mobile
+- Toggle via useColorMode + mounted para evitar mismatch
+- Header não deve ocupar altura excessiva nem criar borda inferior
+
+CÓDIGO COMPLETO:
+- Fornecer arquivo completo do header.
+- Se mexer em layout/CSS, fornecer completo também (somente se necessário).
+
+COMANDOS (PowerShell):
+1) cd "<ROOT confirmado>"
+2) npm run dev
+
+TESTE:
+- Desktop: F5, toggle, console sem warnings
+- Mobile: sem hamburger vazio, toggle no canto direito, sem borda preta inferior
+
+ERROS COMUNS:
+- Hamburger apareceu: usar apenas slots, sem menus
+- Ícone piscando: renderizar ícone só após mounted
+- Conteúdo coberto: ajustar padding-top no main (mínimo)
+- Borda persistente: remover classes de borda/sombra do header
+
+ENCERRAMENTO:
+- Pare e aguarde “Etapa concluída”.

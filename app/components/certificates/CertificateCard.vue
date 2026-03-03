@@ -14,16 +14,16 @@ const imgSrc = computed(() => toPublicPath(props.item.image))
 </script>
 
 <template>
-  <UCard v-reveal
+  <UCard 
     class="cursor-pointer hover:shadow-md transition-shadow"
     :ui="{ body: 'p-3 space-y-3' }"
     @click="emit('open', props.item)"
   >
-    <div class="rounded-lg overflow-hidden border border-default">
+    <div l  class="rounded-lg overflow-hidden border border-default">
       <img :src="imgSrc" :alt="props.item.title" class="w-full h-36 object-cover" />
     </div>
 
-    <div class="text-left">
+    <div  class="text-left">
       <p class="font-semibold leading-snug line-clamp-2">
         {{ props.item.title }}
       </p>

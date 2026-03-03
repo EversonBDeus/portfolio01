@@ -1,0 +1,53 @@
+﻿[PROMPT 13 — IMPLEMENTAR ABA “CERTIFICADOS” (CARDS + SLIDEOVER + TIMELINE) — DATA-DRIVEN]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia briefing (certificados + timeline) + TXT (anti-bugs tabs/hidratação/assets).
+- Use ROOT confirmado.
+- NÃO alterar nuxt.config.ts.
+
+OBJETIVO:
+Aba Certificados:
+1) cards (imagem + título + org/ano)
+2) Slideover com detalhes + botões (ver/baixar)
+3) Timeline (Nuxt UI Timeline) alternável
+4) data-driven app/data/certificates.ts
+5) fallback de assets/links + toast
+6) estável em F5 e tabs (revealTick se aplicável)
+
+ARQUIVOS:
+- TabCertificates.vue
+- CertificateCard.vue
+- CertificateSlideover.vue
+- app/data/certificates.ts (mínimo)
+
+REGRAS:
+- UCard/USlideover/UTimeline/UButton/UBadge/UEmpty/USkeleton/UToast
+- Timeline ordenada por data desc (YYYY-MM)
+- Links vazios: disabled + tooltip/aria-label
+- Sem ScrollArea aqui
+- Acessibilidade: aria-label e rel noopener
+
+CÓDIGO COMPLETO:
+- Arquivos completos alterados.
+- Se criar util de data, incluir completo.
+
+COMANDOS:
+1) cd "<ROOT confirmado>"
+2) npm run dev
+
+TESTE:
+- Cards ok
+- Slideover abre + botões ok/disabled
+- Timeline alterna e ordena
+- Troca tabs + F5: estável
+
+ERROS:
+- Slideover não abre: estado reativo
+- Timeline sem ordem: ordenar corretamente
+- Links quebrados: validar + toast
+- Hidratação: usar tick/fallback
+
+ENCERRAMENTO:
+- Pare e aguarde “Etapa concluída”.

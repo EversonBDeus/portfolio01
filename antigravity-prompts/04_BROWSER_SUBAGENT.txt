@@ -1,0 +1,46 @@
+﻿[PROMPT 4 — CONFIGURAR O BROWSER SUBAGENT (TESTE DO NUxt + CAPTURA DE ARTEFATOS)]
+
+MODO: Planning (obrigatório)
+
+ANTES DE QUALQUER AÇÃO:
+- Releia o resumo “ERROS → CORREÇÕES” do PROMPT 1 e confirme que não há conflito.
+- Não altere arquivos do projeto nesta etapa.
+- Não execute comandos fora da Allow List definida no PROMPT 2.
+- Não navegue fora da Browser URL Allowlist definida no PROMPT 2.
+
+OBJETIVO:
+Configurar o Browser do Antigravity para:
+1) abrir a aplicação local (localhost) com segurança,
+2) capturar screenshots/recordings como artifacts,
+3) validar UI vs briefing de forma reproduzível.
+
+TAREFA 1 — SETUP DO BROWSER SUBAGENT:
+- Abra o Agent Manager → Playground.
+- Solicite ao Browser subagent para abrir: antigravity.google (permitido).
+- Siga o fluxo de “Setup” solicitado pela plataforma (extensão/permissões).
+- Confirme que o browser subagent consegue abrir páginas (sem executar scripts sem revisão).
+
+TAREFA 2 — PERFIL DE TESTE LOCAL:
+- Configure um “perfil de navegação” para testes:
+  - Página inicial do portfólio
+  - Troca de tema (dark mode toggle)
+  - Navegação entre tabs
+  - Abertura de Slideover (projetos/certificados)
+  - Rota /projects/[slug] (se existir)
+- Regra: toda validação deve virar artifact quando houver mudança visual relevante.
+
+TAREFA 3 — CHECK DE PERMISSÕES E SEGURANÇA:
+- Confirme:
+  - Browser JS execution: pedir revisão (ou equivalente)
+  - Domínios permitidos: localhost/127.0.0.1 e doc sites
+  - Bloqueio de navegação fora da allowlist
+
+SAÍDA OBRIGATÓRIA:
+A) Browser subagent configurado: (sim/não)
+B) Extensão/permissões: (ok/pendente; o que falta)
+C) Allowlist efetiva: (listar domínios confirmados)
+D) Checklist de testes locais (lista 5–8 itens)
+E) Política de artifacts: (quando capturar screenshot/recording)
+
+ENCERRAMENTO:
+- Pare e aguarde o usuário dizer: “próximo prompt”.

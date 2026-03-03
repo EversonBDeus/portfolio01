@@ -23,12 +23,11 @@ function openScreenshots(e: MouseEvent | KeyboardEvent) {
 </script>
 
 <template>
-  <UCard v-reveal
+  <UCard
     class="group cursor-pointer"
     :ui="{ body: 'p-3 space-y-3' }"
     @click="emit('open', item)"
   >
-    <!-- IMAGEM clicável = screenshots -->
     <div
       class="relative rounded-xl overflow-hidden border border-default focus:outline-none"
       role="link"
@@ -39,20 +38,13 @@ function openScreenshots(e: MouseEvent | KeyboardEvent) {
     >
       <img :src="item.coverImage" :alt="item.title" class="h-44 w-full object-cover" />
 
-      <!-- overlay base -->
-      <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+      <div class="absolute inset-0 bg-linear-to-t from-black/60 via-black/10 to-transparent" />
 
-      <!-- badges (mantém como está no Conteudo5) -->
-      <UBadge v-reveal
-        class="absolute top-2 left-2 z-10"
-        :color="roleColor[item.role]"
-        variant="solid"
-        size="xs"
-      >
+      <UBadge class="absolute top-2 left-2 z-10" :color="roleColor[item.role]" variant="solid" size="xs">
         {{ roleLabel[item.role] }}
       </UBadge>
 
-      <UBadge v-reveal
+      <UBadge
         v-if="item.stack?.length"
         class="absolute top-2 right-2 z-10 bg-black/40 text-white border border-white/10"
         color="neutral"
@@ -62,14 +54,13 @@ function openScreenshots(e: MouseEvent | KeyboardEvent) {
         {{ item.stack.length }} techs
       </UBadge>
 
-      <!-- ✅ HOVER INFO (desktop): mostra stack + dica -->
       <div
         class="pointer-events-none absolute inset-x-0 bottom-0 z-10 p-3
                opacity-0 transition-opacity duration-200
                group-hover:opacity-100"
       >
         <div class="flex flex-wrap gap-1.5">
-          <UBadge v-reveal
+          <UBadge
             v-for="t in (item.stack || []).slice(0, 4)"
             :key="t"
             color="neutral"
@@ -80,7 +71,7 @@ function openScreenshots(e: MouseEvent | KeyboardEvent) {
             {{ t }}
           </UBadge>
 
-          <UBadge v-reveal
+          <UBadge
             v-if="(item.stack || []).length > 4"
             color="neutral"
             variant="solid"
@@ -96,20 +87,13 @@ function openScreenshots(e: MouseEvent | KeyboardEvent) {
         </p>
       </div>
 
-      <!-- hint pequeno no canto (continua útil) -->
       <div class="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <UBadge v-reveal
-          color="neutral"
-          variant="solid"
-          size="xs"
-          class="bg-black/50 text-white border border-white/10"
-        >
+        <UBadge color="neutral" variant="solid" size="xs" class="bg-black/50 text-white border border-white/10">
           Ver screenshots
         </UBadge>
       </div>
     </div>
 
-    <!-- texto base (mobile e sempre visível) -->
     <div class="text-left">
       <p class="text-sm font-semibold line-clamp-1">
         {{ item.title }}

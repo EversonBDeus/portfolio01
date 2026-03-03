@@ -1,0 +1,78 @@
+﻿[PROMPT 5 — CRIAR RULES (REGRAS) PERSISTENTES DO WORKSPACE NO ANTIGRAVITY]
+
+MODO: Planning (obrigatório)
+
+ANTES DE QUALQUER AÇÃO:
+- Releia o resultado do PROMPT 1 (ROOT confirmado + ERROS→CORREÇÕES).
+- NÃO execute comandos no terminal.
+- NÃO altere código do projeto.
+- NÃO assuma caminhos: use o ROOT confirmado no PROMPT 1.
+
+OBJETIVO:
+Criar Rules persistentes do WORKSPACE para o Antigravity “entender o projeto inteiro” e obedecer o método por etapas, evitando repetir bugs e decisões erradas.
+
+ONDE CRIAR:
+- Customizations → Rules → escopo WORKSPACE (não global).
+
+RULE 1 — "00_fonte_da_verdade_e_leitura_obrigatoria"
+"""
+Antes de qualquer alteração (código, terminal, configurações), eu devo LER POR COMPLETO:
+1) BRIEFING_PORTFOLIO_NUXT_UI.txt (fonte da verdade do design)
+2) CONVERSA_GEMINI_PORTFOLIO_PARA_ANTIGRAVITY.txt (histórico, erros já cometidos e correções)
+3) Código do projeto no ROOT (onde existe nuxt.config.ts + package.json + app/)
+
+Eu NÃO posso assumir caminhos. Sempre devo localizar o ROOT pelo nuxt.config.ts.
+Qualquer divergência entre briefing e código atual deve virar diagnóstico antes de mudar.
+
+references/ (se existir) é APENAS referência visual/blueprint. Não copiar/colar código direto de references sem validação e sem adaptar para Nuxt UI Standard.
+"""
+
+RULE 2 — "10_metodo_por_etapas"
+"""
+Toda resposta de implementação deve seguir SEMPRE este formato:
+1) objetivo da etapa
+2) quais arquivos criar/editar (com paths)
+3) código completo para copiar/colar
+4) comandos prontos para PowerShell (sempre com cd para o ROOT confirmado)
+5) como testar no navegador
+6) erros comuns e como corrigir
+
+NUNCA avançar para a próxima etapa até o usuário dizer exatamente: “etapa concluída”.
+"""
+
+RULE 3 — "20_nuxt_ui_first_e_restricoes"
+"""
+Prioridade total: Nuxt UI + Tailwind + TypeScript.
+Evitar bibliotecas externas.
+
+Não usar Nuxt UI Pro (componentes/blocks pagos). Se references/ trouxer componentes Pro, converter para alternativas Nuxt UI Standard.
+
+Não alterar nuxt.config.ts sem explicar claramente o motivo e o impacto.
+Manter conteúdo data-driven em app/data/* sempre que possível.
+"""
+
+RULE 4 — "30_guardrails_anti_bugs"
+"""
+NÃO reintroduzir bugs já vistos:
+- Não criar menu hambúrguer vazio no mobile.
+- Não colocar “Nuxt UI” ou header pesado (preto/borda grossa) no topo.
+- Cuidado com hidratação/F5: se depender de viewport/medição, usar onMounted/flags e evitar render prematuro.
+- Tabs + ScrollArea + animações: NÃO remover mecanismos existentes (ex.: v-reveal / revealTick / desktopReady ou equivalente). Se precisar trocar, substituir por algo equivalente e justificar.
+- Assets: avatar/CV/certificados precisam de fallback + feedback (toast/empty/skeleton).
+"""
+
+RULE 5 — "40_terminal_e_varreduras_seguras"
+"""
+Ao sugerir comandos:
+- Sempre PowerShell e sempre com caminho/ROOT explícito.
+- Evitar varreduras que travem: excluir node_modules, .nuxt, .output.
+- Nunca sugerir comandos destrutivos.
+"""
+
+VALIDAÇÃO:
+- Liste as Rules criadas (nome exato).
+- Confirme escopo WORKSPACE.
+- Confirme que não alterou arquivos nem executou comandos.
+
+ENCERRAMENTO:
+- Pare e aguarde o usuário dizer: “próximo prompt”.

@@ -1,0 +1,35 @@
+﻿[PROMPT 17 — PREPARAÇÃO DA FASE 2 (SaaS) — SOMENTE BLUEPRINT / SEM IMPLEMENTAR NADA]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia por completo: BRIEFING, TXT, código atual, references (se existir).
+- NÃO escrever código.
+- NÃO criar/editar arquivos.
+- NÃO executar comandos.
+
+OBJETIVO:
+Construir blueprint do SaaS de portfólios com login e templates, baseado no projeto atual e referências, garantindo compatibilidade com Nuxt 4 + Nuxt UI Standard e arquitetura data-driven.
+
+TAREFAS:
+1) Estado atual: resumo arquitetura + o que reaproveitar
+2) Produto SaaS: personas + fluxos (visitante, user, admin)
+3) Arquitetura Nuxt: rotas/pastas + pages vs components
+4) Modelo de dados (sem SQL): entidades + campos + relações + migração app/data → DB
+5) Segurança/multi-tenancy (conceitual): permissões, RLS como requisito futuro
+6) Templates: representação + customização + compatibilidade Nuxt UI Standard (sem Pro)
+7) Domínios personalizados (conceitual): abordagem + dependências + riscos
+8) Roadmap Fase 2 por etapas (2.1..2.7) com riscos
+
+FORMATO DE SAÍDA:
+A) Resumo do estado atual
+B) Escopo SaaS (personas + fluxos)
+C) Rotas/pastas + pages vs components
+D) Dados + mapeamento app/data → DB
+E) Templates (design + customização)
+F) Segurança (conceitual)
+G) Domínios (conceitual)
+H) Roadmap 2.1..2.7 + riscos
+
+ENCERRAMENTO:
+- Pare e aguarde o usuário dizer: “Etapa concluída”.

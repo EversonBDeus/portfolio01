@@ -47,7 +47,6 @@ function onScreenshotsClick(e: Event) {
     return
   }
 
-  // deixa a navegação do :to acontecer, mas fecha o slideover + toast
   open.value = false
   toast.add({
     title: 'Screenshots',
@@ -66,7 +65,7 @@ function onDemoClick(e: Event) {
 </script>
 
 <template>
-  <USlideover v-reveal
+  <USlideover
     v-model:open="open"
     side="right"
     inset
@@ -85,39 +84,20 @@ function onDemoClick(e: Event) {
           </UBadge>
         </div>
 
-        <!-- Ações -->
         <div class="flex gap-3 flex-wrap">
-          <UButton
-            icon="i-lucide-images"
-            variant="soft"
-            :to="screenshotsPath"
-            @click="onScreenshotsClick"
-          >
+          <UButton icon="i-lucide-images" variant="soft" :to="screenshotsPath" @click="onScreenshotsClick">
             Ver screenshots
           </UButton>
 
-          <UButton
-            icon="i-lucide-github"
-            variant="soft"
-            :to="item?.repoUrl || '#'"
-            target="_blank"
-            @click="onRepoClick"
-          >
+          <UButton icon="i-lucide-github" variant="soft" :to="item?.repoUrl || '#'" target="_blank" @click="onRepoClick">
             GitHub
           </UButton>
 
-          <UButton
-            icon="i-lucide-external-link"
-            variant="soft"
-            :to="item?.demoUrl || '#'"
-            target="_blank"
-            @click="onDemoClick"
-          >
+          <UButton icon="i-lucide-external-link" variant="soft" :to="item?.demoUrl || '#'" target="_blank" @click="onDemoClick">
             Hospedagem
           </UButton>
         </div>
 
-        <!-- Imagem -->
         <UCard :ui="{ body: 'p-3' }">
           <div class="rounded-xl overflow-hidden border border-default">
             <img v-if="item" :src="coverSrc" :alt="item.title" class="w-full object-cover" />
@@ -125,7 +105,6 @@ function onDemoClick(e: Event) {
           </div>
         </UCard>
 
-        <!-- Detalhes: scroll só no desktop -->
         <UCard v-if="item?.details?.trim()" :ui="{ body: 'p-3 space-y-2' }">
           <p class="font-semibold">Detalhes</p>
 

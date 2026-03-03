@@ -1,0 +1,43 @@
+﻿[PROMPT 7 — HEALTH CHECK DO PROJETO (COMANDOS MÍNIMOS + SEM MEXER EM CÓDIGO)]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Use ROOT confirmado no PROMPT 1.
+- NÃO editar arquivos.
+- Só executar comandos da Allow List.
+
+OBJETIVO:
+Validar ambiente e execução do projeto em dev.
+
+TAREFA 1 — PowerShell (somente):
+1) cd "<ROOT confirmado>"
+2) node -v
+3) npm -v
+4) npm install
+5) npm run dev
+
+REGRAS:
+- Se houver erro, PARE. Não corrigir aqui. Apenas registrar e sugerir /debug.
+
+TAREFA 2 — Checklist no browser:
+- Abrir localhost (porta do terminal)
+- Trocar tema
+- Trocar tabs (se existirem)
+- Abrir slideover (se existir)
+- Acessar /projects/[slug] (se existir; slug real do data)
+
+SAÍDA:
+A) ROOT utilizado
+B) node -v
+C) npm -v
+D) npm install (ok/erro + bloco inicial do log)
+E) npm run dev (ok/erro + bloco inicial do log)
+F) URL local
+G) Checklist browser (ok/não ok)
+H) Próximo passo:
+   - se OK: sugerir /ui-briefing-check
+   - se falhou: sugerir /debug
+
+ENCERRAMENTO:
+- Pare e aguarde “próximo prompt”.

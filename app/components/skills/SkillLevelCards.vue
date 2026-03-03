@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import type { Skill, SkillLevel } from '~/data/skills'
 
-const props = defineProps<{
-  items: Skill[]
-}>()
+const props = defineProps<{ items: Skill[]; revealTick: number }>()
 
 const labelByLevel: Record<SkillLevel, string> = {
   basic: 'Básico',
@@ -34,37 +32,39 @@ const skillsByLevel = computed(() => {
 
 <template>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-6">
-    <UCard v-reveal
-      v-for="lvl in levels"
+    <div
+      v-for="(lvl, idx) in levels"
       :key="lvl"
-      :ui="{ body: 'p-4 space-y-3' }"
+      v-reveal="{ tick: revealTick, delay: idx * 80 }"
     >
-      <div class="flex items-center gap-2">
-        <UIcon :name="iconByLevel[lvl]" class="text-lg" />
-        <h3 class="font-semibold">{{ labelByLevel[lvl] }}</h3>
+      <UCard :ui="{ body: 'p-4 space-y-3' }">
+        <div class="flex items-center gap-2">
+          <UIcon :name="iconByLevel[lvl]" class="text-lg" />
+          <h3 class="font-semibold">{{ labelByLevel[lvl] }}</h3>
 
-        <UBadge :color="colorByLevel[lvl]" variant="soft" class="ml-auto">
-          {{ skillsByLevel[lvl].length }}
-        </UBadge>
-      </div>
+          <UBadge :color="colorByLevel[lvl]" variant="soft" class="ml-auto">
+            {{ skillsByLevel[lvl].length }}
+          </UBadge>
+        </div>
 
-      <div v-if="skillsByLevel[lvl].length" class="flex flex-wrap gap-2">
-        <UBadge
-          v-for="s in skillsByLevel[lvl]"
-          :key="s.name"
-          :color="colorByLevel[lvl]"
-          variant="subtle"
-        >
-          {{ s.name }}
-        </UBadge>
-      </div>
+        <div v-if="skillsByLevel[lvl].length" class="flex flex-wrap gap-2">
+          <UBadge
+            v-for="s in skillsByLevel[lvl]"
+            :key="s.name"
+            :color="colorByLevel[lvl]"
+            variant="subtle"
+          >
+            {{ s.name }}
+          </UBadge>
+        </div>
 
-      <UEmpty
-        v-else
-        icon="i-lucide-circle-dashed"
-        title="Sem itens"
-        description="Adicione skills para este nível."
-      />
-    </UCard>
+        <UEmpty
+          v-else
+          icon="i-lucide-circle-dashed"
+          title="Sem itens"
+          description="Adicione skills para este nível."
+        />
+      </UCard>
+    </div>
   </div>
 </template>

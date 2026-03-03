@@ -2,6 +2,8 @@
 import { skills } from '~/data/skills'
 import SkillGrid from '~/components/skills/SkillGrid.vue'
 import SkillLevelCards from '~/components/skills/SkillLevelCards.vue'
+
+defineProps<{ revealTick: number }>()
 </script>
 
 <template>
@@ -13,12 +15,10 @@ import SkillLevelCards from '~/components/skills/SkillLevelCards.vue'
       </p>
     </div>
 
-    <!-- Grade com ícones -->
-    <SkillGrid :items="skills" />
+    <SkillGrid :items="skills" :reveal-tick="revealTick" />
 
     <USeparator type="dashed" class="h-px" />
 
-    <!-- Cards por nível (Básico / Intermediário / Avançado) -->
     <div class="text-left space-y-1">
       <h3 class="text-base font-semibold">Níveis</h3>
       <p class="text-sm text-muted">
@@ -26,6 +26,6 @@ import SkillLevelCards from '~/components/skills/SkillLevelCards.vue'
       </p>
     </div>
 
-    <SkillLevelCards :items="skills" />
+    <SkillLevelCards :items="skills" :reveal-tick="revealTick" />
   </div>
 </template>

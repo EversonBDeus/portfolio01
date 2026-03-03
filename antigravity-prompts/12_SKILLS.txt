@@ -1,0 +1,50 @@
+﻿[PROMPT 12 — IMPLEMENTAR ABA “HABILIDADES” (GRID + NÍVEIS) — DATA-DRIVEN]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia briefing (grid + níveis) + TXT (anti-hidratação/tabs).
+- Use ROOT confirmado.
+- NÃO alterar nuxt.config.ts.
+
+OBJETIVO:
+Aba Habilidades:
+1) grid responsiva
+2) níveis: Básico / Intermediário / Avançado
+3) visual premium Nuxt UI
+4) data-driven app/data/skills.ts
+5) estável em F5 e troca de tabs (revealTick se aplicável)
+
+ARQUIVOS:
+- TabSkills.vue
+- components/skills/* (reutilizar se existir)
+- app/data/skills.ts (mínimo)
+- Tipos existentes (evitar any)
+
+REGRAS:
+- UCard/UBadge/ícones
+- Desktop 3 colunas ou cards por nível
+- Mobile 1 coluna com bom espaçamento
+- Sem ScrollArea aqui
+- Usar revealTick/v-reveal se existir
+
+CÓDIGO COMPLETO:
+- Arquivos completos alterados.
+
+COMANDOS:
+1) cd "<ROOT confirmado>"
+2) npm run dev
+
+TESTE:
+- Tab Habilidades: níveis e skills OK
+- Responsivo
+- Troca de tabs + F5: estável
+
+ERROS:
+- Não aparece: checar import/estrutura do data
+- TS: criar/usar tipos corretos
+- Layout apertado: aumentar gap/padding
+- Some ao trocar: garantir tick/fallback
+
+ENCERRAMENTO:
+- Pare e aguarde “Etapa concluída”.

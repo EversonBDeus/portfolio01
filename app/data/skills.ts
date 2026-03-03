@@ -16,7 +16,9 @@ export const skills: Skill[] = [
   { name: 'Vue.js', icon: 'i-simple-icons-vuedotjs', level: 'advanced', colorClass: 'text-[#42B883]' },
   { name: 'Nuxt', icon: 'i-simple-icons-nuxtdotjs', level: 'intermediate', colorClass: 'text-[#00DC82]' },
   { name: 'Tailwind CSS', icon: 'i-simple-icons-tailwindcss', level: 'intermediate', colorClass: 'text-[#06B6D4]' },
-  { name: 'Pinia', icon: 'i-simple-icons-pinialogo', level: 'intermediate', colorClass: 'text-[#F7D336]' },
+
+  // ✅ era i-simple-icons-pinialogo (não existe)
+  { name: 'Pinia', icon: 'i-simple-icons-pinia', level: 'intermediate', colorClass: 'text-[#F7D336]' },
 
   { name: 'Node.js', icon: 'i-simple-icons-nodedotjs', level: 'intermediate', colorClass: 'text-[#339933]' },
   { name: 'MongoDB', icon: 'i-simple-icons-mongodb', level: 'basic', colorClass: 'text-[#47A248]' },

@@ -1,0 +1,60 @@
+﻿[PROMPT 1 — AUDITORIA OBRIGATÓRIA (SEM EXECUTAR COMANDOS / SEM ALTERAR ARQUIVOS)]
+
+MODO: Planning (obrigatório)
+
+ANTES DE QUALQUER COISA:
+- NÃO execute comandos no terminal.
+- NÃO altere nenhum arquivo.
+- NÃO assuma caminhos.
+- Primeiro: LEIA POR COMPLETO os arquivos fornecidos no workspace.
+
+ARQUIVOS QUE VOCÊ DEVE LER (100%):
+1) BRIEFING_PORTFOLIO_NUXT_UI.txt
+2) CONVERSA_GEMINI_PORTFOLIO_PARA_ANTIGRAVITY.txt
+3) Código do projeto (o diretório que contém nuxt.config.ts + package.json)
+4) Pasta references/ (se existir no workspace) — tratar como “somente referência”, não copiar código direto.
+
+TAREFA 1 — IDENTIFICAR CAMINHO EXATO DO PROJETO (SEM ASSUMIR):
+- Encontre o ROOT correto do projeto localizando o arquivo `nuxt.config.ts`.
+- Reporte o caminho absoluto completo do ROOT.
+- Se houver mais de um candidato (ex.: ConteudoAtual/ dentro de outra pasta), escolha o que tiver `nuxt.config.ts` + `package.json` + pasta `app/`.
+
+TAREFA 2 — LOCALIZAR “ERROS JÁ COMETIDOS” E “CORREÇÕES” NO TXT:
+No arquivo CONVERSA_GEMINI_PORTFOLIO_PARA_ANTIGRAVITY.txt:
+- Encontre os trechos onde o USER diz que “Gemini errou” / “você errou” / “erro” / “não fazer”.
+- Monte uma lista “ERRO → CORREÇÃO” com no mínimo:
+  a) erros de caminho (assumir path errado)
+  b) prioridade de referências (qual pasta é a final e quais não usar)
+  c) regras de anti-bugs (hidratação/F5, tabs/scrollarea, revealTick/desktopReady)
+  d) restrições de varredura pesada (evitar node_modules/.nuxt/.output)
+
+TAREFA 3 — INVENTÁRIO DO PROJETO ATUAL (SEM MODIFICAR):
+- Liste a estrutura principal (apenas nível alto):
+  - app/app.vue, app/layouts, app/components (subpastas), app/data, app/pages, app/plugins, app/assets/css
+- Identifique features existentes relevantes ao briefing:
+  - Header (toggle-only ou não)
+  - Perfil (avatar, socials, download CV)
+  - Tabs atuais (quantas, quais nomes)
+  - Projetos (cards, slideover, rota /projects/[slug], marquee)
+  - Certificados (cards, slideover, timeline)
+  - Habilidades (grid + níveis)
+- Aponte arquivos exatos responsáveis por cada parte (paths).
+
+TAREFA 4 — COMPARAR COM O BRIEFING (DIVERGÊNCIAS):
+- Compare o projeto atual com o briefing (fonte da verdade).
+- Liste divergências em bullets, por prioridade:
+  P0 (quebra briefing), P1 (melhoria), P2 (opcional).
+
+TAREFA 5 — SAÍDA (FORMATO OBRIGATÓRIO):
+Responda exatamente nesta estrutura:
+
+A) ROOT CONFIRMADO (caminho absoluto)
+B) CHECKLIST: arquivos lidos (confirmar 1..4)
+C) ERROS ANTERIORES → CORREÇÕES (extraído do TXT)
+D) INVENTÁRIO DO PROJETO (mapa de pastas + arquivos-chave)
+E) DIVERGÊNCIAS VS BRIEFING (P0/P1/P2)
+F) RISCOS + GUARDRAILS (o que NÃO mexer / o que preservar)
+G) PROPOSTA DA PRÓXIMA ETAPA (somente plano, sem código)
+
+ENCERRAMENTO:
+- Pare e aguarde o usuário dizer: “próximo prompt”.

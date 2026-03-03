@@ -1,0 +1,1037 @@
+﻿====================
+FILE: 00_MASTER_RULES.txt
+====================
+[00 — MASTER RULES (LEIA ANTES DE USAR QUALQUER PROMPT)]
+
+REGRAS ABSOLUTAS (OBRIGATÓRIAS):
+1) Antes de qualquer ação, o Antigravity deve ler por COMPLETO:
+   - BRIEFING_PORTFOLIO_NUXT_UI.txt
+   - CONVERSA_GEMINI_PORTFOLIO_PARA_ANTIGRAVITY.txt
+   - o código do projeto (ROOT onde existe nuxt.config.ts + package.json + app/)
+   - references/ (se existir) APENAS como referência, não copiar código direto
+
+2) Identificar no .txt:
+   - os erros já cometidos
+   - as correções corretas
+   - os pontos onde o usuário diz “Gemini errou / você errou / não faça isso”
+
+3) Caminho do projeto:
+   - NUNCA assumir caminho.
+   - Confirmar ROOT localizando nuxt.config.ts.
+   - Reportar o caminho absoluto confirmado.
+
+4) Regra de Etapas:
+   - Entregar apenas UM prompt por vez.
+   - Parar e aguardar “próximo prompt” para continuar.
+   - Prompts de implementação terminam aguardando “Etapa concluída”.
+
+5) Formato obrigatório de resposta (quando for implementação):
+   - objetivo da etapa
+   - quais arquivos criar/editar (paths)
+   - código completo para copiar/colar
+   - comandos PowerShell prontos (com cd no ROOT confirmado)
+   - como testar no navegador
+   - erros comuns e como corrigir
+
+6) Restrições técnicas:
+   - Nuxt UI first (evitar libs externas)
+   - Não alterar nuxt.config.ts sem explicar
+   - Evitar varreduras pesadas (excluir node_modules, .nuxt, .output)
+   - Proibido comandos destrutivos (Remove-Item, del recursivo, format, diskpart, etc.)
+
+
+
+====================
+FILE: 01_AUDITORIA.txt
+====================
+[PROMPT 1 — AUDITORIA OBRIGATÓRIA (SEM EXECUTAR COMANDOS / SEM ALTERAR ARQUIVOS)]
+
+MODO: Planning (obrigatório)
+
+ANTES DE QUALQUER COISA:
+- NÃO execute comandos no terminal.
+- NÃO altere nenhum arquivo.
+- NÃO assuma caminhos.
+- Primeiro: LEIA POR COMPLETO os arquivos fornecidos no workspace.
+
+ARQUIVOS QUE VOCÊ DEVE LER (100%):
+1) BRIEFING_PORTFOLIO_NUXT_UI.txt
+2) CONVERSA_GEMINI_PORTFOLIO_PARA_ANTIGRAVITY.txt
+3) Código do projeto (o diretório que contém nuxt.config.ts + package.json)
+4) Pasta references/ (se existir no workspace) — tratar como “somente referência”, não copiar código direto.
+
+TAREFA 1 — IDENTIFICAR CAMINHO EXATO DO PROJETO (SEM ASSUMIR):
+- Encontre o ROOT correto do projeto localizando o arquivo `nuxt.config.ts`.
+- Reporte o caminho absoluto completo do ROOT.
+- Se houver mais de um candidato (ex.: ConteudoAtual/ dentro de outra pasta), escolha o que tiver `nuxt.config.ts` + `package.json` + pasta `app/`.
+
+TAREFA 2 — LOCALIZAR “ERROS JÁ COMETIDOS” E “CORREÇÕES” NO TXT:
+No arquivo CONVERSA_GEMINI_PORTFOLIO_PARA_ANTIGRAVITY.txt:
+- Encontre os trechos onde o USER diz que “Gemini errou” / “você errou” / “erro” / “não fazer”.
+- Monte uma lista “ERRO → CORREÇÃO” com no mínimo:
+  a) erros de caminho (assumir path errado)
+  b) prioridade de referências (qual pasta é a final e quais não usar)
+  c) regras de anti-bugs (hidratação/F5, tabs/scrollarea, revealTick/desktopReady)
+  d) restrições de varredura pesada (evitar node_modules/.nuxt/.output)
+
+TAREFA 3 — INVENTÁRIO DO PROJETO ATUAL (SEM MODIFICAR):
+- Liste a estrutura principal (apenas nível alto):
+  - app/app.vue, app/layouts, app/components (subpastas), app/data, app/pages, app/plugins, app/assets/css
+- Identifique features existentes relevantes ao briefing:
+  - Header (toggle-only ou não)
+  - Perfil (avatar, socials, download CV)
+  - Tabs atuais (quantas, quais nomes)
+  - Projetos (cards, slideover, rota /projects/[slug], marquee)
+  - Certificados (cards, slideover, timeline)
+  - Habilidades (grid + níveis)
+- Aponte arquivos exatos responsáveis por cada parte (paths).
+
+TAREFA 4 — COMPARAR COM O BRIEFING (DIVERGÊNCIAS):
+- Compare o projeto atual com o briefing (fonte da verdade).
+- Liste divergências em bullets, por prioridade:
+  P0 (quebra briefing), P1 (melhoria), P2 (opcional).
+
+TAREFA 5 — SAÍDA (FORMATO OBRIGATÓRIO):
+Responda exatamente nesta estrutura:
+
+A) ROOT CONFIRMADO (caminho absoluto)
+B) CHECKLIST: arquivos lidos (confirmar 1..4)
+C) ERROS ANTERIORES → CORREÇÕES (extraído do TXT)
+D) INVENTÁRIO DO PROJETO (mapa de pastas + arquivos-chave)
+E) DIVERGÊNCIAS VS BRIEFING (P0/P1/P2)
+F) RISCOS + GUARDRAILS (o que NÃO mexer / o que preservar)
+G) PROPOSTA DA PRÓXIMA ETAPA (somente plano, sem código)
+
+ENCERRAMENTO:
+- Pare e aguarde o usuário dizer: “próximo prompt”.
+
+====================
+FILE: 02_CONFIG_SEGURA.txt
+====================
+[PROMPT 2 — CONFIGURAÇÃO SEGURA DO ANTIGRAVITY (SEM MEXER NO CÓDIGO)]
+
+MODO: Planning (obrigatório)
+
+PRÉ-REQUISITO:
+- Use o ROOT do projeto que você confirmou na resposta do PROMPT 1 (não assuma caminhos).
+- Nesta etapa: NÃO altere código do projeto. NÃO rode comandos no terminal. Somente configurar a plataforma.
+
+OBJETIVO:
+Configurar o Antigravity em modo seguro e previsível para evitar repetir erros antigos (execução indevida, prompt injection, ações sem revisão).
+
+TAREFA 1 — MODO DE DESENVOLVIMENTO (SECURE MODE):
+- Configure para “Review-driven development” (o agente pede revisão com frequência).
+- Se existir “Agent-assisted development” e estiver disponível, manter como alternativa recomendada, mas usar Review-driven como padrão.
+
+TAREFA 2 — POLÍTICA DO TERMINAL (OBRIGATÓRIO):
+- Vá em: Antigravity Settings → Advanced Settings → Terminal (Agent settings)
+- Defina “Terminal Command Auto Execution” = OFF
+
+TAREFA 3 — ALLOW LIST (OBRIGATÓRIO, POR ESTAR EM OFF):
+- Abra a Allow List de comandos do terminal e adicione SOMENTE comandos seguros e necessários para este projeto.
+- Allow List mínima recomendada (Windows/PowerShell):
+  - cd
+  - dir
+  - ls
+  - node -v
+  - npm -v
+  - npm install
+  - npm ci
+  - npm run dev
+  - npm run build
+  - npm run preview
+  - git status
+  - git diff
+- NÃO adicionar comandos destrutivos ou perigosos (ex.: rm, rmdir, del, Remove-Item, format, diskpart, curl, wget, powershell -Command com remoções).
+
+TAREFA 4 — REVIEW POLICY / ARTIFACTS (OBRIGATÓRIO):
+- Configure a política para SEMPRE pedir revisão antes de:
+  - aplicar diffs/código
+  - aceitar “Accept all”
+  - executar comandos não listados
+- Garanta que “Review changes” fique como passo padrão antes de qualquer alteração futura.
+
+TAREFA 5 — BROWSER SECURITY (OBRIGATÓRIO):
+- Vá em: Antigravity Settings → Advanced Settings → Browser
+- Abra o “Browser URL Allowlist” (Open Allowlist File) e limite a navegação do browser subagent aos domínios abaixo:
+  - localhost
+  - 127.0.0.1
+  - antigravity.google
+  - developers.google.com
+  - codelabs.developers.google.com
+  - ui.nuxt.com
+  - nuxt.com
+  - github.com
+  - medium.com
+  - codecademy.com
+- Não permitir domínios genéricos/abertos fora dessa lista nesta fase.
+
+TAREFA 6 — CONFIRMAÇÃO (SAÍDA OBRIGATÓRIA):
+Responda listando exatamente:
+A) Terminal Command Auto Execution: (valor final)
+B) Allow List (lista final de comandos)
+C) Browser URL Allowlist (lista final de domínios)
+D) Política de revisão/artifacts (como ficou configurada)
+E) Se é necessário reiniciar o Antigravity para aplicar as listas (sim/não)
+
+ENCERRAMENTO:
+- Pare e aguarde o usuário dizer: “próximo prompt”.
+
+====================
+FILE: 03_WORKSPACE_MAPA.txt
+====================
+[PROMPT 3 — ESTRUTURA IDEAL DO WORKSPACE NO ANTIGRAVITY (SEM CÓDIGO / SEM TERMINAL)]
+
+MODO: Planning (obrigatório)
+
+ANTES DE COMEÇAR:
+- Releia rapidamente os pontos “ERROS → CORREÇÕES” extraídos no PROMPT 1 e confirme que esta etapa NÃO viola nenhum deles.
+- NÃO execute comandos.
+- NÃO altere arquivos do projeto.
+- NÃO assuma caminhos: use apenas o ROOT confirmado no PROMPT 1.
+
+OBJETIVO:
+Deixar o workspace do Antigravity organizado e previsível para o projeto Nuxt (Fase 1), mantendo “references” como referência e impedindo que o agente trate isso como código fonte do MVP.
+
+TAREFA 1 — ABRIR O WORKSPACE CORRETO:
+- Abra no Antigravity o diretório ROOT confirmado no PROMPT 1 (onde estão nuxt.config.ts + package.json + app/).
+- Verifique no Explorer do editor que esse diretório é o topo do workspace.
+
+TAREFA 2 — DEFINIR “O QUE É CÓDIGO” VS “O QUE É REFERÊNCIA”:
+- Verifique se existe uma pasta “references/” dentro do workspace.
+  - Se existir: marque mentalmente como “READ-ONLY REFERENCE”.
+  - Se NÃO existir no workspace, não tente importar; apenas registre onde ela está fora do workspace.
+- Regra: references/ serve apenas para consulta visual e comparação de ideias; NÃO copiar/colar código direto sem converter para Nuxt UI Standard e sem validar com o briefing.
+
+TAREFA 3 — CRIAR MAPA DE NAVEGAÇÃO DO PROJETO (SEM ALTERAR ARQUIVOS):
+Monte um “Mapa do Projeto” contendo:
+A) Arquivos de entrada:
+   - app/app.vue
+   - app/layouts/default.vue
+   - app/pages/index.vue
+B) Componentes principais por área:
+   - Header / Footer (paths exatos)
+   - ProfileSection + About (paths exatos)
+   - Tabs (paths exatos)
+   - Projetos (card + slideover + rota screenshots) (paths exatos)
+   - Habilidades (paths exatos)
+   - Certificados (paths exatos)
+C) Dados (data-driven):
+   - app/data/* (listar arquivos e o que cada um alimenta)
+
+TAREFA 4 — DEFINIR QUANDO USAR PLANNING VS FAST (REGRAS FIXAS):
+- Planning: mudanças estruturais (tabs, layouts, slideover/marquee, plugins, CSS global, refactors).
+- Fast: pequenas correções (classes, ícones, textos, ajustes pontuais em componentes, bugs simples).
+
+TAREFA 5 — SAÍDA (FORMATO OBRIGATÓRIO):
+A) WORKSPACE ROOT ABERTO: (caminho absoluto)
+B) STATUS references/: (dentro do workspace? sim/não; como será tratada)
+C) MAPA DO PROJETO (paths exatos por seção)
+D) REGRA PLANNING VS FAST (bullets curtos)
+E) CHECKLIST “ANTI-ERROS” (3–6 bullets citando o que NÃO fazer)
+
+ENCERRAMENTO:
+- Pare e aguarde o usuário dizer: “próximo prompt”.
+
+====================
+FILE: 04_BROWSER_SUBAGENT.txt
+====================
+[PROMPT 4 — CONFIGURAR O BROWSER SUBAGENT (TESTE DO NUxt + CAPTURA DE ARTEFATOS)]
+
+MODO: Planning (obrigatório)
+
+ANTES DE QUALQUER AÇÃO:
+- Releia o resumo “ERROS → CORREÇÕES” do PROMPT 1 e confirme que não há conflito.
+- Não altere arquivos do projeto nesta etapa.
+- Não execute comandos fora da Allow List definida no PROMPT 2.
+- Não navegue fora da Browser URL Allowlist definida no PROMPT 2.
+
+OBJETIVO:
+Configurar o Browser do Antigravity para:
+1) abrir a aplicação local (localhost) com segurança,
+2) capturar screenshots/recordings como artifacts,
+3) validar UI vs briefing de forma reproduzível.
+
+TAREFA 1 — SETUP DO BROWSER SUBAGENT:
+- Abra o Agent Manager → Playground.
+- Solicite ao Browser subagent para abrir: antigravity.google (permitido).
+- Siga o fluxo de “Setup” solicitado pela plataforma (extensão/permissões).
+- Confirme que o browser subagent consegue abrir páginas (sem executar scripts sem revisão).
+
+TAREFA 2 — PERFIL DE TESTE LOCAL:
+- Configure um “perfil de navegação” para testes:
+  - Página inicial do portfólio
+  - Troca de tema (dark mode toggle)
+  - Navegação entre tabs
+  - Abertura de Slideover (projetos/certificados)
+  - Rota /projects/[slug] (se existir)
+- Regra: toda validação deve virar artifact quando houver mudança visual relevante.
+
+TAREFA 3 — CHECK DE PERMISSÕES E SEGURANÇA:
+- Confirme:
+  - Browser JS execution: pedir revisão (ou equivalente)
+  - Domínios permitidos: localhost/127.0.0.1 e doc sites
+  - Bloqueio de navegação fora da allowlist
+
+SAÍDA OBRIGATÓRIA:
+A) Browser subagent configurado: (sim/não)
+B) Extensão/permissões: (ok/pendente; o que falta)
+C) Allowlist efetiva: (listar domínios confirmados)
+D) Checklist de testes locais (lista 5–8 itens)
+E) Política de artifacts: (quando capturar screenshot/recording)
+
+ENCERRAMENTO:
+- Pare e aguarde o usuário dizer: “próximo prompt”.
+
+====================
+FILE: 05_RULES_WORKSPACE.txt
+====================
+[PROMPT 5 — CRIAR RULES (REGRAS) PERSISTENTES DO WORKSPACE NO ANTIGRAVITY]
+
+MODO: Planning (obrigatório)
+
+ANTES DE QUALQUER AÇÃO:
+- Releia o resultado do PROMPT 1 (ROOT confirmado + ERROS→CORREÇÕES).
+- NÃO execute comandos no terminal.
+- NÃO altere código do projeto.
+- NÃO assuma caminhos: use o ROOT confirmado no PROMPT 1.
+
+OBJETIVO:
+Criar Rules persistentes do WORKSPACE para o Antigravity “entender o projeto inteiro” e obedecer o método por etapas, evitando repetir bugs e decisões erradas.
+
+ONDE CRIAR:
+- Customizations → Rules → escopo WORKSPACE (não global).
+
+RULE 1 — "00_fonte_da_verdade_e_leitura_obrigatoria"
+"""
+Antes de qualquer alteração (código, terminal, configurações), eu devo LER POR COMPLETO:
+1) BRIEFING_PORTFOLIO_NUXT_UI.txt (fonte da verdade do design)
+2) CONVERSA_GEMINI_PORTFOLIO_PARA_ANTIGRAVITY.txt (histórico, erros já cometidos e correções)
+3) Código do projeto no ROOT (onde existe nuxt.config.ts + package.json + app/)
+
+Eu NÃO posso assumir caminhos. Sempre devo localizar o ROOT pelo nuxt.config.ts.
+Qualquer divergência entre briefing e código atual deve virar diagnóstico antes de mudar.
+
+references/ (se existir) é APENAS referência visual/blueprint. Não copiar/colar código direto de references sem validação e sem adaptar para Nuxt UI Standard.
+"""
+
+RULE 2 — "10_metodo_por_etapas"
+"""
+Toda resposta de implementação deve seguir SEMPRE este formato:
+1) objetivo da etapa
+2) quais arquivos criar/editar (com paths)
+3) código completo para copiar/colar
+4) comandos prontos para PowerShell (sempre com cd para o ROOT confirmado)
+5) como testar no navegador
+6) erros comuns e como corrigir
+
+NUNCA avançar para a próxima etapa até o usuário dizer exatamente: “etapa concluída”.
+"""
+
+RULE 3 — "20_nuxt_ui_first_e_restricoes"
+"""
+Prioridade total: Nuxt UI + Tailwind + TypeScript.
+Evitar bibliotecas externas.
+
+Não usar Nuxt UI Pro (componentes/blocks pagos). Se references/ trouxer componentes Pro, converter para alternativas Nuxt UI Standard.
+
+Não alterar nuxt.config.ts sem explicar claramente o motivo e o impacto.
+Manter conteúdo data-driven em app/data/* sempre que possível.
+"""
+
+RULE 4 — "30_guardrails_anti_bugs"
+"""
+NÃO reintroduzir bugs já vistos:
+- Não criar menu hambúrguer vazio no mobile.
+- Não colocar “Nuxt UI” ou header pesado (preto/borda grossa) no topo.
+- Cuidado com hidratação/F5: se depender de viewport/medição, usar onMounted/flags e evitar render prematuro.
+- Tabs + ScrollArea + animações: NÃO remover mecanismos existentes (ex.: v-reveal / revealTick / desktopReady ou equivalente). Se precisar trocar, substituir por algo equivalente e justificar.
+- Assets: avatar/CV/certificados precisam de fallback + feedback (toast/empty/skeleton).
+"""
+
+RULE 5 — "40_terminal_e_varreduras_seguras"
+"""
+Ao sugerir comandos:
+- Sempre PowerShell e sempre com caminho/ROOT explícito.
+- Evitar varreduras que travem: excluir node_modules, .nuxt, .output.
+- Nunca sugerir comandos destrutivos.
+"""
+
+VALIDAÇÃO:
+- Liste as Rules criadas (nome exato).
+- Confirme escopo WORKSPACE.
+- Confirme que não alterou arquivos nem executou comandos.
+
+ENCERRAMENTO:
+- Pare e aguarde o usuário dizer: “próximo prompt”.
+
+====================
+FILE: 06_WORKFLOWS_WORKSPACE.txt
+====================
+[PROMPT 6 — CRIAR WORKFLOWS (/COMANDOS) DO WORKSPACE NO ANTIGRAVITY]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia Rules do PROMPT 5 e ERROS→CORREÇÕES do PROMPT 1.
+- NÃO execute comandos.
+- NÃO altere código.
+
+OBJETIVO:
+Criar Workflows do WORKSPACE acionados por “/”.
+
+ONDE CRIAR:
+- Customizations → Workflows → escopo WORKSPACE (não global).
+
+WORKFLOW 1 — "/auditoria"
+"""
+Auditoria SEM EXECUTAR COMANDOS e SEM ALTERAR ARQUIVOS.
+
+1) Ler: BRIEFING + TXT
+2) Confirmar ROOT pelo nuxt.config.ts
+3) Mapear arquivos-chave por área (header/profile/tabs/projects/skills/certificates/pages/plugins/css)
+4) Divergências vs briefing em P0/P1/P2
+5) Riscos/guardrails
+6) Propor próxima etapa (plano; sem código)
+
+Formato:
+A) ROOT confirmado
+B) Checklist de arquivos lidos
+C) Erros → correções (TXT)
+D) Inventário
+E) Divergências (P0/P1/P2)
+F) Guardrails
+G) Próxima etapa (plano)
+"""
+
+WORKFLOW 2 — "/etapa"
+"""
+Responder SEMPRE no formato:
+1) objetivo
+2) arquivos (paths)
+3) código completo
+4) comandos PowerShell (cd no ROOT confirmado)
+5) como testar
+6) erros comuns
+
+Não avançar sem “etapa concluída”.
+Não alterar nuxt.config.ts sem explicar.
+Nuxt UI first.
+"""
+
+WORKFLOW 3 — "/debug"
+"""
+Quando receber erro/log:
+1) causa raiz
+2) correção mínima
+3) arquivos + código completo
+4) comandos PowerShell (cd ROOT)
+5) validação
+6) rollback simples
+Finalize pedindo “etapa concluída”.
+"""
+
+WORKFLOW 4 — "/ui-briefing-check"
+"""
+Comparar UI vs briefing:
+- header: apenas toggle
+- perfil + ações
+- tabs: 3
+- projetos: scrollarea só desktop
+- certificados: slideover + timeline
+- rota /projects/[slug] + marquee
+
+Listar P0/P1/P2 e propor 1 etapa mínima.
+"""
+
+VALIDAÇÃO:
+- Liste Workflows criados (nomes exatos).
+- Confirme escopo WORKSPACE.
+- Confirme sem comandos/sem alterações.
+
+ENCERRAMENTO:
+- Pare e aguarde o usuário dizer: “próximo prompt”.
+
+====================
+FILE: 07_HEALTHCHECK.txt
+====================
+[PROMPT 7 — HEALTH CHECK DO PROJETO (COMANDOS MÍNIMOS + SEM MEXER EM CÓDIGO)]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Use ROOT confirmado no PROMPT 1.
+- NÃO editar arquivos.
+- Só executar comandos da Allow List.
+
+OBJETIVO:
+Validar ambiente e execução do projeto em dev.
+
+TAREFA 1 — PowerShell (somente):
+1) cd "<ROOT confirmado>"
+2) node -v
+3) npm -v
+4) npm install
+5) npm run dev
+
+REGRAS:
+- Se houver erro, PARE. Não corrigir aqui. Apenas registrar e sugerir /debug.
+
+TAREFA 2 — Checklist no browser:
+- Abrir localhost (porta do terminal)
+- Trocar tema
+- Trocar tabs (se existirem)
+- Abrir slideover (se existir)
+- Acessar /projects/[slug] (se existir; slug real do data)
+
+SAÍDA:
+A) ROOT utilizado
+B) node -v
+C) npm -v
+D) npm install (ok/erro + bloco inicial do log)
+E) npm run dev (ok/erro + bloco inicial do log)
+F) URL local
+G) Checklist browser (ok/não ok)
+H) Próximo passo:
+   - se OK: sugerir /ui-briefing-check
+   - se falhou: sugerir /debug
+
+ENCERRAMENTO:
+- Pare e aguarde “próximo prompt”.
+
+====================
+FILE: 08_UI_VS_BRIEFING.txt
+====================
+[PROMPT 8 — AUDITORIA VISUAL (UI) VS BRIEFING + PLANO MÍNIMO DE AJUSTES]
+
+MODO: Planning (obrigatório)
+
+PRÉ-REQUISITOS:
+- Dev server rodando (PROMPT 7 OK).
+- NÃO alterar código nesta etapa.
+
+OBJETIVO:
+Comparar UI atual com briefing e propor a Etapa 1 mínima.
+
+TAREFA 1 — Checklist do briefing:
+1) Header fixo com APENAS toggle de tema
+2) Perfil: avatar grande + nome + headline + 3 socials
+3) Ações: Download CV + Whats + Messenger
+4) Tabs: exatamente 3 (Projetos/Habilidades/Certificados)
+5) Projetos: cards + slideover; ScrollArea só desktop; mobile rola normal
+6) /projects/[slug]: screenshots + Marquee
+7) Certificados: cards + Slideover + Timeline
+8) Habilidades: grid por nível
+
+TAREFA 2 — Browser subagent + artifacts:
+Capturar:
+A) Home (header+perfil)
+B) Toggle antes/depois
+C) Tabs estado inicial
+D) Cada aba
+E) Slideover (se existir)
+F) /projects/[slug] (se existir)
+
+TAREFA 3 — Mapear onde no código:
+Apontar paths para cada item.
+
+TAREFA 4 — Divergências P0/P1/P2 + riscos:
+Listar divergências e riscos (hidratação/F5, tabs/scrollarea, header mobile, assets).
+
+TAREFA 5 — Propor Etapa 1 (sem código):
+Plano mínimo com poucos arquivos.
+
+SAÍDA:
+A) Checklist briefing (OK/NÃO OK)
+B) Artifacts capturados
+C) Mapa de arquivos
+D) Divergências P0/P1/P2
+E) Riscos/guardrails
+F) Proposta Etapa 1 (plano; sem código)
+
+ENCERRAMENTO:
+- Pare e aguarde “próximo prompt”.
+
+====================
+FILE: 09_HEADER_TOGGLE_ONLY.txt
+====================
+[PROMPT 9 — IMPLEMENTAR HEADER (FIXO) COM APENAS TOGGLE DE TEMA — CONFORME BRIEFING]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia briefing (Header) + TXT (anti-bugs).
+- Use ROOT confirmado.
+- NÃO alterar nuxt.config.ts.
+
+OBJETIVO:
+Header:
+1) fixo no topo
+2) visual limpo (sem borda pesada / sem preto)
+3) sem “Nuxt UI”, sem nome, sem links, sem menu/hamburger
+4) apenas toggle dark/light no canto superior direito
+5) sem regressões de hidratação
+
+ARQUIVOS:
+- Editar componente real do header (ex.: app/components/layout/AppHeader.vue ou equivalente)
+- Ajustar layout default apenas se necessário (evitar sobreposição)
+- Ajustar CSS global só se necessário (mínimo)
+
+REQUISITOS:
+- Nuxt UI (UHeader + UButton)
+- Não usar configuração que gere hamburger no mobile
+- Toggle via useColorMode + mounted para evitar mismatch
+- Header não deve ocupar altura excessiva nem criar borda inferior
+
+CÓDIGO COMPLETO:
+- Fornecer arquivo completo do header.
+- Se mexer em layout/CSS, fornecer completo também (somente se necessário).
+
+COMANDOS (PowerShell):
+1) cd "<ROOT confirmado>"
+2) npm run dev
+
+TESTE:
+- Desktop: F5, toggle, console sem warnings
+- Mobile: sem hamburger vazio, toggle no canto direito, sem borda preta inferior
+
+ERROS COMUNS:
+- Hamburger apareceu: usar apenas slots, sem menus
+- Ícone piscando: renderizar ícone só após mounted
+- Conteúdo coberto: ajustar padding-top no main (mínimo)
+- Borda persistente: remover classes de borda/sombra do header
+
+ENCERRAMENTO:
+- Pare e aguarde “Etapa concluída”.
+
+====================
+FILE: 10_PERFIL_ACOES.txt
+====================
+[PROMPT 10 — IMPLEMENTAR SEÇÃO DE PERFIL + AÇÕES (DOWNLOAD CV + WHATS/MESSENGER) — CONFORME BRIEFING]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia briefing (Perfil+Ações) + TXT (anti-bugs: assets/toast/loading/F5).
+- Use ROOT confirmado.
+- NÃO alterar nuxt.config.ts.
+
+OBJETIVO:
+Home com:
+1) avatar circular grande com borda
+2) nome + headline
+3) socials (LinkedIn/GitHub/Instagram)
+4) ações:
+   - botão grande Download CV (loading + toast)
+   - ícones WhatsApp e Messenger
+5) fallback se avatar/CV faltarem (sem quebrar layout)
+
+ARQUIVOS:
+- Componente de perfil (ex.: app/components/profile/ProfileSection.vue)
+- Home (ex.: app/pages/index.vue) se necessário
+- app/data/profile.ts (mínimo)
+
+REGRAS:
+- Nuxt UI only (UAvatar/UButton/UToast/UEmpty/USkeleton/UAlert etc.)
+- Sem “card branco solto” (preferir surface/glass leve)
+- Links com target _blank + rel noopener
+- Download CV: toast de erro se arquivo faltar
+- Botões Whats/Messenger: desabilitar se link vazio + feedback
+- Não mexer em tabs/animações aqui
+
+CÓDIGO COMPLETO:
+- Fornecer arquivos completos alterados.
+
+COMANDOS:
+1) cd "<ROOT confirmado>"
+2) npm run dev
+
+TESTE:
+- Desktop: avatar, socials, download, Whats/Messenger
+- Mobile: layout sem overflow, botões organizados
+- F5: layout consistente
+
+ERROS:
+- Download falha: conferir /public path e manter toast
+- Avatar falha: manter fallback + alerta discreto
+- Mobile quebra: flex-wrap/gap/w-full responsivo
+- Links vazios: disabled + tooltip/aria-label
+
+ENCERRAMENTO:
+- Pare e aguarde “Etapa concluída”.
+
+====================
+FILE: 11_TABS_3_APENAS.txt
+====================
+[PROMPT 11 — IMPLEMENTAR TABS (APENAS 3) + ANTI-HIDRATAÇÃO (F5) — CONFORME BRIEFING]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia briefing (3 tabs) + TXT (hidratação/F5 + tabs/scrollarea + v-reveal/tick/desktopReady).
+- Use ROOT confirmado.
+- NÃO alterar nuxt.config.ts.
+
+OBJETIVO:
+1) Exatamente 3 tabs: Projetos / Habilidades / Certificados
+2) Estável em F5 e troca de tabs
+3) Preservar replay de animação (tick) e mecanismos anti-sumiço
+
+ARQUIVOS:
+- Tabs container (ex.: app/components/tabs/PortfolioTabs.vue)
+- Abas: TabProjects.vue / TabSkills.vue / TabCertificates.vue (ou equivalentes)
+- Plugins/CSS de animação: NÃO remover (ajuste mínimo se necessário)
+- Se houver tabs extras: desativar render (não apagar dados)
+
+REGRAS:
+- UTabs com items (label + icon)
+- Ao selecionar tab: incrementar tick do tab e repassar
+- Anti-hidratação: usar onMounted + flags quando depender de viewport
+- ScrollArea apenas em projetos desktop (não global)
+
+CÓDIGO COMPLETO:
+- Arquivos completos alterados.
+- Explicar “antes tinha X tabs, agora só 3”.
+
+COMANDOS:
+1) cd "<ROOT confirmado>"
+2) npm run dev
+
+TESTE:
+- F5: não quebra
+- Troca tabs: não some conteúdo
+- Replay reveal ao voltar
+- Mobile: ok
+
+ERROS:
+- Some ao trocar: garantir tick/fallback
+- Quebra no F5: atrasar render com mounted/flags
+- Tabs extras: remover do array/slots
+- Warning teleport/fragment: envolver root real
+
+ENCERRAMENTO:
+- Pare e aguarde “Etapa concluída”.
+
+====================
+FILE: 12_SKILLS.txt
+====================
+[PROMPT 12 — IMPLEMENTAR ABA “HABILIDADES” (GRID + NÍVEIS) — DATA-DRIVEN]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia briefing (grid + níveis) + TXT (anti-hidratação/tabs).
+- Use ROOT confirmado.
+- NÃO alterar nuxt.config.ts.
+
+OBJETIVO:
+Aba Habilidades:
+1) grid responsiva
+2) níveis: Básico / Intermediário / Avançado
+3) visual premium Nuxt UI
+4) data-driven app/data/skills.ts
+5) estável em F5 e troca de tabs (revealTick se aplicável)
+
+ARQUIVOS:
+- TabSkills.vue
+- components/skills/* (reutilizar se existir)
+- app/data/skills.ts (mínimo)
+- Tipos existentes (evitar any)
+
+REGRAS:
+- UCard/UBadge/ícones
+- Desktop 3 colunas ou cards por nível
+- Mobile 1 coluna com bom espaçamento
+- Sem ScrollArea aqui
+- Usar revealTick/v-reveal se existir
+
+CÓDIGO COMPLETO:
+- Arquivos completos alterados.
+
+COMANDOS:
+1) cd "<ROOT confirmado>"
+2) npm run dev
+
+TESTE:
+- Tab Habilidades: níveis e skills OK
+- Responsivo
+- Troca de tabs + F5: estável
+
+ERROS:
+- Não aparece: checar import/estrutura do data
+- TS: criar/usar tipos corretos
+- Layout apertado: aumentar gap/padding
+- Some ao trocar: garantir tick/fallback
+
+ENCERRAMENTO:
+- Pare e aguarde “Etapa concluída”.
+
+====================
+FILE: 13_CERTIFICADOS.txt
+====================
+[PROMPT 13 — IMPLEMENTAR ABA “CERTIFICADOS” (CARDS + SLIDEOVER + TIMELINE) — DATA-DRIVEN]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia briefing (certificados + timeline) + TXT (anti-bugs tabs/hidratação/assets).
+- Use ROOT confirmado.
+- NÃO alterar nuxt.config.ts.
+
+OBJETIVO:
+Aba Certificados:
+1) cards (imagem + título + org/ano)
+2) Slideover com detalhes + botões (ver/baixar)
+3) Timeline (Nuxt UI Timeline) alternável
+4) data-driven app/data/certificates.ts
+5) fallback de assets/links + toast
+6) estável em F5 e tabs (revealTick se aplicável)
+
+ARQUIVOS:
+- TabCertificates.vue
+- CertificateCard.vue
+- CertificateSlideover.vue
+- app/data/certificates.ts (mínimo)
+
+REGRAS:
+- UCard/USlideover/UTimeline/UButton/UBadge/UEmpty/USkeleton/UToast
+- Timeline ordenada por data desc (YYYY-MM)
+- Links vazios: disabled + tooltip/aria-label
+- Sem ScrollArea aqui
+- Acessibilidade: aria-label e rel noopener
+
+CÓDIGO COMPLETO:
+- Arquivos completos alterados.
+- Se criar util de data, incluir completo.
+
+COMANDOS:
+1) cd "<ROOT confirmado>"
+2) npm run dev
+
+TESTE:
+- Cards ok
+- Slideover abre + botões ok/disabled
+- Timeline alterna e ordena
+- Troca tabs + F5: estável
+
+ERROS:
+- Slideover não abre: estado reativo
+- Timeline sem ordem: ordenar corretamente
+- Links quebrados: validar + toast
+- Hidratação: usar tick/fallback
+
+ENCERRAMENTO:
+- Pare e aguarde “Etapa concluída”.
+
+====================
+FILE: 14_PROJETOS.txt
+====================
+[PROMPT 14 — IMPLEMENTAR ABA “PROJETOS” (CARDS + SLIDEOVER) + SCROLLAREA SÓ NO DESKTOP]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia briefing (projetos + slideover + rota + scrollarea desktop only) + TXT (anti-hidratação).
+- Use ROOT confirmado.
+- NÃO alterar nuxt.config.ts.
+
+OBJETIVO:
+Aba Projetos:
+1) cards (imagem, título, stack)
+2) hover info (desktop)
+3) click abre Slideover (descrição, links, badges, CTA screenshots)
+4) click na imagem → /projects/[slug]
+5) ScrollArea:
+   - desktop: pode usar UScrollArea
+   - mobile: NÃO usar ScrollArea (rolagem normal)
+6) estável em F5 e tabs (desktopReady/tick se aplicável)
+
+ARQUIVOS:
+- TabProjects.vue
+- ProjectCard.vue
+- ProjectSlideover.vue
+- app/data/projects.ts (mínimo)
+- Rota slug não implementar aqui (PROMPT 15)
+
+REGRAS:
+- Nuxt UI: UCard/USlideover/UButton/UBadge/UEmpty/USkeleton/UToast
+- Condicional de desktop (md+)
+- Anti-hidratação: onMounted + desktopReady se necessário
+- A11y: foco/teclado ou botão “Detalhes”; links com noopener
+
+CÓDIGO COMPLETO:
+- Arquivos completos alterados.
+
+COMANDOS:
+1) cd "<ROOT confirmado>"
+2) npm run dev
+
+TESTE:
+- Cards e hover no desktop
+- Slideover abre
+- Click imagem vai pra /projects/[slug]
+- Desktop: ScrollArea interno
+- Mobile: sem ScrollArea
+- Troca tabs + F5: estável
+
+ERROS:
+- ScrollArea no mobile: render condicional md+
+- F5 quebra: desktopReady/mounted
+- Slideover não abre: estado reativo
+- Link slug quebra: garantir slug no data e NuxtLink correto
+
+ENCERRAMENTO:
+- Pare e aguarde “Etapa concluída”.
+
+====================
+FILE: 15_ROTA_SCREENSHOTS.txt
+====================
+[PROMPT 15 — IMPLEMENTAR ROTA /projects/[slug] (SCREENSHOTS + MARQUEE) — CONFORME BRIEFING]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia briefing (rota screenshots + marquee) + TXT (anti-hidratação).
+- Use ROOT confirmado.
+- NÃO alterar nuxt.config.ts.
+
+OBJETIVO:
+Rota /projects/[slug]:
+1) título + botão voltar
+2) galeria com UMarquee (loop)
+3) fallback slug inválido (UEmpty/UError)
+4) responsivo e premium
+5) sem quebrar no F5
+
+ARQUIVOS:
+- app/pages/projects/[slug].vue (criar/editar)
+- app/data/projects.ts (garantir slug + screenshots[])
+- (opcional) componente auxiliar de marquee
+
+REGRAS:
+- Sem libs externas
+- Nuxt UI: UMarquee/UButton/UCard/UEmpty/UAlert/USkeleton
+- Slug inválido: 404 amigável ou UEmpty com voltar
+- Imagens: paths em /public (começar com /)
+- Fallback imagem quebrada: placeholder sem quebrar layout
+- Performance: lazy, limitar tamanhos
+
+CÓDIGO COMPLETO:
+- [slug].vue completo
+- projects.ts completo (se mexer)
+- componente auxiliar completo (se criar)
+
+COMANDOS:
+1) cd "<ROOT confirmado>"
+2) npm run dev
+
+TESTE:
+- /projects/<slug-real>
+- /projects/slug-inexistente
+- mobile ok
+- F5 ok
+
+ERROS:
+- 404 com slug correto: checar arquivo/rota/data
+- marquee não aparece: confirmar array screenshots
+- imagens não carregam: conferir /public paths
+- layout pesado: reduzir e lazy
+
+ENCERRAMENTO:
+- Pare e aguarde “Etapa concluída”.
+
+====================
+FILE: 16_POLIMENTO_FINAL.txt
+====================
+[PROMPT 16 — POLIMENTO FINAL + CHECKLIST ANTI-REGRESSÃO (SEM CRIAR NOVAS FEATURES)]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia briefing + TXT anti-bugs.
+- Use ROOT confirmado.
+- Não adicionar libs externas.
+- NÃO alterar nuxt.config.ts.
+
+OBJETIVO:
+Polir e garantir estabilidade:
+1) toasts / empty / skeleton consistentes
+2) acessibilidade básica
+3) responsividade
+4) sem regressões (header toggle-only, 3 tabs, scrollarea desktop only, slideovers, marquee)
+5) build/preview passando
+
+ARQUIVOS:
+- Somente arquivos necessários para polimento
+- CSS global só ajustes mínimos
+- Se achar P0 crítico, registrar e propor etapa separada
+
+CHECKLIST ANTI-REGRESSÃO:
+1) Header: fixo + apenas toggle + sem hamburger vazio
+2) Perfil: avatar fallback + download (loading/toast) + Whats/Messenger ok
+3) Tabs: 3 apenas + troca estável + F5 estável
+4) Projetos: cards + slideover + scrollarea só desktop
+5) Certificados: cards + slideover + timeline
+6) /projects/[slug]: marquee + fallback slug inválido
+
+CÓDIGO COMPLETO:
+- Somente arquivos alterados, completos, com justificativa breve.
+
+COMANDOS:
+1) cd "<ROOT confirmado>"
+2) npm run dev
+3) npm run build
+4) npm run preview
+
+TESTE:
+- repetir checklist em dev
+- repetir header/perfil/tabs em preview
+
+ERROS:
+- build falha TS: ajustar tipagem/imports
+- toast não aparece: conferir provider/composable
+- overflow mobile: max-w-full, break-words, imagens
+- regressão scrollarea: condicional desktop
+
+ENCERRAMENTO:
+- Pare e aguarde “Etapa concluída”.
+
+====================
+FILE: 17_BLUEPRINT_FASE2.txt
+====================
+[PROMPT 17 — PREPARAÇÃO DA FASE 2 (SaaS) — SOMENTE BLUEPRINT / SEM IMPLEMENTAR NADA]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia por completo: BRIEFING, TXT, código atual, references (se existir).
+- NÃO escrever código.
+- NÃO criar/editar arquivos.
+- NÃO executar comandos.
+
+OBJETIVO:
+Construir blueprint do SaaS de portfólios com login e templates, baseado no projeto atual e referências, garantindo compatibilidade com Nuxt 4 + Nuxt UI Standard e arquitetura data-driven.
+
+TAREFAS:
+1) Estado atual: resumo arquitetura + o que reaproveitar
+2) Produto SaaS: personas + fluxos (visitante, user, admin)
+3) Arquitetura Nuxt: rotas/pastas + pages vs components
+4) Modelo de dados (sem SQL): entidades + campos + relações + migração app/data → DB
+5) Segurança/multi-tenancy (conceitual): permissões, RLS como requisito futuro
+6) Templates: representação + customização + compatibilidade Nuxt UI Standard (sem Pro)
+7) Domínios personalizados (conceitual): abordagem + dependências + riscos
+8) Roadmap Fase 2 por etapas (2.1..2.7) com riscos
+
+FORMATO DE SAÍDA:
+A) Resumo do estado atual
+B) Escopo SaaS (personas + fluxos)
+C) Rotas/pastas + pages vs components
+D) Dados + mapeamento app/data → DB
+E) Templates (design + customização)
+F) Segurança (conceitual)
+G) Domínios (conceitual)
+H) Roadmap 2.1..2.7 + riscos
+
+ENCERRAMENTO:
+- Pare e aguarde o usuário dizer: “Etapa concluída”.
+

@@ -26,7 +26,7 @@ const timelineItems = computed(() => {
 </script>
 
 <template>
-  <div class="pt-4 space-y-4">
+  <div  class="pt-4 space-y-4">
     <div class="flex items-center justify-between gap-3">
       <div class="text-left">
         <h2 class="text-lg font-semibold">Certificados</h2>
@@ -36,7 +36,7 @@ const timelineItems = computed(() => {
       </div>
 
       <UButton
-        icon="i-lucide-timeline"
+        icon="i-lucide-calendar-range"
         color="primary"
         variant="soft"
         @click="viewMode = viewMode === 'grid' ? 'timeline' : 'grid'"
@@ -53,8 +53,8 @@ const timelineItems = computed(() => {
     />
 
     <div v-else>
-      <div v-if="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <CertificateCard v-reveal
+      <div v-reveal v-if="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <CertificateCard
           v-for="c in certificates"
           :key="c.id"
           :item="c"

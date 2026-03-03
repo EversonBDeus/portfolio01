@@ -1,4 +1,31 @@
-# Nuxt Minimal Starter
+# Portfólio — Nuxt 4 + Nuxt UI
+
+Portfólio pessoal construído com **Nuxt 4** e **Nuxt UI**, já organizado para evoluir para um **SaaS de portfólios** (login + templates) no futuro.
+
+## Stack
+- Nuxt 4 (Vue 3 + SSR)
+- Nuxt UI (componentes + tokens/tema)
+- Tailwind CSS v4
+- Pinia + VueUse
+- Nuxt Image / Icon / Scripts
+- nuxt-security + @nuxtjs/seo
+- TypeScript (typecheck no build)
+
+---
+
+## Rodando localmente
+
+```bash
+npm install
+npm run dev
+
+---
+
+## Rodando localmente
+
+```bash
+npm install
+npm run dev
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 

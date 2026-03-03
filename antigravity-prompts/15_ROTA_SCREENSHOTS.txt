@@ -1,0 +1,53 @@
+﻿[PROMPT 15 — IMPLEMENTAR ROTA /projects/[slug] (SCREENSHOTS + MARQUEE) — CONFORME BRIEFING]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia briefing (rota screenshots + marquee) + TXT (anti-hidratação).
+- Use ROOT confirmado.
+- NÃO alterar nuxt.config.ts.
+
+OBJETIVO:
+Rota /projects/[slug]:
+1) título + botão voltar
+2) galeria com UMarquee (loop)
+3) fallback slug inválido (UEmpty/UError)
+4) responsivo e premium
+5) sem quebrar no F5
+
+ARQUIVOS:
+- app/pages/projects/[slug].vue (criar/editar)
+- app/data/projects.ts (garantir slug + screenshots[])
+- (opcional) componente auxiliar de marquee
+
+REGRAS:
+- Sem libs externas
+- Nuxt UI: UMarquee/UButton/UCard/UEmpty/UAlert/USkeleton
+- Slug inválido: 404 amigável ou UEmpty com voltar
+- Imagens: paths em /public (começar com /)
+- Fallback imagem quebrada: placeholder sem quebrar layout
+- Performance: lazy, limitar tamanhos
+
+CÓDIGO COMPLETO:
+- [slug].vue completo
+- projects.ts completo (se mexer)
+- componente auxiliar completo (se criar)
+
+COMANDOS:
+1) cd "<ROOT confirmado>"
+2) npm run dev
+
+TESTE:
+- /projects/<slug-real>
+- /projects/slug-inexistente
+- mobile ok
+- F5 ok
+
+ERROS:
+- 404 com slug correto: checar arquivo/rota/data
+- marquee não aparece: confirmar array screenshots
+- imagens não carregam: conferir /public paths
+- layout pesado: reduzir e lazy
+
+ENCERRAMENTO:
+- Pare e aguarde “Etapa concluída”.

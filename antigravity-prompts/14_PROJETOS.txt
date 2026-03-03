@@ -1,0 +1,56 @@
+﻿[PROMPT 14 — IMPLEMENTAR ABA “PROJETOS” (CARDS + SLIDEOVER) + SCROLLAREA SÓ NO DESKTOP]
+
+MODO: Planning (obrigatório)
+
+ANTES:
+- Releia briefing (projetos + slideover + rota + scrollarea desktop only) + TXT (anti-hidratação).
+- Use ROOT confirmado.
+- NÃO alterar nuxt.config.ts.
+
+OBJETIVO:
+Aba Projetos:
+1) cards (imagem, título, stack)
+2) hover info (desktop)
+3) click abre Slideover (descrição, links, badges, CTA screenshots)
+4) click na imagem → /projects/[slug]
+5) ScrollArea:
+   - desktop: pode usar UScrollArea
+   - mobile: NÃO usar ScrollArea (rolagem normal)
+6) estável em F5 e tabs (desktopReady/tick se aplicável)
+
+ARQUIVOS:
+- TabProjects.vue
+- ProjectCard.vue
+- ProjectSlideover.vue
+- app/data/projects.ts (mínimo)
+- Rota slug não implementar aqui (PROMPT 15)
+
+REGRAS:
+- Nuxt UI: UCard/USlideover/UButton/UBadge/UEmpty/USkeleton/UToast
+- Condicional de desktop (md+)
+- Anti-hidratação: onMounted + desktopReady se necessário
+- A11y: foco/teclado ou botão “Detalhes”; links com noopener
+
+CÓDIGO COMPLETO:
+- Arquivos completos alterados.
+
+COMANDOS:
+1) cd "<ROOT confirmado>"
+2) npm run dev
+
+TESTE:
+- Cards e hover no desktop
+- Slideover abre
+- Click imagem vai pra /projects/[slug]
+- Desktop: ScrollArea interno
+- Mobile: sem ScrollArea
+- Troca tabs + F5: estável
+
+ERROS:
+- ScrollArea no mobile: render condicional md+
+- F5 quebra: desktopReady/mounted
+- Slideover não abre: estado reativo
+- Link slug quebra: garantir slug no data e NuxtLink correto
+
+ENCERRAMENTO:
+- Pare e aguarde “Etapa concluída”.

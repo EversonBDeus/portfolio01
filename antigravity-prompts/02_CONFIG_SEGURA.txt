@@ -1,0 +1,68 @@
+﻿[PROMPT 2 — CONFIGURAÇÃO SEGURA DO ANTIGRAVITY (SEM MEXER NO CÓDIGO)]
+
+MODO: Planning (obrigatório)
+
+PRÉ-REQUISITO:
+- Use o ROOT do projeto que você confirmou na resposta do PROMPT 1 (não assuma caminhos).
+- Nesta etapa: NÃO altere código do projeto. NÃO rode comandos no terminal. Somente configurar a plataforma.
+
+OBJETIVO:
+Configurar o Antigravity em modo seguro e previsível para evitar repetir erros antigos (execução indevida, prompt injection, ações sem revisão).
+
+TAREFA 1 — MODO DE DESENVOLVIMENTO (SECURE MODE):
+- Configure para “Review-driven development” (o agente pede revisão com frequência).
+- Se existir “Agent-assisted development” e estiver disponível, manter como alternativa recomendada, mas usar Review-driven como padrão.
+
+TAREFA 2 — POLÍTICA DO TERMINAL (OBRIGATÓRIO):
+- Vá em: Antigravity Settings → Advanced Settings → Terminal (Agent settings)
+- Defina “Terminal Command Auto Execution” = OFF
+
+TAREFA 3 — ALLOW LIST (OBRIGATÓRIO, POR ESTAR EM OFF):
+- Abra a Allow List de comandos do terminal e adicione SOMENTE comandos seguros e necessários para este projeto.
+- Allow List mínima recomendada (Windows/PowerShell):
+  - cd
+  - dir
+  - ls
+  - node -v
+  - npm -v
+  - npm install
+  - npm ci
+  - npm run dev
+  - npm run build
+  - npm run preview
+  - git status
+  - git diff
+- NÃO adicionar comandos destrutivos ou perigosos (ex.: rm, rmdir, del, Remove-Item, format, diskpart, curl, wget, powershell -Command com remoções).
+
+TAREFA 4 — REVIEW POLICY / ARTIFACTS (OBRIGATÓRIO):
+- Configure a política para SEMPRE pedir revisão antes de:
+  - aplicar diffs/código
+  - aceitar “Accept all”
+  - executar comandos não listados
+- Garanta que “Review changes” fique como passo padrão antes de qualquer alteração futura.
+
+TAREFA 5 — BROWSER SECURITY (OBRIGATÓRIO):
+- Vá em: Antigravity Settings → Advanced Settings → Browser
+- Abra o “Browser URL Allowlist” (Open Allowlist File) e limite a navegação do browser subagent aos domínios abaixo:
+  - localhost
+  - 127.0.0.1
+  - antigravity.google
+  - developers.google.com
+  - codelabs.developers.google.com
+  - ui.nuxt.com
+  - nuxt.com
+  - github.com
+  - medium.com
+  - codecademy.com
+- Não permitir domínios genéricos/abertos fora dessa lista nesta fase.
+
+TAREFA 6 — CONFIRMAÇÃO (SAÍDA OBRIGATÓRIA):
+Responda listando exatamente:
+A) Terminal Command Auto Execution: (valor final)
+B) Allow List (lista final de comandos)
+C) Browser URL Allowlist (lista final de domínios)
+D) Política de revisão/artifacts (como ficou configurada)
+E) Se é necessário reiniciar o Antigravity para aplicar as listas (sim/não)
+
+ENCERRAMENTO:
+- Pare e aguarde o usuário dizer: “próximo prompt”.

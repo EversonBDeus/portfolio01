@@ -1208,16 +1208,15 @@ html[data-preset="neon-spectrum"].dark {
 /* =========================
    Scroll Reveal (base)
    ========================= */
+/* =========================
+   Scroll Reveal (base)
+   ========================= */
 
 .reveal {
-  /* controle via CSS vars (setadas pela diretiva) */
   --reveal-delay: 0ms;
   --reveal-duration: 650ms;
   --reveal-distance: 18px;
 
-  opacity: 0;
-  transform: translate3d(0, var(--reveal-distance), 0);
-  filter: blur(6px);
   transition:
     opacity var(--reveal-duration) ease,
     transform var(--reveal-duration) ease,
@@ -1226,27 +1225,35 @@ html[data-preset="neon-spectrum"].dark {
   will-change: opacity, transform, filter;
 }
 
-/* Direções */
-.reveal--top {
+/* estado “escondido” (aplicado só no client via JS) */
+.reveal--pending {
+  opacity: 0;
+  filter: blur(6px);
+  transform: translate3d(0, var(--reveal-distance), 0);
+}
+
+.reveal--pending.reveal--top {
   transform: translate3d(0, calc(var(--reveal-distance) * -1), 0);
 }
-.reveal--left {
+.reveal--pending.reveal--left {
   transform: translate3d(calc(var(--reveal-distance) * -1), 0, 0);
 }
-.reveal--right {
+.reveal--pending.reveal--right {
   transform: translate3d(var(--reveal-distance), 0, 0);
 }
 
-/* Quando entra na tela */
+/* estado “visível” */
 .reveal--visible {
   opacity: 1;
-  transform: translate3d(0, 0, 0);
   filter: blur(0);
+  transform: translate3d(0, 0, 0);
 }
 
-/* Respeita acessibilidade: reduz animações */
+/* Acessibilidade */
 @media (prefers-reduced-motion: reduce) {
-  .reveal {
+  .reveal,
+  .reveal--pending,
+  .reveal--visible {
     transition: none;
     opacity: 1;
     transform: none;
