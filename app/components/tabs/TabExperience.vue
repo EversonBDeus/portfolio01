@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { experiences } from '~/data/experience'
+import { usePortfolioData } from '~/composables/usePortfolioData'
 import { formatYm } from '~/utils/format'
+
+const { data } = usePortfolioData()
+const experiences = data.experiences
 
 const timelineItems = computed(() =>
   experiences.map((e) => ({
@@ -35,17 +38,16 @@ const timelineItems = computed(() =>
           <div class="space-y-1">
             <div class="font-semibold">{{ e.role }}</div>
             <div class="text-sm text-muted">
-              {{ e.company }}
-              <span v-if="e.location"> • {{ e.location }}</span>
+              {{ e.company }} <span v-if="e.location">• {{ e.location }}</span>
             </div>
             <div class="text-xs text-muted">
               {{ formatYm(e.startDate) }} → {{ e.endDate ? formatYm(e.endDate) : 'atual' }}
             </div>
 
-            <p v-if="e.description" class="text-sm pt-2">{{ e.description }}</p>
+            <p v-if="e.description" class="text-sm mt-2">{{ e.description }}</p>
 
-            <ul v-if="e.highlights?.length" class="text-sm list-disc pl-5 pt-2 space-y-1">
-              <li v-for="(h, i) in e.highlights" :key="i">{{ h }}</li>
+            <ul v-if="e.highlights?.length" class="text-sm list-disc pl-4 mt-2 space-y-1">
+              <li v-for="(h, idx) in e.highlights" :key="idx">{{ h }}</li>
             </ul>
           </div>
         </UCard>

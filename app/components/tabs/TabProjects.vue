@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { projects } from '~/data/projects'
+import { usePortfolioData } from '~/composables/usePortfolioData'
 import type { Project } from '~/data/projects'
 
 import ProjectCard from '../projects/ProjectCard.vue'
 import ProjectSlideover from '../projects/ProjectSlideover.vue'
+
+const { data } = usePortfolioData()
+const projects = data.projects
 
 const selected = ref<Project | null>(null)
 const isOpen = ref(false)
@@ -67,6 +70,7 @@ onMounted(() => {
               :key="p.id"
               v-reveal="{ root: scrollRoot, delay: idx * 70 }"
             >
+              <!-- ✅ ProjectCard espera :item -->
               <ProjectCard :item="p" @open="openProject" />
             </div>
           </div>
@@ -87,6 +91,7 @@ onMounted(() => {
       </div>
     </div>
 
+    <!-- ✅ Slideover espera :item -->
     <ProjectSlideover v-model="isOpen" :item="selected" />
   </div>
 </template>

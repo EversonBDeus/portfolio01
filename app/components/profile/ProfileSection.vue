@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import PortfolioTabs from '~/components/tabs/PortfolioTabs.vue'
 import AboutAccordion from '~/components/profile/AboutAccordion.vue'
-import { profile } from '~/data/profile'
+import { usePortfolioData } from '~/composables/usePortfolioData'
 
 const isLoading = ref(false)
 const avatarOk = ref(true)
 const isAboutOpen = ref(false)
+
+const { data } = usePortfolioData()
+const profile = data.profile
 
 onMounted(() => {
   const img = new Image()
@@ -20,7 +23,7 @@ function notifyMissing(label: string, e?: Event) {
   e?.preventDefault?.()
   toast.add({
     title: 'Link não configurado',
-    description: `Adicione o link de ${label} em data/profile.ts`,
+    description: `Adicione o link de ${label} em app/data/profile.ts`,
     icon: 'i-lucide-link-2-off'
   })
 }
@@ -51,7 +54,7 @@ async function downloadCV() {
   if (!ok) {
     toast.add({
       title: 'Currículo não encontrado',
-      description: 'Coloque o arquivo em public/files/cv.pdf (ou ajuste data/profile.ts).',
+      description: 'Coloque o arquivo em public/files/cv.pdf (ou ajuste app/data/profile.ts).',
       icon: 'i-lucide-file-x'
     })
     return

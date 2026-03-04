@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { skills } from '~/data/skills'
+import { usePortfolioData } from '~/composables/usePortfolioData'
 import SkillGrid from '~/components/skills/SkillGrid.vue'
 import SkillLevelCards from '~/components/skills/SkillLevelCards.vue'
 
-defineProps<{ revealTick: number }>()
+const props = defineProps<{ revealTick: number }>()
+
+const { data } = usePortfolioData()
+const skills = data.skills
 </script>
 
 <template>
@@ -15,7 +18,7 @@ defineProps<{ revealTick: number }>()
       </p>
     </div>
 
-    <SkillGrid :items="skills" :reveal-tick="revealTick" />
+    <SkillGrid :items="skills" :reveal-tick="props.revealTick" />
 
     <USeparator type="dashed" class="h-px" />
 
@@ -26,6 +29,7 @@ defineProps<{ revealTick: number }>()
       </p>
     </div>
 
-    <SkillLevelCards :items="skills" :reveal-tick="revealTick" />
+    <!-- ✅ SkillLevelCards exige revealTick -->
+    <SkillLevelCards :items="skills" :reveal-tick="props.revealTick" />
   </div>
 </template>

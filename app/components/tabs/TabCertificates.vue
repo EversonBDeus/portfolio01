@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { certificates } from '~/data/certificates'
+import { usePortfolioData } from '~/composables/usePortfolioData'
 import type { Certificate } from '~/data/certificates'
 import CertificateCard from '~/components/certificates/CertificateCard.vue'
 import CertificateSlideover from '~/components/certificates/CertificateSlideover.vue'
 import { formatYm } from '~/utils/format'
+
+const { data } = usePortfolioData()
+const certificates = data.certificates
 
 const viewMode = ref<'grid' | 'timeline'>('grid')
 
@@ -26,7 +29,7 @@ const timelineItems = computed(() => {
 </script>
 
 <template>
-  <div  class="pt-4 space-y-4">
+  <div class="pt-4 space-y-4">
     <div class="flex items-center justify-between gap-3">
       <div class="text-left">
         <h2 class="text-lg font-semibold">Certificados</h2>
@@ -53,7 +56,8 @@ const timelineItems = computed(() => {
     />
 
     <div v-else>
-      <div v-reveal v-if="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div v-if="viewMode === 'grid'" v-reveal class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <!-- ✅ CertificateCard espera :item -->
         <CertificateCard
           v-for="c in certificates"
           :key="c.id"
@@ -67,6 +71,7 @@ const timelineItems = computed(() => {
       </div>
     </div>
 
+    <!-- ✅ Slideover espera :item -->
     <CertificateSlideover v-model="isOpen" :item="selected" />
   </div>
 </template>

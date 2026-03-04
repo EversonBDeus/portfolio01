@@ -12,3 +12,6 @@ dist/
 .DS_Store
 .env
 .env.*
+# Pastas locais de referência / prompts (não versionar)
+references/
+antigravity-prompts/

@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { education } from '~/data/education'
+import { usePortfolioData } from '~/composables/usePortfolioData'
 import { formatYm } from '~/utils/format'
+
+const { data } = usePortfolioData()
+const education = data.education
 
 const timelineItems = computed(() =>
   education.map((e) => ({
@@ -37,7 +40,7 @@ const timelineItems = computed(() =>
             <div class="text-xs text-muted">
               {{ formatYm(e.startDate) }} → {{ e.endDate ? formatYm(e.endDate) : 'em andamento' }}
             </div>
-            <p v-if="e.description" class="text-sm pt-2">{{ e.description }}</p>
+            <p v-if="e.description" class="text-sm mt-2">{{ e.description }}</p>
           </div>
         </UCard>
       </div>

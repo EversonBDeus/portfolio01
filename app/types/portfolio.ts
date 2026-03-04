@@ -1,4 +1,9 @@
-export type PortfolioSectionId = 'projects' | 'skills' | 'certificates'
+export type PortfolioSectionId =
+  | 'projects'
+  | 'skills'
+  | 'certificates'
+  | 'experience'
+  | 'education'
 
 export type PortfolioSectionConfig = {
   id: PortfolioSectionId
