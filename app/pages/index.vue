@@ -3,5 +3,7 @@ import ProfileSection from '~/components/profile/ProfileSection.vue'
 </script>
 
 <template>
-  <ProfileSection />
+  <div class="space-y-8 pb-12">
+    <ProfileSection />
+  </div>
 </template>

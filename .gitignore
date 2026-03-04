@@ -12,6 +12,17 @@ dist/
 .DS_Store
 .env
 .env.*
-# Pastas locais de referência / prompts (não versionar)
+
+
+# Antigravity / agentes locais
+.agents/
+
+# Pastas locais de referência (não versionar)
+ref_agent/
 references/
 antigravity-prompts/
+
+# Briefings e documentos locais do projeto (não versionar)
+BRIEFING_PORTFOLIO_NUXT_UI*.txt
+Contexto.txt
+Organização.txt

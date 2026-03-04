@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { usePortfolioData } from '~/composables/usePortfolioData'
 import type { Certificate } from '~/data/certificates'
+
 import CertificateCard from '~/components/certificates/CertificateCard.vue'
 import CertificateSlideover from '~/components/certificates/CertificateSlideover.vue'
 import { formatYm } from '~/utils/format'
@@ -11,8 +12,8 @@ const certificates = data.certificates
 
 const viewMode = ref<'grid' | 'timeline'>('grid')
 
-const selected = ref<Certificate | null>(null)
 const isOpen = ref(false)
+const selected = ref<Certificate | null>(null)
 
 function openCertificate(item: Certificate) {
   selected.value = item
@@ -30,7 +31,7 @@ const timelineItems = computed(() => {
 
 <template>
   <div class="pt-4 space-y-4">
-    <div class="flex items-center justify-between gap-3">
+    <div class="flex items-start justify-between gap-3 flex-wrap">
       <div class="text-left">
         <h2 class="text-lg font-semibold">Certificados</h2>
         <p class="text-sm text-muted">
@@ -51,13 +52,16 @@ const timelineItems = computed(() => {
     <UEmpty
       v-if="certificates.length === 0"
       icon="i-lucide-award"
-      title="Nenhum certificado cadastrado"
-      description="Adicione certificados em data/certificates.ts."
+      title="Nenhum certificado"
+      description="Adicione certificados em app/data/certificates.ts."
     />
 
     <div v-else>
-      <div v-if="viewMode === 'grid'" v-reveal class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <!-- ✅ CertificateCard espera :item -->
+      <div v-if="viewMode === 'timeline'" class="mt-2">
+        <UTimeline :items="timelineItems" />
+      </div>
+
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <CertificateCard
           v-for="c in certificates"
           :key="c.id"
@@ -65,13 +69,8 @@ const timelineItems = computed(() => {
           @open="openCertificate"
         />
       </div>
-
-      <div v-else class="mt-2">
-        <UTimeline :items="timelineItems" />
-      </div>
     </div>
 
-    <!-- ✅ Slideover espera :item -->
     <CertificateSlideover v-model="isOpen" :item="selected" />
   </div>
 </template>

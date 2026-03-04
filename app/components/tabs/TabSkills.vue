@@ -18,18 +18,26 @@ const skills = data.skills
       </p>
     </div>
 
-    <SkillGrid :items="skills" :reveal-tick="props.revealTick" />
+    <UEmpty
+      v-if="skills.length === 0"
+      icon="i-lucide-sparkles"
+      title="Nenhuma habilidade"
+      description="Adicione habilidades em app/data/skills.ts."
+    />
 
-    <USeparator type="dashed" class="h-px" />
+    <template v-else>
+      <SkillGrid :items="skills" :reveal-tick="props.revealTick" />
 
-    <div class="text-left space-y-1">
-      <h3 class="text-base font-semibold">Níveis</h3>
-      <p class="text-sm text-muted">
-        Visão geral das tecnologias por nível.
-      </p>
-    </div>
+      <USeparator type="dashed" class="h-px" />
 
-    <!-- ✅ SkillLevelCards exige revealTick -->
-    <SkillLevelCards :items="skills" :reveal-tick="props.revealTick" />
+      <div class="text-left space-y-1">
+        <h3 class="text-base font-semibold">Níveis</h3>
+        <p class="text-sm text-muted">
+          Visão geral das tecnologias por nível.
+        </p>
+      </div>
+
+      <SkillLevelCards :items="skills" :reveal-tick="props.revealTick" />
+    </template>
   </div>
 </template>

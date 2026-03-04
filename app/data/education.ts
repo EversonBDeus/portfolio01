@@ -7,4 +7,13 @@ export type Education = {
   description?: string
 }
 
-export const education: Education[] = []
+export const education: Education[] = [
+  {
+    id: 'edu-1',
+    title: 'Análise e Desenvolvimento de Sistemas',
+    institution: 'Estácio',
+    startDate: '2022-01',
+    endDate: '',
+    description: 'Graduação focada em desenvolvimento web, banco de dados e fundamentos de arquitetura.'
+  }
+]
