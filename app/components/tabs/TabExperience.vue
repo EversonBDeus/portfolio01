@@ -37,12 +37,26 @@ const timelineItems = computed(() =>
     />
 
     <div v-else class="space-y-4">
+      <!-- Resumo em timeline -->
       <UTimeline :items="timelineItems" />
 
-      <!-- detalhes (sem repetir título/data) -->
+      <!-- Detalhes em cards compactos (sem centralizar) -->
       <div class="grid grid-cols-1 gap-3">
         <UCard v-for="e in experiences" :key="e.id" class="surface-panel">
-          <div class="space-y-2">
+          <div class="space-y-2 text-left">
+            <div class="flex items-start justify-between gap-3 flex-wrap">
+              <div class="space-y-0.5">
+                <div class="font-semibold">{{ e.role }}</div>
+                <div class="text-sm text-muted">
+                  {{ e.company }}<span v-if="e.location"> • {{ e.location }}</span>
+                </div>
+              </div>
+
+              <div class="text-xs text-muted">
+                {{ formatYm(e.startDate) }} → {{ e.endDate && e.endDate.trim() ? formatYm(e.endDate) : 'atual' }}
+              </div>
+            </div>
+
             <p v-if="e.description" class="text-sm">
               {{ e.description }}
             </p>
