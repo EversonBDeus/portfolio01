@@ -37,7 +37,7 @@ export default defineNuxtConfig({
     '@nuxt/eslint'
   ],
 
-  css: ['~/assets/css/main.css'],
+  css: ['~/assets/css/main.css',],
 
   ui: {
     theme: {
