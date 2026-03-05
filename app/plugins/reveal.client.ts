@@ -1,85 +1,58 @@
-// plugins/reveal.client.ts
-import { defineNuxtPlugin } from '#app'
+import type { Directive } from 'vue'
 
 type RevealOptions = {
-  once?: boolean
-  delay?: number // ms
-  duration?: number // ms
-  distance?: number // px
-  origin?: 'bottom' | 'top' | 'left' | 'right'
-  threshold?: number
-  rootMargin?: string
-}
-
-const DEFAULTS: Required<RevealOptions> = {
-  once: true,
-  delay: 0,
-  duration: 650,
-  distance: 18,
-  origin: 'bottom',
-  threshold: 0.12,
-  rootMargin: '0px 0px -10% 0px'
-}
-
-function getOptions(bindingValue: unknown): Required<RevealOptions> {
-  if (bindingValue && typeof bindingValue === 'object') {
-    const v = bindingValue as RevealOptions
-    return {
-      once: v.once ?? DEFAULTS.once,
-      delay: v.delay ?? DEFAULTS.delay,
-      duration: v.duration ?? DEFAULTS.duration,
-      distance: v.distance ?? DEFAULTS.distance,
-      origin: v.origin ?? DEFAULTS.origin,
-      threshold: v.threshold ?? DEFAULTS.threshold,
-      rootMargin: v.rootMargin ?? DEFAULTS.rootMargin
-    }
-  }
-  return DEFAULTS
+  delay?: number
+  duration?: number
+  distance?: string
+  origin?: 'top' | 'right' | 'bottom' | 'left'
+  opacity?: number
+  easing?: string
+  interval?: number
+  root?: Element | null
 }
 
 export default defineNuxtPlugin((nuxtApp) => {
-  nuxtApp.vueApp.directive('reveal', {
-    mounted(el, binding) {
-      const opts = getOptions(binding.value)
-
-      // classes base
-      el.classList.add('reveal')
-      el.classList.add(`reveal--${opts.origin}`)
-
-      // css vars (para controlar sem ficar criando mil classes)
-      el.style.setProperty('--reveal-delay', `${opts.delay}ms`)
-      el.style.setProperty('--reveal-duration', `${opts.duration}ms`)
-      el.style.setProperty('--reveal-distance', `${opts.distance}px`)
-
-      // evita reprocessar o mesmo elemento
-      const already = (el as any).__revealObserver as IntersectionObserver | undefined
-      if (already) already.disconnect()
-
-      const observer = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            if (!entry.isIntersecting) continue
-
-            el.classList.add('reveal--visible')
-
-            if (opts.once) {
-              observer.unobserve(el)
-            }
-          }
-        },
-        {
-          threshold: opts.threshold,
-          rootMargin: opts.rootMargin
-        }
-      )
-
-      ;(el as any).__revealObserver = observer
-      observer.observe(el)
+  const reveal: Directive<HTMLElement, RevealOptions | undefined> = {
+    // ✅ SSR-safe: evita o crash "getSSRProps"
+    getSSRProps() {
+      return {}
     },
-    unmounted(el) {
-      const obs = (el as any).__revealObserver as IntersectionObserver | undefined
-      if (obs) obs.disconnect()
-      delete (el as any).__revealObserver
+
+    // ✅ Só roda no client
+    async mounted(el, binding) {
+      if (import.meta.server) return
+
+      const v = binding.value || {}
+
+      // Se ScrollReveal não existir (ou não estiver instalado), não quebra.
+      try {
+        const mod = await import('scrollreveal')
+        const ScrollReveal = mod.default
+
+        const sr = ScrollReveal()
+
+        const options: Record<string, any> = {
+          distance: v.distance ?? '12px',
+          duration: v.duration ?? 500,
+          easing: v.easing ?? 'cubic-bezier(0.2, 0, 0, 1)',
+          origin: v.origin ?? 'bottom',
+          opacity: v.opacity ?? 0,
+          delay: v.delay ?? 0,
+          interval: v.interval ?? 0
+        }
+
+        // Para scroll interno (UScrollArea), usamos container do ScrollReveal
+        if (v.root) {
+          options.container = v.root
+        }
+
+        sr.reveal(el, options)
+      } catch {
+        // no-op (sem crash)
+      }
     }
-  })
+  }
+if ((nuxtApp.vueApp as any)._revealInstalled) return
+;(nuxtApp.vueApp as any)._revealInstalled = true
+  nuxtApp.vueApp.directive('reveal', reveal)
 })
