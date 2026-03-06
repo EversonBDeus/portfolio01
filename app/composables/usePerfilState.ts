@@ -15,18 +15,18 @@ export type AccountData = {
 }
 
 export const initialUser: UserProfile = {
-  nome: 'Seu Nome',
-  headline: 'Seu título profissional',
-  bio: 'Texto de bio (no futuro vem do onboarding e pode ter “Melhorar com IA”).',
-  location: 'Brasil',
+  nome: '',
+  headline: '',
+  bio: '',
+  location: '',
   linkedin: '',
   github: '',
   instagram: ''
 }
 
 export const initialAccount: AccountData = {
-  email: 'voce@exemplo.com',
-  username: 'seu-username',
+  email: '',
+  username: '',
   plan: 'free'
 }
 
@@ -53,7 +53,7 @@ export type PlanTier = 'free' | 'plus' | 'pro'
 export type PlanData = {
   tier: PlanTier
   status: 'ativa' | 'cancelada' | 'trial'
-  renewAt: string // ISO ou string formatada por enquanto
+  renewAt: string
   cancelAt?: string
   coupon?: string
 }
