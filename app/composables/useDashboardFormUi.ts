@@ -24,7 +24,9 @@ export function useDashboardFormUi() {
     'peer-placeholder-shown:top-1.5 peer-placeholder-shown:text-sm ' +
     'peer-placeholder-shown:font-normal peer-placeholder-shown:text-dimmed'
 
-  const floatingLabelSurfaceClass = 'inline-flex bg-[var(--dashboard-field-label-bg)] px-1'
+  const floatingLabelSurfaceClass =
+    'inline-flex bg-[var(--dashboard-field-label-bg)] px-1 ' +
+    'shadow-[0_0_0_2px_var(--dashboard-field-label-bg)]'
 
   return {
     inputUi,

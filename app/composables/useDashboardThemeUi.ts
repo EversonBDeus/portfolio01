@@ -1,15 +1,20 @@
 export function useDashboardThemeUi() {
   const cardUi = {
-    root: 'rounded-2xl overflow-hidden border border-[var(--dashboard-border-strong)] bg-[var(--dashboard-surface-1)] shadow-[var(--dashboard-shadow-sm)]',
+    root: 'rounded-2xl overflow-hidden border border-[var(--dashboard-border-strong)] bg-[var(--dashboard-surface-3)] shadow-[var(--dashboard-shadow-md)]',
     header: '',
     body: '',
     footer: ''
   }
 
   const tabsUi = {
-    list: 'relative flex w-max min-w-full rounded-xl border border-[var(--dashboard-border-soft)] bg-[var(--dashboard-tabs-bg)] p-1 shadow-[var(--dashboard-shadow-xs)] md:w-full',
-    indicator: 'absolute rounded-lg border border-[var(--dashboard-border-soft)] shadow-[var(--dashboard-shadow-xs)]',
-    trigger: 'whitespace-nowrap md:flex-1 md:justify-center'
+    list: 'relative flex w-max min-w-full rounded-xl border border-[var(--dashboard-border-strong)] bg-[var(--dashboard-tabs-bg)] p-1 shadow-[var(--dashboard-shadow-sm)] md:w-full',
+    indicator: 'absolute rounded-lg bg-[var(--dashboard-tab-active-bg)] shadow-[var(--dashboard-shadow-xs)]',
+    trigger: [
+      'whitespace-nowrap rounded-lg transition-colors md:flex-1 md:justify-center',
+      'text-default',
+      'data-[state=active]:text-[var(--dashboard-tab-active-text)]',
+      'data-[state=active]:font-medium'
+    ].join(' ')
   }
 
   const switchUi = {

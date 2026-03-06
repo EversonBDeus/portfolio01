@@ -45,11 +45,12 @@ function markDirty() {
     </div>
 
     <UAlert
+      class="dashboard-note-alert"
       icon="i-lucide-lock"
       title="Login real entra depois"
       description="Nesta fase, o login (Supabase) ainda não foi conectado."
       color="neutral"
-      variant="soft"
+      variant="outline"
     />
   </div>
 </template>

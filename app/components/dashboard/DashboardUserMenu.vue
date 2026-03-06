@@ -23,8 +23,7 @@ const items = [
           size="sm"
           alt="Usuário"
           icon="i-lucide-user"
-          class="shrink-0"
-          :ui="{ base: 'ring-1 ring-[--ui-border]' }"
+          class=" shrink-0 ring-1 ring-[--ui-border]"
         />
         <div class="flex flex-col items-start min-w-0 text-left">
           <span class="text-sm font-medium truncate leading-tight">Usuário</span>

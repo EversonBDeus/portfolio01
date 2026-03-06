@@ -157,11 +157,12 @@ function markDirty() {
           </div>
 
           <UAlert
+            class="dashboard-note-alert"
             icon="i-lucide-info"
             title="Observação"
             description="No futuro você poderá conectar um número e confirmar via código."
             color="neutral"
-            variant="subtle"
+            variant="outline"
           />
         </UCard>
       </div>

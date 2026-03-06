@@ -1,82 +1,77 @@
 :root {
+  --dashboard-app-bg:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.05), transparent 30%),
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.05), transparent 24%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+
   --dashboard-surface-1: rgba(255, 255, 255, 0.9);
   --dashboard-surface-2: rgba(255, 255, 255, 0.96);
+  --dashboard-surface-3: rgba(255, 255, 255, 0.985);
 
   --dashboard-border-strong: rgba(15, 23, 42, 0.14);
   --dashboard-border-soft: rgba(15, 23, 42, 0.08);
 
-  --dashboard-shadow-xs: 0 10px 24px -18px rgba(15, 23, 42, 0.18);
+  --dashboard-shadow-xs:
+    0 8px 22px -14px rgba(15, 23, 42, 0.14);
   --dashboard-shadow-sm:
-    0 16px 36px -24px rgba(15, 23, 42, 0.18),
-    0 6px 14px -10px rgba(15, 23, 42, 0.1);
+    0 18px 44px -24px rgba(15, 23, 42, 0.16),
+    0 8px 16px -10px rgba(15, 23, 42, 0.08);
   --dashboard-shadow-md:
-    0 24px 56px -28px rgba(15, 23, 42, 0.22),
-    0 12px 24px -16px rgba(15, 23, 42, 0.12);
+    0 26px 70px -30px rgba(15, 23, 42, 0.18),
+    0 14px 28px -16px rgba(15, 23, 42, 0.08);
 
-  --dashboard-tabs-bg: rgba(255, 255, 255, 0.86);
+  --dashboard-tabs-bg: rgba(255, 255, 255, 0.88);
+  --dashboard-tab-active-bg: rgb(34 197 94);
+  --dashboard-tab-active-text: rgb(255 255 255);
 
-  --dashboard-switch-off-track: rgba(15, 23, 42, 0.16);
-  --dashboard-switch-off-border: rgba(15, 23, 42, 0.12);
+  --dashboard-alert-bg: rgba(241, 245, 249, 0.92);
+  --dashboard-alert-border: rgba(15, 23, 42, 0.1);
+
+  --dashboard-switch-off-track: rgba(15, 23, 42, 0.14);
+  --dashboard-switch-off-border: rgba(15, 23, 42, 0.1);
   --dashboard-switch-thumb: rgba(255, 255, 255, 0.98);
 }
 
 .dark {
-  --dashboard-surface-1: rgba(12, 18, 26, 0.92);
-  --dashboard-surface-2: rgba(18, 26, 36, 0.88);
+  --dashboard-app-bg:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.08), transparent 32%),
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 28%),
+    linear-gradient(180deg, #030712 0%, #050b14 100%);
 
-  --dashboard-border-strong: rgba(255, 255, 255, 0.12);
-  --dashboard-border-soft: rgba(255, 255, 255, 0.08);
+  --dashboard-surface-1: rgba(14, 19, 28, 0.82);
+  --dashboard-surface-2: rgba(20, 27, 38, 0.94);
+  --dashboard-surface-3: rgba(28, 36, 48, 0.98);
 
-  --dashboard-shadow-xs: 0 14px 28px -20px rgba(0, 0, 0, 0.74);
+  --dashboard-border-strong: rgba(255, 255, 255, 0.11);
+  --dashboard-border-soft: rgba(255, 255, 255, 0.06);
+
+  --dashboard-shadow-xs:
+    0 10px 24px -14px rgba(0, 0, 0, 0.52),
+    0 1px 0 rgba(255, 255, 255, 0.02);
   --dashboard-shadow-sm:
-    0 22px 46px -28px rgba(0, 0, 0, 0.82),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    0 20px 48px -24px rgba(0, 0, 0, 0.68),
+    0 10px 20px -12px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
   --dashboard-shadow-md:
-    0 32px 72px -38px rgba(0, 0, 0, 0.86),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 28px 80px -34px rgba(0, 0, 0, 0.78),
+    0 16px 30px -16px rgba(0, 0, 0, 0.44),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 
-  --dashboard-tabs-bg: rgba(20, 28, 38, 0.86);
+  --dashboard-tabs-bg: rgba(17, 23, 34, 0.92);
+  --dashboard-tab-active-bg: rgb(34 197 94);
+  --dashboard-tab-active-text: rgb(255 255 255);
+
+  --dashboard-alert-bg: rgba(23, 30, 42, 0.96);
+  --dashboard-alert-border: rgba(255, 255, 255, 0.08);
 
   --dashboard-switch-off-track: rgba(148, 163, 184, 0.24);
   --dashboard-switch-off-border: rgba(255, 255, 255, 0.1);
   --dashboard-switch-thumb: rgba(248, 250, 252, 0.98);
 }
 
-@supports (color: color-mix(in srgb, white 10%, transparent)) {
-  :root {
-    --dashboard-surface-1: color-mix(in srgb, white 95%, var(--ui-color-primary-500, #22c55e) 5%);
-    --dashboard-surface-2: color-mix(in srgb, white 97%, var(--ui-color-secondary-500, #06b6d4) 3%);
-
-    --dashboard-border-strong: color-mix(in srgb, var(--ui-color-neutral-900, #0f172a) 14%, transparent);
-    --dashboard-border-soft: color-mix(in srgb, var(--ui-color-neutral-900, #0f172a) 8%, transparent);
-
-    --dashboard-tabs-bg: color-mix(in srgb, white 90%, var(--ui-color-neutral-100, #e5e7eb) 10%);
-
-    --dashboard-switch-off-track: color-mix(in srgb, var(--ui-color-neutral-900, #0f172a) 14%, transparent);
-    --dashboard-switch-off-border: color-mix(in srgb, var(--ui-color-neutral-900, #0f172a) 10%, transparent);
-    --dashboard-switch-thumb: color-mix(in srgb, white 98%, transparent);
-  }
-
-  .dark {
-    --dashboard-surface-1: color-mix(in srgb, var(--ui-color-neutral-900, #0f172a) 88%, black 12%);
-    --dashboard-surface-2: color-mix(in srgb, var(--ui-color-neutral-800, #1f2937) 74%, black 26%);
-
-    --dashboard-border-strong: color-mix(in srgb, white 10%, var(--ui-color-primary-400, #4ade80) 12%);
-    --dashboard-border-soft: color-mix(in srgb, white 6%, var(--ui-color-primary-400, #4ade80) 6%);
-
-    --dashboard-tabs-bg: color-mix(in srgb, var(--ui-color-neutral-900, #0f172a) 76%, var(--ui-color-neutral-800, #1f2937) 24%);
-
-    --dashboard-switch-off-track: color-mix(in srgb, white 18%, var(--ui-color-neutral-800, #1f2937) 82%);
-    --dashboard-switch-off-border: color-mix(in srgb, white 9%, var(--ui-color-neutral-700, #374151) 91%);
-    --dashboard-switch-thumb: color-mix(in srgb, white 98%, transparent);
-  }
-
-  html[data-preset="cyber-lime"].dark {
-    --dashboard-border-strong: color-mix(in srgb, white 11%, var(--ui-color-primary-400, #a3e635) 16%);
-    --dashboard-border-soft: color-mix(in srgb, white 7%, var(--ui-color-primary-400, #a3e635) 8%);
-    --dashboard-tabs-bg: color-mix(in srgb, var(--ui-color-neutral-900, #0f172a) 74%, var(--ui-color-primary-500, #84cc16) 5%);
-    --dashboard-switch-off-track: color-mix(in srgb, white 20%, var(--ui-color-neutral-800, #1f2937) 80%);
-  }
+.dashboard-app-shell {
+  min-height: 100vh;
+  background: var(--dashboard-app-bg);
 }
 
 .dashboard-sidebar-shell,
@@ -86,7 +81,7 @@
 }
 
 .dashboard-sidebar-shell {
-  background: var(--dashboard-surface-1);
+  background: var(--dashboard-surface-2);
   border-right: 1px solid var(--dashboard-border-strong);
   box-shadow: var(--dashboard-shadow-sm);
 }
@@ -98,5 +93,15 @@
 }
 
 .dashboard-card-shell {
+  background: var(--dashboard-surface-3);
+  border: 1px solid var(--dashboard-border-strong);
   box-shadow: var(--dashboard-shadow-md);
+}
+
+.dashboard-note-alert {
+  background: var(--dashboard-alert-bg);
+  border: 1px solid var(--dashboard-alert-border);
+  box-shadow: var(--dashboard-shadow-xs);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }

@@ -118,11 +118,12 @@ function cancel() {
         </div>
 
         <UAlert
+          class="dashboard-note-alert"
           icon="i-lucide-info"
           title="Templates premium"
           description="Plus/Pro desbloqueiam templates e recursos avançados (analytics, domínio, etc.)."
           color="neutral"
-          variant="subtle"
+          variant="outline"
         />
       </UCard>
 

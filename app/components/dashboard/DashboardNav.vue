@@ -1,31 +1,42 @@
-
 <script setup lang="ts">
-const main = [
-  { label: 'Início', to: '/dashboard', icon: 'i-lucide-layout-dashboard' },
-  { label: 'Perfil', to: '/dashboard/perfil', icon: 'i-lucide-user' },
-  { label: 'Templates', to: '/dashboard/templates', icon: 'i-lucide-layout-template' }
-]
+import type { NavigationMenuItem } from '@nuxt/ui'
 
-const billing = [
-  { label: 'Plans', to: '/dashboard/plans', icon: 'i-lucide-credit-card' },
-  { label: 'Domain', to: '/dashboard/domain', icon: 'i-lucide-globe' }
-]
+const emit = defineEmits<{
+  navigate: []
+}>()
+
+function onNavigate() {
+  emit('navigate')
+}
+
+const main = computed<NavigationMenuItem[]>(() => [
+  { label: 'Início', to: '/dashboard', icon: 'i-lucide-layout-dashboard', onSelect: onNavigate },
+  { label: 'Perfil', to: '/dashboard/perfil', icon: 'i-lucide-user', onSelect: onNavigate },
+  { label: 'Templates', to: '/dashboard/templates', icon: 'i-lucide-layout-template', onSelect: onNavigate }
+])
+
+const billing = computed<NavigationMenuItem[]>(() => [
+  { label: 'Plans', to: '/dashboard/plans', icon: 'i-lucide-credit-card', onSelect: onNavigate },
+  { label: 'Domain', to: '/dashboard/domain', icon: 'i-lucide-globe', onSelect: onNavigate }
+])
 </script>
 
 <template>
-  <div class="p-2 space-y-3">
+  <div class="space-y-3">
     <UNavigationMenu
       orientation="vertical"
+      variant="pill"
       :items="main"
-      class="text-default"
+      class="w-full"
     />
 
     <USeparator />
 
     <UNavigationMenu
       orientation="vertical"
+      variant="pill"
       :items="billing"
-      class="text-default"
+      class="w-full"
     />
   </div>
 </template>
