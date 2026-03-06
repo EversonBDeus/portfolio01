@@ -92,7 +92,7 @@ function markDirty() {
 
     <div class="grid gap-4 lg:grid-cols-2">
       <div
-        class="space-y-4 rounded-2xl border border-[var(--dashboard-border-soft)] bg-[var(--dashboard-surface-2)] p-4 shadow-[var(--dashboard-shadow-xs)]"
+       class="dashboard-form-surface-2 space-y-4 rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs)"
       >
         <div class="space-y-1">
           <p class="font-medium">Ações públicas</p>
@@ -133,7 +133,7 @@ function markDirty() {
       </div>
 
       <div
-        class="space-y-4 rounded-2xl border border-[var(--dashboard-border-soft)] bg-[var(--dashboard-surface-2)] p-4 shadow-[var(--dashboard-shadow-xs)]"
+      class="dashboard-form-surface-2 space-y-4 rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs)"
       >
         <div class="space-y-1">
           <p class="font-medium">Canais de contato</p>

@@ -121,7 +121,7 @@ async function save() {
 
     <UCard
       variant="outline"
-      class="dashboard-card-shell"
+     class="dashboard-card-shell dashboard-form-surface-3"
       :ui="{
         ...cardUi,
         body: 'p-4 sm:p-6'

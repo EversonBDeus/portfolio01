@@ -1,19 +1,23 @@
 :root {
-  --dashboard-field-bg: rgba(255, 255, 255, 0.98);
   --dashboard-field-text: rgba(15, 23, 42, 0.96);
-  --dashboard-field-placeholder: rgba(15, 23, 42, 0.54);
   --dashboard-field-icon: rgba(15, 23, 42, 0.66);
   --dashboard-field-ring: rgba(15, 23, 42, 0.14);
-  --dashboard-field-inner: rgba(255, 255, 255, 0.82);
-  --dashboard-field-label-bg: var(--dashboard-surface-3, rgba(255, 255, 255, 0.98));
+
+  --dashboard-form-surface: var(--dashboard-surface-3);
 }
 
 .dark {
-  --dashboard-field-bg: rgba(24, 32, 44, 0.96);
   --dashboard-field-text: rgba(255, 255, 255, 0.95);
-  --dashboard-field-placeholder: rgba(255, 255, 255, 0.58);
-  --dashboard-field-icon: rgba(255, 255, 255, 0.7);
-  --dashboard-field-ring: rgba(255, 255, 255, 0.1);
-  --dashboard-field-inner: rgba(255, 255, 255, 0.04);
-  --dashboard-field-label-bg: var(--dashboard-surface-3, rgba(28, 36, 48, 0.98));
+  --dashboard-field-icon: rgba(255, 255, 255, 0.68);
+  --dashboard-field-ring: rgba(255, 255, 255, 0.14);
+
+  --dashboard-form-surface: var(--dashboard-surface-3);
+}
+
+.dashboard-form-surface-2 {
+  --dashboard-form-surface: var(--dashboard-surface-2);
+}
+
+.dashboard-form-surface-3 {
+  --dashboard-form-surface: var(--dashboard-surface-3);
 }

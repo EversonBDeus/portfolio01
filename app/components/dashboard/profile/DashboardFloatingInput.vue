@@ -1,59 +1,60 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useDashboardFormUi } from '~/composables/useDashboardFormUi'
 
-const model = defineModel<string | undefined>({ default: '' })
+type Props = {
+  label: string
+  icon?: string
+  type?: string
+  autocomplete?: string
+  disabled?: boolean
+}
 
-const props = withDefaults(
-  defineProps<{
-    label: string
-    type?: string
-    icon?: string
-    autocomplete?: string
-    disabled?: boolean
-  }>(),
-  {
-    type: 'text',
-    autocomplete: undefined,
-    disabled: false,
-    icon: undefined
-  }
-)
+const props = withDefaults(defineProps<Props>(), {
+  icon: '',
+  type: 'text',
+  autocomplete: undefined,
+  disabled: false
+})
+
+defineSlots<{
+  trailing?: () => any
+}>()
+
+const model = defineModel<string>({ default: '' })
 
 const {
-  inputUi: sharedInputUi,
+  inputUi,
   floatingLabelBaseClass,
   floatingLabelSurfaceClass
 } = useDashboardFormUi()
 
-const inputUi = computed(() => ({
-  ...sharedInputUi,
-  leading: props.icon ? sharedInputUi.leading : ''
-}))
-
-const labelClass = computed(() => {
-  const left = props.icon ? 'left-9' : 'left-0'
-
-  return [floatingLabelBaseClass, left].join(' ')
-})
+const labelOffsetClass = computed(() =>
+  props.icon ? 'start-10' : 'start-3'
+)
 </script>
 
 <template>
-  <div class="relative">
-    <UInput
-      v-model="model"
-      :type="type"
-      :icon="icon"
-      :autocomplete="autocomplete"
-      :disabled="disabled"
-      placeholder=""
-      class="w-full"
-      :ui="inputUi"
-    >
-      <label :class="labelClass">
+  <UInput
+    v-model="model"
+    :type="props.type"
+    :placeholder="' '"
+    :icon="props.icon"
+    :autocomplete="props.autocomplete"
+    :disabled="props.disabled"
+    size="lg"
+    :ui="inputUi"
+  >
+    <template #default>
+      <label :class="[floatingLabelBaseClass, labelOffsetClass]">
         <span :class="floatingLabelSurfaceClass">
-          {{ label }}
+          {{ props.label }}
         </span>
       </label>
-    </UInput>
-  </div>
+    </template>
+
+    <template v-if="$slots.trailing" #trailing>
+      <slot name="trailing" />
+    </template>
+  </UInput>
 </template>
