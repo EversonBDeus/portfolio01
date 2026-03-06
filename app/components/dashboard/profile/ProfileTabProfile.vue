@@ -43,9 +43,9 @@ const inputUi = {
         </UInput>
       </div>
 
-      <UFormGroup label="Bio" class="sm:col-span-2">
+      <UFormField  label="Bio" class="sm:col-span-2">
         <UTextarea v-model="props.model.bio" :rows="5" class="w-full" @update:model-value="markDirty" />
-      </UFormGroup>
+      </UFormField>
     </div>
 
     <USeparator />

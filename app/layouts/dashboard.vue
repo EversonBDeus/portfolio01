@@ -41,14 +41,14 @@ import DashboardUserMenu from '~/components/dashboard/DashboardUserMenu.vue'
         </template>
       </UDashboardNavbar>
 
-      <UDashboardPanelContent>
+      <UDashboardPanel>
         <!-- ✅ aumenta até perto das linhas vermelhas -->
         <div class="px-6 py-6">
           <div class="w-full max-w-7xl mx-auto">
             <slot />
           </div>
         </div>
-      </UDashboardPanelContent>
+      </UDashboardPanel>
     </UDashboardPanel>
   </UDashboardGroup>
 </template>

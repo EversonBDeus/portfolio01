@@ -34,7 +34,7 @@ const inputUi = {
         </UInput>
       </div>
 
-      <UFormGroup label="Plano">
+      <UFormField  label="Plano">
         <USelect
           v-model="props.model.plan"
           :options="[
@@ -45,7 +45,7 @@ const inputUi = {
           class="w-full"
           @update:model-value="markDirty"
         />
-      </UFormGroup>
+      </UFormField>
     </div>
 
     <UAlert

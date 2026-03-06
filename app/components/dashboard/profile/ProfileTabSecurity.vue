@@ -288,7 +288,7 @@ const labelClass =
         </div>
 
         <div v-if="props.model.twoFactorEnabled" class="mt-4 grid gap-4 md:grid-cols-2">
-          <UFormGroup label="Método">
+          <UFormField  label="Método">
             <USelect
               v-model="props.model.twoFactorMethod"
               :options="[
@@ -299,7 +299,7 @@ const labelClass =
               class="w-full"
               @update:model-value="markDirty"
             />
-          </UFormGroup>
+          </UFormField>
 
           <UAlert
             icon="i-lucide-shield-check"
