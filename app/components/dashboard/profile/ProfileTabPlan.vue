@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { PlanData, PlanTier } from '~/composables/usePerfilState'
+import { useDashboardThemeUi } from '~/composables/useDashboardThemeUi'
 
 const props = defineProps<{ model: PlanData }>()
 const emit = defineEmits<{ dirty: [] }>()
 
 const toast = useToast()
+const { cardUi } = useDashboardThemeUi()
 
 function planLabel(tier: PlanTier) {
   if (tier === 'free') return 'Free'
@@ -53,18 +55,23 @@ function cancel() {
         </p>
       </div>
 
-      <!-- Resumo -->
-      <UCard :ui="{ body: 'p-5 space-y-4' }">
+      <UCard
+        variant="outline"
+        :ui="{
+          ...cardUi,
+          body: 'p-5 space-y-4'
+        }"
+      >
         <div class="flex items-start justify-between gap-4">
-          <div class="space-y-1 min-w-0">
+          <div class="min-w-0 space-y-1">
             <p class="text-sm text-muted">Plano atual</p>
-            <p class="text-xl font-semibold truncate">{{ currentLabel }}</p>
+            <p class="truncate text-xl font-semibold">{{ currentLabel }}</p>
             <p class="text-sm text-muted">
               Status: <span class="font-medium text-default">{{ props.model.status }}</span>
             </p>
           </div>
 
-          <div class="flex items-center gap-2 shrink-0">
+          <div class="flex shrink-0 items-center gap-2">
             <UButton
               v-if="props.model.tier === 'free'"
               color="primary"
@@ -115,16 +122,21 @@ function cancel() {
           title="Templates premium"
           description="Plus/Pro desbloqueiam templates e recursos avançados (analytics, domínio, etc.)."
           color="neutral"
-          variant="soft"
+          variant="subtle"
         />
       </UCard>
 
-      <!-- Comparativo -->
       <div class="grid gap-4 lg:grid-cols-3">
-        <UCard :ui="{ body: 'p-5 space-y-3' }">
+        <UCard
+          variant="outline"
+          :ui="{
+            ...cardUi,
+            body: 'p-5 space-y-3'
+          }"
+        >
           <p class="font-semibold">Free</p>
           <p class="text-sm text-muted">Para começar</p>
-          <ul class="text-sm space-y-2">
+          <ul class="space-y-2 text-sm">
             <li class="flex items-center gap-2"><UIcon name="i-lucide-check" class="size-4 text-success" /> 1 template grátis</li>
             <li class="flex items-center gap-2"><UIcon name="i-lucide-check" class="size-4 text-success" /> Página pública</li>
             <li class="flex items-center gap-2"><UIcon name="i-lucide-x" class="size-4 text-muted" /> Analytics</li>
@@ -132,10 +144,16 @@ function cancel() {
           </ul>
         </UCard>
 
-        <UCard :ui="{ body: 'p-5 space-y-3' }">
+        <UCard
+          variant="outline"
+          :ui="{
+            ...cardUi,
+            body: 'p-5 space-y-3'
+          }"
+        >
           <p class="font-semibold">Plus</p>
           <p class="text-sm text-muted">Mais templates e recursos</p>
-          <ul class="text-sm space-y-2">
+          <ul class="space-y-2 text-sm">
             <li class="flex items-center gap-2"><UIcon name="i-lucide-check" class="size-4 text-success" /> Templates premium</li>
             <li class="flex items-center gap-2"><UIcon name="i-lucide-check" class="size-4 text-success" /> Analytics básico</li>
             <li class="flex items-center gap-2"><UIcon name="i-lucide-check" class="size-4 text-success" /> Suporte prioritário</li>
@@ -143,10 +161,16 @@ function cancel() {
           </ul>
         </UCard>
 
-        <UCard :ui="{ body: 'p-5 space-y-3' }">
+        <UCard
+          variant="outline"
+          :ui="{
+            ...cardUi,
+            body: 'p-5 space-y-3'
+          }"
+        >
           <p class="font-semibold">Pro</p>
           <p class="text-sm text-muted">Completo</p>
-          <ul class="text-sm space-y-2">
+          <ul class="space-y-2 text-sm">
             <li class="flex items-center gap-2"><UIcon name="i-lucide-check" class="size-4 text-success" /> Tudo do Plus</li>
             <li class="flex items-center gap-2"><UIcon name="i-lucide-check" class="size-4 text-success" /> Domínio próprio</li>
             <li class="flex items-center gap-2"><UIcon name="i-lucide-check" class="size-4 text-success" /> Analytics avançado</li>

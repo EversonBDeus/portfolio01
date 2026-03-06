@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useDashboardFormUi } from '~/composables/useDashboardFormUi'
+
 const model = defineModel<string | undefined>({ default: '' })
 
 const props = withDefaults(
@@ -17,21 +19,21 @@ const props = withDefaults(
   }
 )
 
+const {
+  inputUi: sharedInputUi,
+  floatingLabelBaseClass,
+  floatingLabelSurfaceClass
+} = useDashboardFormUi()
+
 const inputUi = computed(() => ({
-  base: 'peer bg-default text-default ring-1 ring-default focus:ring-2 focus:ring-primary',
-  leading: props.icon ? 'pointer-events-none text-dimmed' : ''
+  ...sharedInputUi,
+  leading: props.icon ? sharedInputUi.leading : ''
 }))
 
 const labelClass = computed(() => {
   const left = props.icon ? 'left-9' : 'left-0'
 
-  return [
-    'pointer-events-none absolute z-[1] px-1.5 transition-all duration-200',
-    left,
-    '-top-2.5 text-xs font-medium text-highlighted',
-    'peer-focus:-top-2.5 peer-focus:text-xs peer-focus:font-medium peer-focus:text-highlighted',
-    'peer-placeholder-shown:top-1.5 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-placeholder-shown:text-dimmed'
-  ].join(' ')
+  return [floatingLabelBaseClass, left].join(' ')
 })
 </script>
 
@@ -48,7 +50,7 @@ const labelClass = computed(() => {
       :ui="inputUi"
     >
       <label :class="labelClass">
-        <span class="inline-flex bg-default px-1">
+        <span :class="floatingLabelSurfaceClass">
           {{ label }}
         </span>
       </label>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SecurityData } from '~/composables/usePerfilState'
+import { useDashboardFormUi } from '~/composables/useDashboardFormUi'
 
 const props = defineProps<{ model: SecurityData }>()
 const emit = defineEmits<{ dirty: [] }>()
@@ -25,11 +26,11 @@ function checkStrength(str: string) {
     { regex: /[a-z]/, text: 'Pelo menos 1 letra minúscula' },
     { regex: /[A-Z]/, text: 'Pelo menos 1 letra maiúscula' }
   ]
-  return requirements.map(req => ({ met: req.regex.test(str), text: req.text }))
+  return requirements.map((req) => ({ met: req.regex.test(str), text: req.text }))
 }
 
 const strength = computed(() => checkStrength(props.model.newPassword || ''))
-const score = computed(() => strength.value.filter(req => req.met).length)
+const score = computed(() => strength.value.filter((req) => req.met).length)
 const showStrength = computed(() => (props.model.newPassword || '').length > 0)
 
 const strengthColor = computed(() => {
@@ -46,10 +47,6 @@ const strengthText = computed(() => {
   return 'Senha forte'
 })
 
-/**
- * ✅ Regra de ouro:
- * - O botão só habilita quando for IGUAL (exato), mesmo antes do usuário “terminar”.
- */
 const isExactMatch = computed(() => {
   const a = props.model.newPassword || ''
   const b = props.model.confirmPassword || ''
@@ -57,11 +54,6 @@ const isExactMatch = computed(() => {
   return a === b
 })
 
-/**
- * Exibição do erro (UX):
- * - Só mostra depois do blur do campo OU tentativa de salvar
- * - E só quando já faz sentido comparar
- */
 const showMismatch = computed(() => {
   const a = props.model.newPassword || ''
   const b = props.model.confirmPassword || ''
@@ -114,21 +106,9 @@ async function updatePassword() {
   markDirty()
 }
 
-/**
- * ✅ Floating label + CONTRASTE no dark:
- * - adicionamos bg/ring no próprio input
- */
-const inputUi = {
-  base:
-    'peer bg-default/80 dark:bg-muted/10 text-default ring-1 ring-default/70 ' +
-    'focus:ring-2 focus:ring-primary',
-  trailing: 'pe-1'
-}
+const { inputUi, floatingLabelBaseClass, floatingLabelSurfaceClass } = useDashboardFormUi()
 
-const labelClass =
-  'pointer-events-none absolute left-0 -top-2.5 text-highlighted text-xs font-medium px-1.5 transition-all ' +
-  'peer-focus:-top-2.5 peer-focus:text-highlighted peer-focus:text-xs peer-focus:font-medium ' +
-  'peer-placeholder-shown:text-sm peer-placeholder-shown:text-dimmed peer-placeholder-shown:top-1.5 peer-placeholder-shown:font-normal'
+const labelClass = floatingLabelBaseClass
 </script>
 
 <template>
@@ -139,9 +119,7 @@ const labelClass =
         <p class="text-sm text-muted">Altere sua senha com segurança.</p>
       </div>
 
-      <!-- ✅ mais espaço vertical -->
       <div class="max-w-xl space-y-6">
-        <!-- Senha atual -->
         <div class="relative">
           <UInput
             v-model="props.model.currentPassword"
@@ -153,7 +131,7 @@ const labelClass =
             @update:model-value="markDirty"
           >
             <label :class="labelClass">
-              <span class="inline-flex bg-default px-1">Senha atual</span>
+              <span :class="floatingLabelSurfaceClass">Senha atual</span>
             </label>
 
             <template #trailing>
@@ -169,7 +147,6 @@ const labelClass =
           </UInput>
         </div>
 
-        <!-- Nova senha -->
         <div class="relative">
           <UInput
             v-model="props.model.newPassword"
@@ -182,7 +159,7 @@ const labelClass =
             @update:model-value="markDirty"
           >
             <label :class="labelClass">
-              <span class="inline-flex bg-default px-1">Nova senha</span>
+              <span :class="floatingLabelSurfaceClass">Nova senha</span>
             </label>
 
             <template #trailing>
@@ -197,7 +174,6 @@ const labelClass =
             </template>
           </UInput>
 
-          <!-- Requisitos só quando digitar -->
           <div v-if="showStrength" class="mt-4 space-y-3">
             <UProgress :color="strengthColor" :indicator="strengthText" :model-value="score" :max="4" size="sm" />
 
@@ -219,7 +195,6 @@ const labelClass =
           </div>
         </div>
 
-        <!-- Confirmar -->
         <div class="relative">
           <UInput
             v-model="props.model.confirmPassword"
@@ -232,7 +207,7 @@ const labelClass =
             @blur="confirmTouched = true"
           >
             <label :class="labelClass">
-              <span class="inline-flex bg-default px-1">Confirmar nova senha</span>
+              <span :class="floatingLabelSurfaceClass">Confirmar nova senha</span>
             </label>
 
             <template #trailing>
@@ -252,7 +227,6 @@ const labelClass =
           </p>
         </div>
 
-        <!-- CTA -->
         <div class="pt-1">
           <UButton
             color="primary"
@@ -288,7 +262,7 @@ const labelClass =
         </div>
 
         <div v-if="props.model.twoFactorEnabled" class="mt-4 grid gap-4 md:grid-cols-2">
-          <UFormField  label="Método">
+          <UFormField label="Método">
             <USelect
               v-model="props.model.twoFactorMethod"
               :options="[

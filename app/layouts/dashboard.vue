@@ -4,8 +4,8 @@ import DashboardUserMenu from '~/components/dashboard/DashboardUserMenu.vue'
 </script>
 
 <template>
-  <UDashboardGroup>
-    <UDashboardSidebar class="bg-default border-r border-default">
+  <UDashboardGroup class="min-h-screen">
+    <UDashboardSidebar class="dashboard-sidebar-shell">
       <template #header>
         <div class="flex items-center justify-between gap-2 px-2 py-2">
           <div class="flex min-w-0 items-center gap-2">
@@ -22,9 +22,9 @@ import DashboardUserMenu from '~/components/dashboard/DashboardUserMenu.vue'
       </template>
     </UDashboardSidebar>
 
-    <UDashboardPanel>
+    <UDashboardPanel class="min-w-0">
       <UDashboardNavbar
-        class="px-4 md:px-6"
+        class="dashboard-topbar-shell px-4 md:px-6"
         :toggle="false"
       >
         <template #left>

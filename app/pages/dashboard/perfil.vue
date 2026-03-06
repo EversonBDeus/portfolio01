@@ -4,19 +4,21 @@ useSeoMeta({ title: 'Perfil & Conta' })
 
 import type { TabsItem } from '@nuxt/ui'
 import { initialUser, initialAccount } from '~/composables/usePerfilState'
-import type { SecurityData } from '~/composables/usePerfilState'
-import ProfileTabNotifications from '~/components/dashboard/profile/ProfileTabNotifications.vue'
-import type { NotificationsData } from '~/composables/usePerfilState'
+import type { SecurityData, NotificationsData, PlanData } from '~/composables/usePerfilState'
+import { useDashboardThemeUi } from '~/composables/useDashboardThemeUi'
 
 import ProfileTabProfile from '~/components/dashboard/profile/ProfileTabProfile.vue'
 import ProfileTabAccount from '~/components/dashboard/profile/ProfileTabAccount.vue'
 import ProfileTabSecurity from '~/components/dashboard/profile/ProfileTabSecurity.vue'
+import ProfileTabNotifications from '~/components/dashboard/profile/ProfileTabNotifications.vue'
 import ProfileTabPlan from '~/components/dashboard/profile/ProfileTabPlan.vue'
-import type { PlanData } from '~/composables/usePerfilState'
+
 const toast = useToast()
 const isSaving = ref(false)
 const isDirty = ref(false)
 const activeTab = ref('perfil')
+
+const { cardUi, tabsUi } = useDashboardThemeUi()
 
 const user = reactive({ ...initialUser })
 const account = reactive({ ...initialAccount })
@@ -56,11 +58,17 @@ const tabs: TabsItem[] = [
 
 async function save() {
   if (isSaving.value) return
+
   isSaving.value = true
-  await new Promise((r) => setTimeout(r, 600))
+  await new Promise((resolve) => setTimeout(resolve, 600))
   isSaving.value = false
   isDirty.value = false
-  toast.add({ title: 'Alterações salvas', icon: 'i-lucide-circle-check', color: 'success' })
+
+  toast.add({
+    title: 'Alterações salvas',
+    icon: 'i-lucide-circle-check',
+    color: 'success'
+  })
 }
 </script>
 
@@ -84,37 +92,38 @@ async function save() {
       </UButton>
     </div>
 
-    <!-- ✅ Tabs ocupam largura no desktop, scroll no mobile -->
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto pb-1">
       <UTabs
         v-model="activeTab"
         :items="tabs"
         value-key="value"
         variant="pill"
         :content="false"
-        :ui="{
-          list: 'bg-muted/40 rounded-xl p-1 w-max md:w-full',
-          trigger: 'md:flex-1 md:justify-center whitespace-nowrap'
-        }"
+        :ui="tabsUi"
       />
     </div>
 
-    <UCard :ui="{ body: 'p-4 sm:p-6' }">
+    <UCard
+      variant="outline"
+      class="dashboard-card-shell"
+      :ui="{
+        ...cardUi,
+        body: 'p-4 sm:p-6'
+      }"
+    >
       <ProfileTabProfile v-show="activeTab === 'perfil'" :model="user" @dirty="isDirty = true" />
       <ProfileTabAccount v-show="activeTab === 'conta'" :model="account" @dirty="isDirty = true" />
       <ProfileTabSecurity v-show="activeTab === 'seguranca'" :model="security" @dirty="isDirty = true" />
-
-            <ProfileTabNotifications
-            v-show="activeTab === 'notificacoes'"
-            :model="notifications"
-            @dirty="isDirty = true"
-            />
-
-            <ProfileTabPlan
-            v-show="activeTab === 'plano'"
-            :model="plan"
-            @dirty="isDirty = true"
-            />
+      <ProfileTabNotifications
+        v-show="activeTab === 'notificacoes'"
+        :model="notifications"
+        @dirty="isDirty = true"
+      />
+      <ProfileTabPlan
+        v-show="activeTab === 'plano'"
+        :model="plan"
+        @dirty="isDirty = true"
+      />
     </UCard>
   </div>
 </template>

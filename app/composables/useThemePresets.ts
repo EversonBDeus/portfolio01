@@ -37,10 +37,6 @@ export const THEME_PRESETS: ThemePreset[] = [
       info: 'candysky-sky',
       warning: 'sunrise-amber',
       error: 'uxred',
-
-      // ✅ IMPORTANTÍSSIMO (legibilidade):
-      // neutral controla "cinzas", textos muted, fundos e variantes soft/subtle.
-      // slate é um neutral equilibrado para light/dark.
       neutral: 'slate'
     }
   },
@@ -172,11 +168,17 @@ export const THEME_PRESETS: ThemePreset[] = [
   }
 ]
 
-export function useThemePresets() {
-  const cookie = useCookie<ThemePresetId>('theme', { default: () => 'cyber-lime' })
+const DEFAULT_THEME_PRESET_ID: ThemePresetId = 'cyber-lime'
+const DEFAULT_THEME_PRESET = THEME_PRESETS.find((preset) => preset.id === DEFAULT_THEME_PRESET_ID)!
 
-  const preset = computed<ThemePreset>(() => {
-    return THEME_PRESETS.find((t) => t.id === cookie.value) ?? THEME_PRESETS[0]
+export function useThemePresets() {
+  const cookie = useCookie<ThemePresetId>('theme', {
+    default: () => DEFAULT_THEME_PRESET_ID
+  })
+
+  const preset = computed(() => {
+    const currentId = cookie.value ?? DEFAULT_THEME_PRESET_ID
+    return THEME_PRESETS.find((item) => item.id === currentId) ?? DEFAULT_THEME_PRESET
   })
 
   function setPreset(id: ThemePresetId) {

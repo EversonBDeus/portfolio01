@@ -1,0 +1,85 @@
+/* =========================================================
+   Dashboard form tokens
+   - Base global para campos do painel
+   - Fundo neutro e legível no light/dark
+   - Tema afeta foco/borda, não o miolo do campo
+   ========================================================= */
+
+:root {
+  --dashboard-field-bg: rgba(255, 255, 255, 0.94);
+  --dashboard-field-text: rgba(15, 23, 42, 0.96);
+  --dashboard-field-placeholder: rgba(15, 23, 42, 0.56);
+  --dashboard-field-icon: rgba(15, 23, 42, 0.68);
+  --dashboard-field-ring: rgba(15, 23, 42, 0.14);
+  --dashboard-field-inner: rgba(255, 255, 255, 0.7);
+  --dashboard-field-label-bg: rgba(255, 255, 255, 0.96);
+}
+
+html.dark,
+body.dark,
+.dark {
+  --dashboard-field-bg: rgba(9, 14, 20, 0.92);
+  --dashboard-field-text: rgba(255, 255, 255, 0.95);
+  --dashboard-field-placeholder: rgba(255, 255, 255, 0.58);
+  --dashboard-field-icon: rgba(255, 255, 255, 0.72);
+  --dashboard-field-ring: rgba(255, 255, 255, 0.12);
+  --dashboard-field-inner: rgba(255, 255, 255, 0.03);
+  --dashboard-field-label-bg: rgba(9, 14, 20, 0.96);
+}
+
+@supports (color: color-mix(in srgb, white 10%, transparent)) {
+  :root {
+    --dashboard-field-bg: color-mix(in srgb, white 94%, transparent);
+    --dashboard-field-text: color-mix(in srgb, black 92%, transparent);
+    --dashboard-field-placeholder: color-mix(in srgb, black 56%, transparent);
+    --dashboard-field-icon: color-mix(in srgb, black 66%, transparent);
+    --dashboard-field-ring: color-mix(in srgb, black 14%, transparent);
+    --dashboard-field-inner: color-mix(in srgb, white 70%, transparent);
+    --dashboard-field-label-bg: color-mix(in srgb, white 96%, transparent);
+  }
+
+  html.dark,
+  body.dark,
+  .dark {
+    --dashboard-field-bg: color-mix(in srgb, #0b1117 92%, transparent);
+    --dashboard-field-text: color-mix(in srgb, white 95%, transparent);
+    --dashboard-field-placeholder: color-mix(in srgb, white 58%, transparent);
+    --dashboard-field-icon: color-mix(in srgb, white 72%, transparent);
+    --dashboard-field-ring: color-mix(in srgb, white 12%, transparent);
+    --dashboard-field-inner: color-mix(in srgb, white 3%, transparent);
+    --dashboard-field-label-bg: color-mix(in srgb, #0b1117 96%, transparent);
+  }
+
+  /* Presets neon: sem tingir o fundo do input */
+  html[data-preset="cyber-lime"].dark,
+  html[data-preset="minty-dark"].dark,
+  html[data-preset="neon-spectrum"].dark {
+    --dashboard-field-bg: color-mix(in srgb, #0b1117 94%, transparent);
+    --dashboard-field-text: color-mix(in srgb, white 95%, transparent);
+    --dashboard-field-placeholder: color-mix(in srgb, white 58%, transparent);
+    --dashboard-field-icon: color-mix(in srgb, white 72%, transparent);
+    --dashboard-field-ring: color-mix(
+      in srgb,
+      white 8%,
+      var(--ui-color-primary-400, var(--t-primary)) 22%
+    );
+    --dashboard-field-inner: color-mix(in srgb, white 3%, transparent);
+    --dashboard-field-label-bg: color-mix(in srgb, #0b1117 96%, transparent);
+  }
+
+  /* Ajuste específico do cyber-lime:
+     mantém contraste forte sem fundo verde */
+  html[data-preset="cyber-lime"].dark {
+    --dashboard-field-bg: color-mix(in srgb, #091015 95%, transparent);
+    --dashboard-field-text: color-mix(in srgb, white 96%, transparent);
+    --dashboard-field-placeholder: color-mix(in srgb, white 60%, transparent);
+    --dashboard-field-icon: color-mix(in srgb, white 74%, transparent);
+    --dashboard-field-ring: color-mix(
+      in srgb,
+      white 6%,
+      var(--ui-color-primary-400, var(--t-primary)) 26%
+    );
+    --dashboard-field-inner: color-mix(in srgb, white 3%, transparent);
+    --dashboard-field-label-bg: color-mix(in srgb, #091015 97%, transparent);
+  }
+}

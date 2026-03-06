@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import type { UserProfile } from '~/composables/usePerfilState'
+import { useDashboardFormUi } from '~/composables/useDashboardFormUi'
 import DashboardFloatingInput from '~/components/dashboard/profile/DashboardFloatingInput.vue'
 
 const props = defineProps<{ model: UserProfile }>()
 const emit = defineEmits<{ dirty: [] }>()
+
+const { textareaUi } = useDashboardFormUi()
 
 function markDirty() {
   emit('dirty')
@@ -44,6 +47,7 @@ function markDirty() {
           v-model="props.model.bio"
           :rows="5"
           class="w-full"
+          :ui="textareaUi"
           @update:model-value="markDirty"
         />
       </UFormField>
