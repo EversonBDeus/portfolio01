@@ -3,15 +3,23 @@ export type UserProfile = {
   headline: string
   bio: string
   location: string
-  linkedin?: string
-  github?: string
-  instagram?: string
+  publicEmail: string
+  linkedin: string
+  github: string
+  instagram: string
+  whatsapp: string
+  messenger: string
+  externalPortfolio: string
+  allowResumeDownload: boolean
+  allowContactButtons: boolean
 }
 
 export type AccountData = {
   email: string
   username: string
-  plan: 'free' | 'plus' | 'pro'
+  accountId: string
+  createdAt: string
+  lastLogin: string
 }
 
 export const initialUser: UserProfile = {
@@ -19,15 +27,23 @@ export const initialUser: UserProfile = {
   headline: '',
   bio: '',
   location: '',
+  publicEmail: '',
   linkedin: '',
   github: '',
-  instagram: ''
+  instagram: '',
+  whatsapp: '',
+  messenger: '',
+  externalPortfolio: '',
+  allowResumeDownload: true,
+  allowContactButtons: true
 }
 
 export const initialAccount: AccountData = {
   email: '',
   username: '',
-  plan: 'free'
+  accountId: '—',
+  createdAt: '—',
+  lastLogin: '—'
 }
 
 export type SecurityData = {

@@ -11,12 +11,19 @@ function markDirty() {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-8">
+    <div class="space-y-1">
+      <h2 class="text-base font-semibold">Dados internos da conta</h2>
+      <p class="text-sm text-muted">
+        Aqui ficam login, identificadores e metadados da conta. Plano, segurança e notificações têm abas próprias.
+      </p>
+    </div>
+
     <div class="grid gap-4 sm:grid-cols-2">
       <DashboardFloatingInput
         v-model="props.model.email"
         type="email"
-        label="E-mail"
+        label="E-mail de acesso"
         icon="i-lucide-mail"
         autocomplete="email"
         @update:model-value="markDirty"
@@ -30,25 +37,35 @@ function markDirty() {
         @update:model-value="markDirty"
       />
 
-      <UFormField label="Plano">
-        <USelect
-          v-model="props.model.plan"
-          :items="[
-            { label: 'Free', value: 'free' },
-            { label: 'Plus', value: 'plus' },
-            { label: 'Pro', value: 'pro' }
-          ]"
-          class="w-full"
-          @update:model-value="markDirty"
+      <div class="sm:col-span-2">
+        <DashboardFloatingInput
+          v-model="props.model.accountId"
+          label="ID da conta"
+          icon="i-lucide-fingerprint"
+          disabled
         />
-      </UFormField>
+      </div>
+
+      <DashboardFloatingInput
+        v-model="props.model.createdAt"
+        label="Conta criada em"
+        icon="i-lucide-calendar-plus"
+        disabled
+      />
+
+      <DashboardFloatingInput
+        v-model="props.model.lastLogin"
+        label="Último acesso"
+        icon="i-lucide-history"
+        disabled
+      />
     </div>
 
     <UAlert
       class="dashboard-note-alert"
-      icon="i-lucide-lock"
-      title="Login real entra depois"
-      description="Nesta fase, o login (Supabase) ainda não foi conectado."
+      icon="i-lucide-info"
+      title="Separação intencional"
+      description="Plano não fica mais aqui para evitar mistura entre dados da conta e assinatura. A aba Conta agora serve apenas para dados internos do usuário."
       color="neutral"
       variant="outline"
     />

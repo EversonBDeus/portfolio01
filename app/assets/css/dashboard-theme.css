@@ -68,9 +68,10 @@
   --dashboard-switch-off-border: rgba(255, 255, 255, 0.1);
   --dashboard-switch-thumb: rgba(248, 250, 252, 0.98);
 }
-
 .dashboard-app-shell {
   min-height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   background: var(--dashboard-app-bg);
 }
 

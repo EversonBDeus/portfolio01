@@ -1,10 +1,15 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'dashboard' })
-useSeoMeta({ title: 'Perfil & Conta' })
+useSeoMeta({ title: 'Perfil' })
 
 import type { TabsItem } from '@nuxt/ui'
-import { initialUser, initialAccount } from '~/composables/usePerfilState'
-import type { SecurityData, NotificationsData, PlanData } from '~/composables/usePerfilState'
+import {
+  initialUser,
+  initialAccount,
+  type SecurityData,
+  type NotificationsData,
+  type PlanData
+} from '~/composables/usePerfilState'
 import { useDashboardThemeUi } from '~/composables/useDashboardThemeUi'
 
 import ProfileTabProfile from '~/components/dashboard/profile/ProfileTabProfile.vue'
@@ -16,7 +21,7 @@ import ProfileTabPlan from '~/components/dashboard/profile/ProfileTabPlan.vue'
 const toast = useToast()
 const isSaving = ref(false)
 const isDirty = ref(false)
-const activeTab = ref('perfil')
+const activeTab = ref('portfolio')
 
 const { cardUi, tabsUi } = useDashboardThemeUi()
 
@@ -49,7 +54,7 @@ const plan = reactive<PlanData>({
 })
 
 const tabs: TabsItem[] = [
-  { label: 'Perfil', value: 'perfil', icon: 'i-lucide-user' },
+  { label: 'Portfólio', value: 'portfolio', icon: 'i-lucide-briefcase-business' },
   { label: 'Conta', value: 'conta', icon: 'i-lucide-settings' },
   { label: 'Segurança', value: 'seguranca', icon: 'i-lucide-shield-check' },
   { label: 'Notificações', value: 'notificacoes', icon: 'i-lucide-bell' },
@@ -75,9 +80,11 @@ async function save() {
 <template>
   <div class="space-y-6">
     <div class="flex items-start justify-between gap-4">
-      <div class="min-w-0">
-        <h1 class="text-2xl font-semibold leading-tight">Perfil & Conta</h1>
-        <p class="text-sm text-muted">Base do painel do SaaS. Depois pluga Supabase.</p>
+      <div class="min-w-0 space-y-1">
+        <h1 class="text-2xl font-semibold leading-tight">Perfil</h1>
+        <p class="text-sm text-muted">
+          Edite o que aparece no seu portfólio e o que pertence à sua conta no sistema.
+        </p>
       </div>
 
       <UButton
@@ -91,6 +98,15 @@ async function save() {
         Salvar
       </UButton>
     </div>
+
+    <UAlert
+      class="dashboard-note-alert"
+      icon="i-lucide-layout-panel-top"
+      title="Separação desta tela"
+      description="A aba Portfólio controla os dados públicos do template. Conta, Segurança, Notificações e Plano controlam dados internos do sistema."
+      color="neutral"
+      variant="outline"
+    />
 
     <div class="overflow-x-auto pb-1">
       <UTabs
@@ -111,14 +127,30 @@ async function save() {
         body: 'p-4 sm:p-6'
       }"
     >
-      <ProfileTabProfile v-show="activeTab === 'perfil'" :model="user" @dirty="isDirty = true" />
-      <ProfileTabAccount v-show="activeTab === 'conta'" :model="account" @dirty="isDirty = true" />
-      <ProfileTabSecurity v-show="activeTab === 'seguranca'" :model="security" @dirty="isDirty = true" />
+      <ProfileTabProfile
+        v-show="activeTab === 'portfolio'"
+        :model="user"
+        @dirty="isDirty = true"
+      />
+
+      <ProfileTabAccount
+        v-show="activeTab === 'conta'"
+        :model="account"
+        @dirty="isDirty = true"
+      />
+
+      <ProfileTabSecurity
+        v-show="activeTab === 'seguranca'"
+        :model="security"
+        @dirty="isDirty = true"
+      />
+
       <ProfileTabNotifications
         v-show="activeTab === 'notificacoes'"
         :model="notifications"
         @dirty="isDirty = true"
       />
+
       <ProfileTabPlan
         v-show="activeTab === 'plano'"
         :model="plan"

@@ -2,7 +2,6 @@
 @import "@nuxt/ui";
 @import "./dashboard-forms.css";
 @import "./dashboard-theme.css";
-
 @theme {
   --font-sans: 'Poppins', system-ui, sans-serif;
 }
