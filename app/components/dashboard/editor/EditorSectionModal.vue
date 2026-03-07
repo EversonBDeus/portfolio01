@@ -2,23 +2,35 @@
 import { computed } from 'vue'
 import EditorAboutControls from '~/components/dashboard/editor/EditorAboutControls.vue'
 import EditorHeroControls from '~/components/dashboard/editor/EditorHeroControls.vue'
+import EditorProjectsControls from '~/components/dashboard/editor/EditorProjectsControls.vue'
 import type {
   EditorAboutForm,
-  EditorHeroForm
+  EditorHeroForm,
+  EditorProjectFieldUpdate
 } from '~/composables/useEditorState'
 import type { EditorSectionId } from '~/data/editor-sections'
+import type { EditorProjectErrors, EditorProjectForm } from '~/schemas/editor-project'
 
 const props = defineProps<{
   open: boolean
   activeSection: EditorSectionId
   heroForm: EditorHeroForm
   aboutForm: EditorAboutForm
+  projects: EditorProjectForm[]
+  activeProjectId: string | null
+  projectErrors: Record<string, EditorProjectErrors>
+  canAddProject: boolean
 }>()
 
 const emit = defineEmits<{
   'update:open': [value: boolean]
   'update:heroForm': [value: EditorHeroForm]
   'update:aboutForm': [value: EditorAboutForm]
+  addProject: []
+  removeProject: [projectId: string]
+  selectProject: [projectId: string]
+  setFeaturedProject: [projectId: string]
+  updateProjectField: [payload: EditorProjectFieldUpdate]
   reset: [sectionId: EditorSectionId]
 }>()
 
@@ -43,10 +55,10 @@ const sectionMeta = computed(() => {
 
   if (props.activeSection === 'projects') {
     return {
-      title: 'Projetos',
-      description: 'A edição detalhada desta seção entra na próxima etapa.',
+      title: 'Editar Projetos',
+      description: 'Ajuste os cards que alimentam a vitrine inicial da seção Projetos no template.',
       icon: 'i-lucide-folder-kanban',
-      badge: 'Próxima etapa'
+      badge: 'Projetos ativa'
     }
   }
 
@@ -66,12 +78,20 @@ function handleAboutUpdate(value: EditorAboutForm) {
   emit('update:aboutForm', value)
 }
 
+function handleProjectFieldUpdate(value: EditorProjectFieldUpdate) {
+  emit('updateProjectField', value)
+}
+
 function handleResetHero() {
   emit('reset', 'hero')
 }
 
 function handleResetAbout() {
   emit('reset', 'about')
+}
+
+function handleResetProjects() {
+  emit('reset', 'projects')
 }
 </script>
 
@@ -81,7 +101,7 @@ function handleResetAbout() {
     scrollable
     :title="sectionMeta.title"
     :description="sectionMeta.description"
-    :ui="{ content: 'sm:max-w-4xl' }"
+    :ui="{ content: 'sm:max-w-5xl' }"
     @update:open="emit('update:open', $event)"
   >
     <template #body>
@@ -126,7 +146,7 @@ function handleResetAbout() {
 
           <div class="px-5 py-5 sm:px-6 sm:py-6">
             <!--  =========== Conteúdo da Seção ================ -->
-            <!--  ----------- Hero, Sobre e Próximas Etapas -------------- -->
+            <!--  ----------- Hero, Sobre, Projetos e Próximas Etapas -------------- -->
 
             <EditorHeroControls
               v-if="activeSection === 'hero'"
@@ -144,13 +164,27 @@ function handleResetAbout() {
               @reset="handleResetAbout"
             />
 
+            <EditorProjectsControls
+              v-else-if="activeSection === 'projects'"
+              :projects="projects"
+              :active-project-id="activeProjectId"
+              :project-errors="projectErrors"
+              :can-add-project="canAddProject"
+              @add-project="emit('addProject')"
+              @remove-project="emit('removeProject', $event)"
+              @select-project="emit('selectProject', $event)"
+              @set-featured-project="emit('setFeaturedProject', $event)"
+              @update-project-field="handleProjectFieldUpdate"
+              @reset="handleResetProjects"
+            />
+
             <div v-else class="space-y-4">
               <div class="rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-5">
                 <UAlert
                   class="dashboard-note-alert"
                   icon="i-lucide-clock-3"
                   title="Controles desta seção entram na próxima etapa"
-                  :description="`A edição detalhada de ${sectionMeta.title} será adicionada depois da base de Hero e Sobre.`"
+                  :description="`A edição detalhada de ${sectionMeta.title} será adicionada depois da base de Hero, Sobre e Projetos.`"
                   color="neutral"
                   variant="outline"
                 />

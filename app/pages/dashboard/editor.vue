@@ -5,7 +5,8 @@ import EditorSectionModal from '~/components/dashboard/editor/EditorSectionModal
 import EditorSectionsPanel from '~/components/dashboard/editor/EditorSectionsPanel.vue'
 import type {
   EditorAboutForm,
-  EditorHeroForm
+  EditorHeroForm,
+  EditorProjectFieldUpdate
 } from '~/composables/useEditorState'
 import type { EditorSectionId } from '~/data/editor-sections'
 import { useEditorState } from '~/composables/useEditorState'
@@ -17,19 +18,28 @@ const isSectionModalOpen = ref(false)
 
 const {
   aboutForm,
+  activeProjectId,
   activeSection,
+  addProject,
+  canAddProject,
   device,
   hasSelectedTemplate,
   heroForm,
   previewData,
+  projectErrors,
+  projectsForm,
+  removeProject,
   resetSection,
   sections,
   selectedTemplate,
   setAboutForm,
+  setActiveProject,
   setActiveSection,
   setDevice,
+  setFeaturedProject,
   setHeroForm,
   toggleSection,
+  updateProjectField,
   visibility
 } = useEditorState()
 
@@ -41,9 +51,29 @@ function handleAboutForm(value: EditorAboutForm) {
   setAboutForm(value)
 }
 
+function handleProjectFieldUpdate(value: EditorProjectFieldUpdate) {
+  updateProjectField(value.projectId, value.field, value.value)
+}
+
 function handleSelectSection(sectionId: EditorSectionId) {
   setActiveSection(sectionId)
   isSectionModalOpen.value = true
+}
+
+function handleSelectProject(projectId: string) {
+  setActiveProject(projectId)
+}
+
+function handleAddProject() {
+  addProject()
+}
+
+function handleRemoveProject(projectId: string) {
+  removeProject(projectId)
+}
+
+function handleSetFeaturedProject(projectId: string) {
+  setFeaturedProject(projectId)
 }
 </script>
 
@@ -56,7 +86,7 @@ function handleSelectSection(sectionId: EditorSectionId) {
       <div class="space-y-1">
         <h1 class="text-2xl font-semibold">Editor</h1>
         <p class="text-sm text-muted">
-          Agora a edição das seções acontece em modal, mantendo o preview visível durante o ajuste.
+          O editor já permite ajustar Hero, Sobre e agora também a vitrine de Projetos em tempo real.
         </p>
       </div>
 
@@ -87,7 +117,7 @@ function handleSelectSection(sectionId: EditorSectionId) {
       class="dashboard-note-alert"
       icon="i-lucide-sliders-horizontal"
       title="Escopo desta etapa"
-      description="A edição agora abre em modal. Hero e Sobre continuam com preview em tempo real. Projetos e Contato entram na próxima fase."
+      description="Hero, Sobre e Projetos já podem ser ajustados localmente no editor. Contato, reorder e persistência entram depois."
       color="neutral"
       variant="outline"
     />
@@ -211,9 +241,18 @@ function handleSelectSection(sectionId: EditorSectionId) {
       :active-section="activeSection"
       :hero-form="heroForm"
       :about-form="aboutForm"
+      :projects="projectsForm"
+      :active-project-id="activeProjectId"
+      :project-errors="projectErrors"
+      :can-add-project="canAddProject"
       @update:open="isSectionModalOpen = $event"
       @update:hero-form="handleHeroForm"
       @update:about-form="handleAboutForm"
+      @add-project="handleAddProject"
+      @remove-project="handleRemoveProject"
+      @select-project="handleSelectProject"
+      @set-featured-project="handleSetFeaturedProject"
+      @update-project-field="handleProjectFieldUpdate"
       @reset="resetSection"
     />
   </div>

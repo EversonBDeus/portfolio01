@@ -6,7 +6,12 @@ import {
 } from '~/data/editor-sections'
 import { useOnboardingState } from '~/composables/useOnboardingState'
 import { useTemplateSelection } from '~/composables/useTemplateSelection'
-
+import {
+  editorProjectSchema,
+  isEditorProjectErrorField,
+  type EditorProjectErrors,
+  type EditorProjectForm
+} from '~/schemas/editor-project'
 export type EditorDevice = 'desktop' | 'mobile'
 
 export type EditorSectionVisibility = Record<EditorSectionId, boolean>
@@ -25,6 +30,14 @@ export type EditorHeroForm = {
 
 export type EditorAboutForm = {
   summary: string
+}
+
+export type EditorProjectField = 'title' | 'category' | 'summary' | 'link'
+
+export type EditorProjectFieldUpdate = {
+  projectId: string
+  field: EditorProjectField
+  value: string
 }
 
 export type EditorPreviewProject = {
@@ -70,18 +83,37 @@ function normalizeSkills(skillsText: string) {
     .slice(0, 6)
 }
 
+function createProjectId() {
+  return `editor-project-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+function toEditorProjectForm(project: EditorPreviewProject): EditorProjectForm {
+  return {
+    id: project.id,
+    title: project.title,
+    category: project.category,
+    summary: project.summary,
+    link: project.link,
+    featured: project.featured
+  }
+}
+
+function createProjectErrorsMap(items: EditorProjectForm[]) {
+  return items.reduce<Record<string, EditorProjectErrors>>((acc, item) => {
+    acc[item.id] = {}
+    return acc
+  }, {})
+}
+
 export function useEditorState() {
   //  =========== Dados do Onboarding ================
   //  ----------- Base do Preview --------------
 
   const { publicProfile, professional, projects } = useOnboardingState()
 
-  const {
-    hasSelectedTemplate,
-    selectedTemplate
-  } = useTemplateSelection()
+  const { hasSelectedTemplate, selectedTemplate } = useTemplateSelection()
 
-  const previewProjects = computed<EditorPreviewProject[]>(() => {
+  const onboardingProjects = computed<EditorPreviewProject[]>(() => {
     return [...(projects.value.items ?? [])]
       .sort((current, next) => Number(next.featured) - Number(current.featured))
       .slice(0, 3)
@@ -145,7 +177,7 @@ export function useEditorState() {
       skills: Array.isArray(professional.value.mainSkills)
         ? professional.value.mainSkills.slice(0, 6)
         : [],
-      projects: previewProjects.value,
+      projects: onboardingProjects.value,
       links: previewLinks.value
     }
   })
@@ -182,6 +214,40 @@ export function useEditorState() {
     summary: basePreviewData.value.summary
   }))
 
+  //  =========== Estado dos Projetos ================
+  //  ----------- Edição Local --------------
+
+  const projectsForm = useState<EditorProjectForm[]>('editor-projects-form', () => {
+    return onboardingProjects.value.map(toEditorProjectForm)
+  })
+
+  const activeProjectId = useState<string | null>('editor-active-project-id', () => {
+    return onboardingProjects.value[0]?.id ?? null
+  })
+
+  const projectErrors = useState<Record<string, EditorProjectErrors>>(
+    'editor-project-errors',
+    () => createProjectErrorsMap(onboardingProjects.value.map(toEditorProjectForm))
+  )
+
+  const canAddProject = computed(() => projectsForm.value.length < 3)
+
+  const previewProjects = computed<EditorPreviewProject[]>(() => {
+    return [...projectsForm.value]
+      .sort((current, next) => Number(next.featured) - Number(current.featured))
+      .slice(0, 3)
+      .map((item) => ({
+        id: item.id,
+        title: item.title.trim() || 'Novo projeto',
+        category: item.category.trim() || 'Categoria do projeto',
+        summary:
+          item.summary.trim() ||
+          'Adicione um resumo para este projeto no editor ou no onboarding.',
+        link: item.link.trim(),
+        featured: item.featured
+      }))
+  })
+
   //  =========== Preview Final ================
   //  ----------- Dados Renderizados --------------
 
@@ -198,8 +264,47 @@ export function useEditorState() {
     }
   })
 
-  //  =========== Ações do Editor ================
-  //  ----------- Interações Locais --------------
+  //  =========== Validação dos Projetos ================
+  //  ----------- Zod Local --------------
+
+function validateProject(projectId: string) {
+  const project = projectsForm.value.find((item) => item.id === projectId)
+
+  if (!project) {
+    return false
+  }
+
+  const result = editorProjectSchema.safeParse(project)
+
+  if (result.success) {
+    projectErrors.value = {
+      ...projectErrors.value,
+      [projectId]: {}
+    }
+
+    return true
+  }
+
+  const nextErrors: EditorProjectErrors = {}
+
+  for (const issue of result.error.issues) {
+    const field = issue.path[0]
+
+    if (isEditorProjectErrorField(field) && !nextErrors[field]) {
+      nextErrors[field] = issue.message
+    }
+  }
+
+  projectErrors.value = {
+    ...projectErrors.value,
+    [projectId]: nextErrors
+  }
+
+  return false
+}
+
+  //  =========== Ações Gerais ================
+  //  ----------- Hero, Sobre e Seção --------------
 
   function setDevice(nextDevice: EditorDevice) {
     device.value = nextDevice
@@ -224,6 +329,90 @@ export function useEditorState() {
     aboutForm.value = nextValue
   }
 
+  //  =========== Ações dos Projetos ================
+  //  ----------- Lista e Destaque --------------
+
+  function setActiveProject(projectId: string) {
+    activeProjectId.value = projectId
+  }
+
+  function addProject() {
+    if (!canAddProject.value) {
+      return
+    }
+
+    const shouldBeFeatured =
+      projectsForm.value.length === 0 ||
+      !projectsForm.value.some((item) => item.featured)
+
+    const nextProject: EditorProjectForm = {
+      id: createProjectId(),
+      title: '',
+      category: '',
+      summary: '',
+      link: '',
+      featured: shouldBeFeatured
+    }
+
+    projectsForm.value = [...projectsForm.value, nextProject]
+    activeProjectId.value = nextProject.id
+
+    projectErrors.value = {
+      ...projectErrors.value,
+      [nextProject.id]: {}
+    }
+  }
+
+  function removeProject(projectId: string) {
+    const nextItems = projectsForm.value.filter((item) => item.id !== projectId)
+    const nextErrors = { ...projectErrors.value }
+
+    delete nextErrors[projectId]
+
+    if (nextItems.length > 0 && !nextItems.some((item) => item.featured)) {
+      const [firstItem, ...restItems] = nextItems
+
+      if (firstItem) {
+        projectsForm.value = [{ ...firstItem, featured: true }, ...restItems]
+      } else {
+        projectsForm.value = nextItems
+      }
+    } else {
+      projectsForm.value = nextItems
+    }
+
+    projectErrors.value = nextErrors
+
+    if (activeProjectId.value === projectId) {
+      activeProjectId.value = projectsForm.value[0]?.id ?? null
+    }
+  }
+
+  function setFeaturedProject(projectId: string) {
+    projectsForm.value = projectsForm.value.map((item) => ({
+      ...item,
+      featured: item.id === projectId
+    }))
+  }
+
+  function updateProjectField(projectId: string, field: EditorProjectField, value: string) {
+    projectsForm.value = projectsForm.value.map((item) => {
+      if (item.id !== projectId) {
+        return item
+      }
+
+      return {
+        ...item,
+        [field]: value
+      }
+    })
+
+    validateProject(projectId)
+  }
+
+  //  =========== Reset das Seções ================
+  //  ----------- Restaurar Base --------------
+
   function resetSection(sectionId: EditorSectionId) {
     if (sectionId === 'hero') {
       heroForm.value = {
@@ -241,24 +430,43 @@ export function useEditorState() {
       aboutForm.value = {
         summary: basePreviewData.value.summary
       }
+
+      return
+    }
+
+    if (sectionId === 'projects') {
+      const nextProjects = onboardingProjects.value.map(toEditorProjectForm)
+
+      projectsForm.value = nextProjects
+      activeProjectId.value = nextProjects[0]?.id ?? null
+      projectErrors.value = createProjectErrorsMap(nextProjects)
     }
   }
 
   return {
     aboutForm,
+    activeProjectId,
     activeSection,
+    addProject,
+    canAddProject,
     device,
     hasSelectedTemplate,
     heroForm,
     previewData,
+    projectErrors,
+    projectsForm,
+    removeProject,
     resetSection,
     sections,
     selectedTemplate,
     setAboutForm,
+    setActiveProject,
     setActiveSection,
     setDevice,
+    setFeaturedProject,
     setHeroForm,
     toggleSection,
+    updateProjectField,
     visibility
   }
 }

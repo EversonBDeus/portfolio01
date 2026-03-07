@@ -29,7 +29,8 @@
     "scrollreveal": "^4.0.9",
     "three": "^0.183.1",
     "vue": "^3.5.28",
-    "vue-router": "^4.6.4"
+    "vue-router": "^4.6.4",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "prettier": "^3.8.1",
