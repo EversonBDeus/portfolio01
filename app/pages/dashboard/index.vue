@@ -1,6 +1,10 @@
 <script setup lang="ts">
-await navigateTo('/dashboard/perfil', {
-  replace: true,
-  redirectCode: 302
-})
+//  =========== Entrada do Dashboard ================
+//  ----------- Redirecionamento Padrão --------------
+
+await navigateTo('/dashboard/perfil', { replace: true })
 </script>
+
+<template>
+  <div />
+</template>

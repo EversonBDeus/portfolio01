@@ -4,10 +4,11 @@ export default defineNuxtPlugin(() => {
 
   const apply = () => {
     const c = preset.value.colors
-
+//  =========== Cores do Tema Ativo ================
+//  ----------- Cor Terciária --------------
     appConfig.ui.colors.primary = c.primary
     appConfig.ui.colors.secondary = c.secondary
-    appConfig.ui.colors.tertiary = c.tertiary
+    appConfig.ui.colors.tertiary = c.tertiary as typeof appConfig.ui.colors.tertiary
     appConfig.ui.colors.success = c.success
     appConfig.ui.colors.info = c.info
     appConfig.ui.colors.warning = c.warning

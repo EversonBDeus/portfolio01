@@ -163,7 +163,7 @@ function handleClearDraft() {
                 class="w-full"
                 :ui="summaryTextareaUi"
               />
-              <label :class="[floatingLabelBaseClass, 'start-3']">
+              <label :class="[floatingLabelBaseClass, 'inset-3']">
                 <span :class="floatingLabelSurfaceClass">
                   Resumo do projeto ou trabalho
                 </span>

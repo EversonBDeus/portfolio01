@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import type { OnboardingStepId } from '~/composables/useOnboardingState'
 import { useOnboardingState } from '~/composables/useOnboardingState'
 import OnboardingStepAccount from '~/components/onboarding/OnboardingStepAccount.vue'
@@ -19,12 +19,15 @@ useSeoMeta({
   title: 'Onboarding'
 })
 
+
 //  =========== Acesso do Onboarding ================
 //  ----------- Início do Fluxo --------------
 
 const { startOnboarding } = useOnboardingAccess()
 
-startOnboarding()
+onMounted(() => {
+  startOnboarding()
+})
 
 
 //  =========== Estado da Página ================
@@ -150,7 +153,7 @@ function handleStepClick(stepId: string | number | undefined) {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[var(--dashboard-app-bg)]">
+  <div class="min-h-screen bg-(--dashboard-app-bg)">
     <!--  =========== Header do Onboarding ================ -->
     <!--  ----------- Navegação Superior -------------- -->
 
