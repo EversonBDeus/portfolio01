@@ -4,7 +4,12 @@ import type { OnboardingStepId } from '~/composables/useOnboardingState'
 import { useOnboardingState } from '~/composables/useOnboardingState'
 import OnboardingStepAccount from '~/components/onboarding/OnboardingStepAccount.vue'
 import OnboardingStepProfessional from '~/components/onboarding/OnboardingStepProfessional.vue'
+import OnboardingStepProjects from '~/components/onboarding/OnboardingStepProjects.vue'
 import OnboardingStepPublicProfile from '~/components/onboarding/OnboardingStepPublicProfile.vue'
+import { useOnboardingAccess } from '~/composables/useOnboardingAccess'
+
+//  =========== Configuração da Página ================
+//  ----------- Meta do Onboarding --------------
 
 definePageMeta({
   layout: false
@@ -14,6 +19,17 @@ useSeoMeta({
   title: 'Onboarding'
 })
 
+//  =========== Acesso do Onboarding ================
+//  ----------- Início do Fluxo --------------
+
+const { startOnboarding } = useOnboardingAccess()
+
+startOnboarding()
+
+
+//  =========== Estado da Página ================
+//  ----------- Composable do Onboarding --------------
+
 const toast = useToast()
 
 const {
@@ -21,34 +37,57 @@ const {
   account,
   accountErrors,
   accountIsValid,
+  addProject,
+  canGoPrev,
+  clearProjectsDraft,
   currentIndex,
   currentStep,
   currentStepIsValid,
+  featuredProjectCount,
+  finishOnboarding,
   finished,
   isLastStep,
-  progressValue,
+  isStepCompleted,
+  nextStep,
+  prevStep,
   professional,
   professionalErrors,
   professionalIsValid,
+  progressValue,
+  projectCount,
+  projects,
+  projectsCanAdd,
+  projectsErrors,
   publicProfile,
   publicProfileErrors,
   publicProfileIsValid,
-  steps,
-  stepperItems,
-  canGoPrev,
-  nextStep,
-  prevStep,
-  skipStep,
-  finishOnboarding,
+  removeProject,
   resetOnboarding,
-  isStepCompleted
+  skipStep,
+  stepperItems,
+  steps,
+  toggleProjectFeatured
 } = useOnboardingState()
+
+//  =========== Computeds das Etapas ================
+//  ----------- Identificação da Etapa Atual --------------
 
 const isAccountStep = computed(() => currentStep.value.id === 'account')
 const isProfileStep = computed(() => currentStep.value.id === 'profile')
 const isProfessionalStep = computed(() => currentStep.value.id === 'professional')
+const isProjectsStep = computed(() => currentStep.value.id === 'projects')
+const isLaunchStep = computed(() => currentStep.value.id === 'launch')
 
-function handleNext() {
+const projectsPreviewItems = computed(() => {
+  return projects.value.items.slice(0, 3)
+})
+
+
+
+//  =========== Ações do Fluxo ================
+//  ----------- Avançar Etapas --------------
+
+async function handleNext() {
   if (!currentStepIsValid.value) {
     toast.add({
       title: 'Complete a etapa atual',
@@ -67,11 +106,12 @@ function handleNext() {
 
     toast.add({
       title: 'Onboarding concluído',
-      description: 'A estrutura inicial do fluxo foi concluída.',
+      description: 'Base inicial pronta. Abrindo o dashboard.',
       color: 'success',
       icon: 'i-lucide-circle-check'
     })
 
+    await navigateTo('/dashboard')
     return
   }
 
@@ -104,12 +144,16 @@ function handleReset() {
 
 function handleStepClick(stepId: string | number | undefined) {
   if (!stepId || typeof stepId !== 'string') return
+
   activeStep.value = stepId as OnboardingStepId
 }
 </script>
 
 <template>
   <div class="min-h-screen bg-[var(--dashboard-app-bg)]">
+    <!--  =========== Header do Onboarding ================ -->
+    <!--  ----------- Navegação Superior -------------- -->
+
     <header class="dashboard-topbar-shell sticky top-0 z-20">
       <div class="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <div class="flex min-w-0 items-center gap-3">
@@ -140,13 +184,16 @@ function handleStepClick(stepId: string | number | undefined) {
       </div>
     </header>
 
+    <!--  =========== Conteúdo do Onboarding ================ -->
+    <!--  ----------- Estrutura Principal -------------- -->
+
     <main class="px-4 py-8 sm:px-6 lg:px-8">
       <div class="mx-auto w-full max-w-7xl">
         <UPage>
           <UPageHeader
             headline="Onboarding"
             title="Vamos montar a base inicial do seu espaço"
-            description="Agora o fluxo já tem conta, perfil público e a etapa profissional com dados reais."
+            description="Agora o fluxo já tem conta, perfil público, base profissional e a primeira vitrine de projetos."
           />
 
           <UPageBody class="space-y-6">
@@ -161,6 +208,9 @@ function handleStepClick(stepId: string | number | undefined) {
             />
 
             <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+              <!--  =========== Coluna Principal ================ -->
+              <!--  ----------- Stepper e Conteúdo -------------- -->
+
               <div class="space-y-6">
                 <div class="dashboard-card-shell rounded-2xl p-4 sm:p-5">
                   <div class="space-y-4">
@@ -211,6 +261,9 @@ function handleStepClick(stepId: string | number | undefined) {
                       </p>
                     </div>
 
+                    <!--  =========== Conteúdo das Etapas ================ -->
+                    <!--  ----------- Conta, Perfil, Profissional e Projetos -------------- -->
+
                     <OnboardingStepAccount
                       v-if="isAccountStep"
                       :model="account"
@@ -231,6 +284,66 @@ function handleStepClick(stepId: string | number | undefined) {
                       :errors="professionalErrors"
                       :is-valid="professionalIsValid"
                     />
+
+                    <OnboardingStepProjects
+                      v-else-if="isProjectsStep"
+                      :model="projects"
+                      :errors="projectsErrors"
+                      :can-add-project="projectsCanAdd"
+                      :project-count="projectCount"
+                      :featured-project-count="featuredProjectCount"
+                      @add-project="addProject"
+                      @clear-draft="clearProjectsDraft"
+                      @remove-project="removeProject"
+                      @toggle-featured="toggleProjectFeatured"
+                    />
+
+                    <!--  =========== Etapa Final ================ -->
+                    <!--  ----------- Revisão do Onboarding -------------- -->
+
+                    <template v-else-if="isLaunchStep">
+                      <div class="grid gap-4 md:grid-cols-2">
+                        <div class="rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                          <p class="text-sm font-medium">Conta</p>
+                          <p class="mt-1 text-sm text-muted">
+                            {{ accountIsValid ? 'Dados de acesso prontos.' : 'Ainda existe algo pendente na conta.' }}
+                          </p>
+                        </div>
+
+                        <div class="rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                          <p class="text-sm font-medium">Perfil público</p>
+                          <p class="mt-1 text-sm text-muted">
+                            {{ publicProfileIsValid ? 'Apresentação pública pronta.' : 'Ainda existe algo pendente no perfil público.' }}
+                          </p>
+                        </div>
+
+                        <div class="rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                          <p class="text-sm font-medium">Profissional</p>
+                          <p class="mt-1 text-sm text-muted">
+                            {{ professionalIsValid ? 'Base profissional pronta.' : 'Ainda existe algo pendente na base profissional.' }}
+                          </p>
+                        </div>
+
+                        <div class="rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                          <p class="text-sm font-medium">Projetos</p>
+                          <p class="mt-1 text-sm text-muted">
+                            {{ projectCount ? `${projectCount} item(ns) já foram adicionados.` : 'Nenhum projeto foi adicionado nesta etapa.' }}
+                          </p>
+                        </div>
+                      </div>
+
+                      <UAlert
+                        class="dashboard-note-alert"
+                        icon="i-lucide-rocket"
+                        title="Pronto para entrar no painel"
+                        description="Você já tem uma base inicial suficiente para continuar dentro do dashboard e refinar tudo depois."
+                        color="success"
+                        variant="outline"
+                      />
+                    </template>
+
+                    <!--  =========== Fallback de Etapas ================ -->
+                    <!--  ----------- Placeholder Residual -------------- -->
 
                     <template v-else>
                       <div class="grid gap-4 md:grid-cols-2">
@@ -257,22 +370,10 @@ function handleStepClick(stepId: string | number | undefined) {
                         color="neutral"
                         variant="outline"
                       />
-
-                      <div class="rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-5">
-                        <div class="space-y-2">
-                          <p class="text-base font-semibold">{{ currentStep.title }}</p>
-                          <p class="text-sm text-muted">
-                            {{ currentStep.description }}
-                          </p>
-                        </div>
-
-                        <div class="mt-4 rounded-xl border border-dashed border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4">
-                          <p class="text-sm text-muted">
-                            Conteúdo real desta etapa entra no próximo passo do desenvolvimento.
-                          </p>
-                        </div>
-                      </div>
                     </template>
+
+                    <!--  =========== Ações do Onboarding ================ -->
+                    <!--  ----------- Navegação Inferior -------------- -->
 
                     <div class="flex flex-wrap items-center justify-between gap-3">
                       <div class="flex flex-wrap gap-3">
@@ -309,13 +410,16 @@ function handleStepClick(stepId: string | number | undefined) {
                           color="primary"
                           @click="handleNext"
                         >
-                          {{ isLastStep ? 'Concluir onboarding' : 'Próxima etapa' }}
+                          {{ isLastStep ? 'Concluir e abrir dashboard' : 'Próxima etapa' }}
                         </UButton>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+
+              <!--  =========== Coluna Lateral ================ -->
+              <!--  ----------- Resumo e Prévia -------------- -->
 
               <div class="space-y-6">
                 <div class="dashboard-card-shell rounded-2xl p-4 sm:p-5">
@@ -373,6 +477,9 @@ function handleStepClick(stepId: string | number | undefined) {
                       </p>
                     </div>
 
+                    <!--  =========== Prévia da Conta ================ -->
+                    <!--  ----------- Resumo da Etapa Conta -------------- -->
+
                     <template v-if="isAccountStep">
                       <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
                         <p class="text-xs uppercase tracking-wide text-muted">E-mail</p>
@@ -397,6 +504,9 @@ function handleStepClick(stepId: string | number | undefined) {
                         variant="outline"
                       />
                     </template>
+
+                    <!--  =========== Prévia do Perfil Público ================ -->
+                    <!--  ----------- Resumo da Etapa Perfil Público -------------- -->
 
                     <template v-else-if="isProfileStep">
                       <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
@@ -430,6 +540,9 @@ function handleStepClick(stepId: string | number | undefined) {
                       />
                     </template>
 
+                    <!--  =========== Prévia Profissional ================ -->
+                    <!--  ----------- Resumo da Etapa Profissional -------------- -->
+
                     <template v-else-if="isProfessionalStep">
                       <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
                         <p class="text-xs uppercase tracking-wide text-muted">Título / cargo</p>
@@ -453,9 +566,12 @@ function handleStepClick(stepId: string | number | undefined) {
                       </div>
 
                       <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
-                        <p class="text-xs uppercase tracking-wide text-muted">Habilidades principais</p>
+                        <p class="text-xs uppercase tracking-wide text-muted">Competências principais</p>
 
-                        <div v-if="professional.mainSkills.length" class="mt-2 flex flex-wrap gap-2">
+                        <div
+                          v-if="professional.mainSkills.length"
+                          class="mt-2 flex flex-wrap gap-2"
+                        >
                           <UBadge
                             v-for="skill in professional.mainSkills"
                             :key="skill"
@@ -466,8 +582,11 @@ function handleStepClick(stepId: string | number | undefined) {
                           </UBadge>
                         </div>
 
-                        <p v-else class="mt-1 text-sm text-muted">
-                          Nenhuma habilidade selecionada.
+                        <p
+                          v-else
+                          class="mt-1 text-sm text-muted"
+                        >
+                          Nenhuma competência selecionada.
                         </p>
                       </div>
 
@@ -479,6 +598,102 @@ function handleStepClick(stepId: string | number | undefined) {
                         :color="professionalIsValid ? 'success' : 'warning'"
                         variant="outline"
                       />
+                    </template>
+
+                    <!--  =========== Prévia dos Projetos ================ -->
+                    <!--  ----------- Resumo da Etapa Projetos -------------- -->
+
+                    <template v-else-if="isProjectsStep">
+                      <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                          <p class="text-xs uppercase tracking-wide text-muted">Projetos</p>
+                          <p class="mt-2 text-2xl font-semibold">{{ projectCount }}</p>
+                        </div>
+
+                        <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                          <p class="text-xs uppercase tracking-wide text-muted">Em destaque</p>
+                          <p class="mt-2 text-2xl font-semibold">{{ featuredProjectCount }}</p>
+                        </div>
+                      </div>
+
+                      <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                        <p class="text-xs uppercase tracking-wide text-muted">Primeiros itens</p>
+
+                        <div
+                          v-if="projectsPreviewItems.length"
+                          class="mt-3 space-y-3"
+                        >
+                          <div
+                            v-for="item in projectsPreviewItems"
+                            :key="item.id"
+                            class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-3"
+                          >
+                            <div class="flex items-start justify-between gap-2">
+                              <div class="min-w-0">
+                                <p class="truncate text-sm font-medium">{{ item.title }}</p>
+                                <p class="mt-1 text-xs text-muted">{{ item.category }}</p>
+                              </div>
+
+                              <UBadge
+                                v-if="item.featured"
+                                color="success"
+                                variant="soft"
+                              >
+                                Destaque
+                              </UBadge>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p
+                          v-else
+                          class="mt-2 text-sm text-muted"
+                        >
+                          Nenhum projeto foi adicionado ainda.
+                        </p>
+                      </div>
+
+                      <UAlert
+                        class="dashboard-note-alert"
+                        :icon="projectCount ? 'i-lucide-circle-check' : 'i-lucide-info'"
+                        :title="projectCount ? 'Vitrine inicial criada' : 'Etapa ainda vazia'"
+                        :description="projectCount ? 'Os primeiros itens do portfólio já estão registrados nesta etapa.' : 'Você pode seguir sem projetos agora e completar isso depois no painel.'"
+                        :color="projectCount ? 'success' : 'neutral'"
+                        variant="outline"
+                      />
+                    </template>
+
+                    <!--  =========== Prévia da Finalização ================ -->
+                    <!--  ----------- Resumo da Etapa Final -------------- -->
+
+                    <template v-else>
+                      <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                        <p class="text-xs uppercase tracking-wide text-muted">Conta</p>
+                        <p class="mt-1 text-sm font-medium">
+                          {{ accountIsValid ? 'Pronta' : 'Pendente' }}
+                        </p>
+                      </div>
+
+                      <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                        <p class="text-xs uppercase tracking-wide text-muted">Perfil público</p>
+                        <p class="mt-1 text-sm font-medium">
+                          {{ publicProfileIsValid ? 'Pronto' : 'Pendente' }}
+                        </p>
+                      </div>
+
+                      <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                        <p class="text-xs uppercase tracking-wide text-muted">Profissional</p>
+                        <p class="mt-1 text-sm font-medium">
+                          {{ professionalIsValid ? 'Pronto' : 'Pendente' }}
+                        </p>
+                      </div>
+
+                      <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                        <p class="text-xs uppercase tracking-wide text-muted">Projetos</p>
+                        <p class="mt-1 text-sm font-medium">
+                          {{ projectCount ? `${projectCount} item(ns)` : 'Nenhum item' }}
+                        </p>
+                      </div>
                     </template>
                   </div>
                 </div>
@@ -509,4 +724,4 @@ function handleStepClick(stepId: string | number | undefined) {
       </div>
     </main>
   </div>
-</template> 
+</template>

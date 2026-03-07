@@ -1,5 +1,9 @@
 import { computed } from 'vue'
 import type { StepperItem } from '@nuxt/ui'
+import { useOnboardingAccess } from '~/composables/useOnboardingAccess'
+
+//  =========== Tipos das Etapas ================
+//  ----------- Identificadores do Fluxo --------------
 
 export type OnboardingStepId =
   | 'account'
@@ -20,6 +24,9 @@ export type OnboardingStep = {
   canSkip: boolean
 }
 
+//  =========== Dados da Conta ================
+//  ----------- Tipos da Etapa Conta --------------
+
 export type OnboardingAccountData = {
   email: string
   username: string
@@ -36,6 +43,9 @@ export type OnboardingAccountErrors = {
   confirmPassword: string
   acceptTerms: string
 }
+
+//  =========== Dados do Perfil Público ================
+//  ----------- Tipos da Etapa Perfil Público --------------
 
 export type OnboardingPublicProfileData = {
   publicName: string
@@ -54,6 +64,9 @@ export type OnboardingPublicProfileErrors = {
   bio: string
 }
 
+//  =========== Dados Profissionais ================
+//  ----------- Tipos da Etapa Profissional --------------
+
 export type OnboardingProfessionalData = {
   roleTitle: string
   professionalSummary: string
@@ -70,18 +83,50 @@ export type OnboardingProfessionalErrors = {
   mainSkills: string
 }
 
+//  =========== Dados dos Projetos ================
+//  ----------- Tipos da Etapa Projetos --------------
+
+export type OnboardingProjectItem = {
+  id: string
+  title: string
+  category: string
+  summary: string
+  link: string
+  featured: boolean
+}
+
+export type OnboardingProjectsDraft = {
+  title: string
+  category: string
+  summary: string
+  link: string
+}
+
+export type OnboardingProjectsData = {
+  draft: OnboardingProjectsDraft
+  items: OnboardingProjectItem[]
+}
+
+export type OnboardingProjectsErrors = {
+  title: string
+  summary: string
+}
+
+//  =========== Configuração das Etapas ================
+//  ----------- Ordem do Onboarding --------------
+
 const onboardingSteps: OnboardingStep[] = [
-{
-  id: 'professional',
-  title: 'Profissional',
-  description: 'Resumo, área, experiência e competências',
-  icon: 'i-lucide-briefcase-business',
-  eyebrow: 'Conteúdo profissional',
-  headline: 'Vamos estruturar sua base profissional',
-  body: 'Aqui entram cargo, resumo profissional, área de atuação, nível de experiência e competências principais que depois alimentam o template e o editor.',
-  required: true,
-  canSkip: true
-},
+  {
+    id: 'account',
+    title: 'Conta',
+    description: 'Base de acesso e preferências iniciais',
+    icon: 'i-lucide-user-round',
+    eyebrow: 'Primeiro acesso',
+    headline: 'Vamos preparar sua conta',
+    body: 'Aqui entram os dados de acesso e as preferências iniciais da conta antes de seguir para os dados públicos do portfólio.',
+    required: true,
+    canSkip: false
+  },
   {
     id: 'profile',
     title: 'Perfil público',
@@ -96,22 +141,22 @@ const onboardingSteps: OnboardingStep[] = [
   {
     id: 'professional',
     title: 'Profissional',
-    description: 'Resumo, área, senioridade e skills',
+    description: 'Resumo, área, experiência e competências',
     icon: 'i-lucide-briefcase-business',
     eyebrow: 'Conteúdo profissional',
     headline: 'Vamos estruturar sua base profissional',
-    body: 'Aqui entram cargo, resumo profissional, área de atuação, nível de experiência e habilidades principais que depois alimentam o template e o editor.',
+    body: 'Aqui entram cargo, resumo profissional, área de atuação, nível de experiência e competências principais que depois alimentam o template e o editor.',
     required: true,
     canSkip: true
   },
   {
     id: 'projects',
     title: 'Projetos',
-    description: 'Base para portfólio e editor',
+    description: 'Primeira vitrine do portfólio',
     icon: 'i-lucide-folder-kanban',
-    eyebrow: 'Projetos',
-    headline: 'Organize sua primeira vitrine de projetos',
-    body: 'Aqui entrarão os blocos iniciais de projetos para evitar que o usuário caia em um painel vazio.',
+    eyebrow: 'Projetos e trabalhos',
+    headline: 'Monte sua primeira vitrine de projetos',
+    body: 'Aqui você já pode cadastrar alguns projetos, trabalhos ou estudos de caso para evitar um portfólio vazio e dar base ao editor visual.',
     required: false,
     canSkip: true
   },
@@ -121,12 +166,15 @@ const onboardingSteps: OnboardingStep[] = [
     description: 'Revisão e entrada no painel',
     icon: 'i-lucide-rocket',
     eyebrow: 'Concluir onboarding',
-    headline: 'Revisão final antes do dashboard',
-    body: 'A etapa final resume o progresso e prepara a transição para o dashboard, mantendo a possibilidade de completar depois.',
+    headline: 'Revise sua base inicial',
+    body: 'Esta etapa resume o que já foi preenchido e prepara sua entrada no painel, sem impedir ajustes posteriores.',
     required: false,
-    canSkip: true
+    canSkip: false
   }
 ]
+
+//  =========== Helpers Gerais ================
+//  ----------- Validação e Transformação --------------
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
@@ -136,10 +184,57 @@ function isValidUsername(value: string) {
   return /^[a-zA-Z0-9._-]{3,20}$/.test(value)
 }
 
+function createEmptyProjectsDraft(): OnboardingProjectsDraft {
+  return {
+    title: '',
+    category: '',
+    summary: '',
+    link: ''
+  }
+}
+
+function normalizeOptionalUrl(value: string) {
+  const trimmed = value.trim()
+
+  if (!trimmed) return ''
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+
+  return `https://${trimmed}`
+}
+
+function createProjectItem(
+  draft: OnboardingProjectsDraft,
+  index: number
+): OnboardingProjectItem {
+  return {
+    id: `onboarding-project-${Date.now()}-${index}`,
+    title: draft.title.trim(),
+    category: draft.category.trim() || 'Projeto',
+    summary: draft.summary.trim(),
+    link: normalizeOptionalUrl(draft.link),
+    featured: false
+  }
+}
+
 export function useOnboardingState() {
+  //  =========== Estado do Fluxo ================
+  //  ----------- Etapa Atual e Conclusão --------------
+
+    //  =========== Acesso do Onboarding ================
+  //  ----------- Status do Fluxo --------------
+
+  const {
+    keepOnboardingInProgress,
+    markOnboardingCompleted,
+    onboardingCompleted
+  } = useOnboardingAccess()
+
   const activeStep = useState<OnboardingStepId>('onboarding-active-step', () => 'account')
   const completedSteps = useState<OnboardingStepId[]>('onboarding-completed-steps', () => [])
-  const finished = useState<boolean>('onboarding-finished', () => false)
+  const finished = useState<boolean>('onboarding-finished', () => onboardingCompleted.value)
+
+  //  =========== Estado da Conta ================
+  //  ----------- Dados da Etapa Conta --------------
 
   const account = useState<OnboardingAccountData>('onboarding-account', () => ({
     email: '',
@@ -149,6 +244,9 @@ export function useOnboardingState() {
     acceptTerms: false,
     acceptUpdates: true
   }))
+
+  //  =========== Estado do Perfil Público ================
+  //  ----------- Dados da Etapa Perfil Público --------------
 
   const publicProfile = useState<OnboardingPublicProfileData>('onboarding-public-profile', () => ({
     publicName: '',
@@ -160,6 +258,9 @@ export function useOnboardingState() {
     github: ''
   }))
 
+  //  =========== Estado Profissional ================
+  //  ----------- Dados da Etapa Profissional --------------
+
   const professional = useState<OnboardingProfessionalData>('onboarding-professional', () => ({
     roleTitle: '',
     professionalSummary: '',
@@ -167,6 +268,17 @@ export function useOnboardingState() {
     experienceLevel: '',
     mainSkills: []
   }))
+
+  //  =========== Estado dos Projetos ================
+  //  ----------- Dados da Etapa Projetos --------------
+
+  const projects = useState<OnboardingProjectsData>('onboarding-projects', () => ({
+    draft: createEmptyProjectsDraft(),
+    items: []
+  }))
+
+  //  =========== Estrutura das Etapas ================
+  //  ----------- Navegação e Progresso --------------
 
   const steps = computed(() => onboardingSteps)
 
@@ -195,6 +307,9 @@ export function useOnboardingState() {
       value: step.id
     }))
   })
+
+  //  =========== Validação da Conta ================
+  //  ----------- Regras da Etapa Conta --------------
 
   const accountErrors = computed<OnboardingAccountErrors>(() => {
     const value = account.value
@@ -230,8 +345,12 @@ export function useOnboardingState() {
 
   const accountIsValid = computed(() => {
     const errors = accountErrors.value
+
     return !errors.email && !errors.username && !errors.password && !errors.confirmPassword && !errors.acceptTerms
   })
+
+  //  =========== Validação do Perfil Público ================
+  //  ----------- Regras da Etapa Perfil Público --------------
 
   const publicProfileErrors = computed<OnboardingPublicProfileErrors>(() => {
     const value = publicProfile.value
@@ -264,44 +383,151 @@ export function useOnboardingState() {
 
   const publicProfileIsValid = computed(() => {
     const errors = publicProfileErrors.value
+
     return !errors.publicName && !errors.headline && !errors.publicEmail && !errors.bio
   })
-const professionalErrors = computed<OnboardingProfessionalErrors>(() => {
-  const value = professional.value
 
-  return {
-    roleTitle:
-      !value.roleTitle.trim()
-        ? 'Informe seu título ou cargo.'
-        : value.roleTitle.trim().length < 2
-          ? 'Use pelo menos 2 caracteres.'
-          : '',
-    professionalSummary:
-      !value.professionalSummary.trim()
-        ? 'Escreva um resumo profissional.'
-        : value.professionalSummary.trim().length < 40
-          ? 'O resumo deve ter pelo menos 40 caracteres.'
-          : '',
-    workArea: !value.workArea ? 'Selecione sua área de atuação.' : '',
-    experienceLevel: !value.experienceLevel ? 'Selecione seu nível de experiência.' : '',
-    mainSkills: value.mainSkills.length < 2 ? 'Adicione pelo menos 2 competências principais.' : ''
-  }
-})
+  //  =========== Validação Profissional ================
+  //  ----------- Regras da Etapa Profissional --------------
+
+  const professionalErrors = computed<OnboardingProfessionalErrors>(() => {
+    const value = professional.value
+
+    return {
+      roleTitle:
+        !value.roleTitle.trim()
+          ? 'Informe seu título ou cargo.'
+          : value.roleTitle.trim().length < 2
+            ? 'Use pelo menos 2 caracteres.'
+            : '',
+      professionalSummary:
+        !value.professionalSummary.trim()
+          ? 'Escreva um resumo profissional.'
+          : value.professionalSummary.trim().length < 40
+            ? 'O resumo deve ter pelo menos 40 caracteres.'
+            : '',
+      workArea: !value.workArea ? 'Selecione sua área de atuação.' : '',
+      experienceLevel: !value.experienceLevel ? 'Selecione seu nível de experiência.' : '',
+      mainSkills: value.mainSkills.length < 2 ? 'Adicione pelo menos 2 competências principais.' : ''
+    }
+  })
 
   const professionalIsValid = computed(() => {
     const errors = professionalErrors.value
+
     return !errors.roleTitle && !errors.professionalSummary && !errors.workArea && !errors.experienceLevel && !errors.mainSkills
   })
+
+  //  =========== Validação dos Projetos ================
+  //  ----------- Regras do Rascunho --------------
+
+  const projectsErrors = computed<OnboardingProjectsErrors>(() => {
+    const value = projects.value.draft
+
+    return {
+      title: !value.title.trim() ? 'Informe o nome do projeto ou trabalho.' : '',
+      summary:
+        !value.summary.trim()
+          ? 'Escreva um resumo curto do projeto ou trabalho.'
+          : value.summary.trim().length < 20
+            ? 'O resumo deve ter pelo menos 20 caracteres.'
+            : ''
+    }
+  })
+
+  const projectsCanAdd = computed(() => {
+    const errors = projectsErrors.value
+
+    return !errors.title && !errors.summary
+  })
+
+  const projectCount = computed(() => projects.value.items.length)
+  const featuredProjectCount = computed(() => projects.value.items.filter(item => item.featured).length)
+
+  //  =========== Validação da Etapa Atual ================
+  //  ----------- Liberação de Avanço --------------
 
   const currentStepIsValid = computed(() => {
     if (currentStep.value.id === 'account') return accountIsValid.value
     if (currentStep.value.id === 'profile') return publicProfileIsValid.value
     if (currentStep.value.id === 'professional') return professionalIsValid.value
+
     return true
   })
 
+  //  =========== Ações dos Projetos ================
+  //  ----------- Manipulação da Etapa Projetos --------------
+
+  function addProject() {
+    if (!projectsCanAdd.value) return false
+
+    const newProject = createProjectItem(
+      projects.value.draft,
+      projects.value.items.length + 1
+    )
+
+    projects.value = {
+      draft: createEmptyProjectsDraft(),
+      items: [
+        ...projects.value.items,
+        {
+          ...newProject,
+          featured: projects.value.items.length === 0
+        }
+      ]
+    }
+
+    return true
+  }
+
+  function clearProjectsDraft() {
+    projects.value = {
+      ...projects.value,
+      draft: createEmptyProjectsDraft()
+    }
+  }
+
+//  =========== Ações dos Projetos ================
+//  ----------- Remover Projeto --------------
+
+function removeProject(projectId: string) {
+  const removedProject = projects.value.items.find(item => item.id === projectId)
+  let nextItems = projects.value.items.filter(item => item.id !== projectId)
+
+  if (removedProject?.featured && nextItems.length > 0 && !nextItems.some(item => item.featured)) {
+    const firstItem = nextItems[0]
+
+    if (firstItem) {
+      nextItems = [
+        { ...firstItem, featured: true },
+        ...nextItems.slice(1)
+      ]
+    }
+  }
+
+  projects.value = {
+    ...projects.value,
+    items: nextItems
+  }
+}
+
+  function toggleProjectFeatured(projectId: string) {
+    projects.value = {
+      ...projects.value,
+      items: projects.value.items.map(item =>
+        item.id === projectId
+          ? { ...item, featured: !item.featured }
+          : item
+      )
+    }
+  }
+
+  //  =========== Navegação do Fluxo ================
+  //  ----------- Passos e Conclusão --------------
+
   function markStepCompleted(stepId: OnboardingStepId) {
     if (completedSteps.value.includes(stepId)) return
+
     completedSteps.value = [...completedSteps.value, stepId]
   }
 
@@ -317,6 +543,7 @@ const professionalErrors = computed<OnboardingProfessionalErrors>(() => {
     if (!canGoNext.value) return true
 
     const next = steps.value[currentIndex.value + 1]
+
     if (!next) return true
 
     activeStep.value = next.id
@@ -327,6 +554,7 @@ const professionalErrors = computed<OnboardingProfessionalErrors>(() => {
     if (!canGoPrev.value) return
 
     const prev = steps.value[currentIndex.value - 1]
+
     if (!prev) return
 
     activeStep.value = prev.id
@@ -341,6 +569,7 @@ const professionalErrors = computed<OnboardingProfessionalErrors>(() => {
     }
 
     const next = steps.value[currentIndex.value + 1]
+
     if (!next) {
       finished.value = true
       return true
@@ -350,15 +579,24 @@ const professionalErrors = computed<OnboardingProfessionalErrors>(() => {
     return true
   }
 
+  //  =========== Navegação do Fluxo ================
+  //  ----------- Concluir Onboarding --------------
+
   function finishOnboarding() {
     if (!currentStepIsValid.value) return false
 
     markStepCompleted(currentStep.value.id)
+    markOnboardingCompleted()
     finished.value = true
+
     return true
   }
+  //  =========== Navegação do Fluxo ================
+  //  ----------- Reiniciar Onboarding --------------
 
   function resetOnboarding() {
+    keepOnboardingInProgress()
+
     activeStep.value = 'account'
     completedSteps.value = []
     finished.value = false
@@ -389,6 +627,11 @@ const professionalErrors = computed<OnboardingProfessionalErrors>(() => {
       experienceLevel: '',
       mainSkills: []
     }
+
+    projects.value = {
+      draft: createEmptyProjectsDraft(),
+      items: []
+    }
   }
 
   function isStepCompleted(stepId: OnboardingStepId) {
@@ -400,29 +643,39 @@ const professionalErrors = computed<OnboardingProfessionalErrors>(() => {
     account,
     accountErrors,
     accountIsValid,
+    addProject,
+    canGoNext,
+    canGoPrev,
+    clearProjectsDraft,
     completedSteps,
     currentIndex,
     currentStep,
     currentStepIsValid,
+    featuredProjectCount,
+    finishOnboarding,
     finished,
+    goToStep,
     isLastStep,
-    progressValue,
-    publicProfile,
-    publicProfileErrors,
-    publicProfileIsValid,
+    isStepCompleted,
+    markStepCompleted,
+    nextStep,
+    prevStep,
     professional,
     professionalErrors,
     professionalIsValid,
-    steps,
-    stepperItems,
-    canGoPrev,
-    canGoNext,
-    goToStep,
-    nextStep,
-    prevStep,
-    skipStep,
-    finishOnboarding,
+    progressValue,
+    projectCount,
+    projects,
+    projectsCanAdd,
+    projectsErrors,
+    publicProfile,
+    publicProfileErrors,
+    publicProfileIsValid,
+    removeProject,
     resetOnboarding,
-    isStepCompleted
+    skipStep,
+    stepperItems,
+    steps,
+    toggleProjectFeatured
   }
 }
