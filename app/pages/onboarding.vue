@@ -3,6 +3,8 @@ import { computed } from 'vue'
 import type { OnboardingStepId } from '~/composables/useOnboardingState'
 import { useOnboardingState } from '~/composables/useOnboardingState'
 import OnboardingStepAccount from '~/components/onboarding/OnboardingStepAccount.vue'
+import OnboardingStepProfessional from '~/components/onboarding/OnboardingStepProfessional.vue'
+import OnboardingStepPublicProfile from '~/components/onboarding/OnboardingStepPublicProfile.vue'
 
 definePageMeta({
   layout: false
@@ -25,6 +27,12 @@ const {
   finished,
   isLastStep,
   progressValue,
+  professional,
+  professionalErrors,
+  professionalIsValid,
+  publicProfile,
+  publicProfileErrors,
+  publicProfileIsValid,
   steps,
   stepperItems,
   canGoPrev,
@@ -37,6 +45,8 @@ const {
 } = useOnboardingState()
 
 const isAccountStep = computed(() => currentStep.value.id === 'account')
+const isProfileStep = computed(() => currentStep.value.id === 'profile')
+const isProfessionalStep = computed(() => currentStep.value.id === 'professional')
 
 function handleNext() {
   if (!currentStepIsValid.value) {
@@ -57,7 +67,7 @@ function handleNext() {
 
     toast.add({
       title: 'Onboarding concluído',
-      description: 'A shell inicial foi concluída. Na próxima etapa entram os campos reais restantes.',
+      description: 'A estrutura inicial do fluxo foi concluída.',
       color: 'success',
       icon: 'i-lucide-circle-check'
     })
@@ -86,7 +96,7 @@ function handleReset() {
 
   toast.add({
     title: 'Onboarding reiniciado',
-    description: 'A shell voltou para a primeira etapa.',
+    description: 'O fluxo voltou para a primeira etapa.',
     color: 'neutral',
     icon: 'i-lucide-rotate-ccw'
   })
@@ -136,7 +146,7 @@ function handleStepClick(stepId: string | number | undefined) {
           <UPageHeader
             headline="Onboarding"
             title="Vamos montar a base inicial do seu espaço"
-            description="Agora a primeira etapa já recebe os dados reais da conta, mantendo o restante do fluxo preparado para os próximos passos."
+            description="Agora o fluxo já tem conta, perfil público e a etapa profissional com dados reais."
           />
 
           <UPageBody class="space-y-6">
@@ -145,7 +155,7 @@ function handleStepClick(stepId: string | number | undefined) {
               class="dashboard-note-alert"
               icon="i-lucide-circle-check"
               title="Fluxo inicial concluído"
-              description="A shell do onboarding já está pronta. As próximas etapas vão preencher os outros passos com os campos reais."
+              description="As etapas iniciais do onboarding já estão prontas e você pode continuar refinando tudo depois no painel."
               color="success"
               variant="outline"
             />
@@ -206,6 +216,20 @@ function handleStepClick(stepId: string | number | undefined) {
                       :model="account"
                       :errors="accountErrors"
                       :is-valid="accountIsValid"
+                    />
+
+                    <OnboardingStepPublicProfile
+                      v-else-if="isProfileStep"
+                      :model="publicProfile"
+                      :errors="publicProfileErrors"
+                      :is-valid="publicProfileIsValid"
+                    />
+
+                    <OnboardingStepProfessional
+                      v-else-if="isProfessionalStep"
+                      :model="professional"
+                      :errors="professionalErrors"
+                      :is-valid="professionalIsValid"
                     />
 
                     <template v-else>
@@ -299,7 +323,7 @@ function handleStepClick(stepId: string | number | undefined) {
                     <div class="space-y-1">
                       <h2 class="text-base font-semibold">Resumo do fluxo</h2>
                       <p class="text-sm text-muted">
-                        Estrutura inicial das etapas antes de conectar autenticação, persistência e os dados finais do portfólio.
+                        Estrutura inicial das etapas antes de conectar persistência, autenticação real e os dados finais do portfólio.
                       </p>
                     </div>
 
@@ -343,34 +367,119 @@ function handleStepClick(stepId: string | number | undefined) {
                 <div class="dashboard-card-shell rounded-2xl p-4 sm:p-5">
                   <div class="space-y-3">
                     <div class="space-y-1">
-                      <h2 class="text-base font-semibold">Prévia da conta</h2>
+                      <h2 class="text-base font-semibold">Prévia da etapa</h2>
                       <p class="text-sm text-muted">
-                        Resumo rápido do primeiro passo real do onboarding.
+                        Resumo rápido do passo atual do onboarding.
                       </p>
                     </div>
 
-                    <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
-                      <p class="text-xs uppercase tracking-wide text-muted">E-mail</p>
-                      <p class="mt-1 break-all text-sm font-medium">
-                        {{ account.email || 'Não informado' }}
-                      </p>
-                    </div>
+                    <template v-if="isAccountStep">
+                      <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                        <p class="text-xs uppercase tracking-wide text-muted">E-mail</p>
+                        <p class="mt-1 break-all text-sm font-medium">
+                          {{ account.email || 'Não informado' }}
+                        </p>
+                      </div>
 
-                    <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
-                      <p class="text-xs uppercase tracking-wide text-muted">Usuário</p>
-                      <p class="mt-1 text-sm font-medium">
-                        {{ account.username || 'Não informado' }}
-                      </p>
-                    </div>
+                      <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                        <p class="text-xs uppercase tracking-wide text-muted">Usuário</p>
+                        <p class="mt-1 text-sm font-medium">
+                          {{ account.username || 'Não informado' }}
+                        </p>
+                      </div>
 
-                    <UAlert
-                      class="dashboard-note-alert"
-                      :icon="accountIsValid ? 'i-lucide-circle-check' : 'i-lucide-info'"
-                      :title="accountIsValid ? 'Conta pronta' : 'Conta pendente'"
-                      :description="accountIsValid ? 'Os dados mínimos da conta já permitem seguir para a próxima etapa.' : 'Faltam dados obrigatórios para liberar o próximo passo.'"
-                      :color="accountIsValid ? 'success' : 'warning'"
-                      variant="outline"
-                    />
+                      <UAlert
+                        class="dashboard-note-alert"
+                        :icon="accountIsValid ? 'i-lucide-circle-check' : 'i-lucide-info'"
+                        :title="accountIsValid ? 'Conta pronta' : 'Conta pendente'"
+                        :description="accountIsValid ? 'Os dados mínimos da conta já permitem seguir para a próxima etapa.' : 'Faltam dados obrigatórios para liberar o próximo passo.'"
+                        :color="accountIsValid ? 'success' : 'warning'"
+                        variant="outline"
+                      />
+                    </template>
+
+                    <template v-else-if="isProfileStep">
+                      <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                        <p class="text-xs uppercase tracking-wide text-muted">Nome público</p>
+                        <p class="mt-1 text-sm font-medium">
+                          {{ publicProfile.publicName || 'Não informado' }}
+                        </p>
+                      </div>
+
+                      <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                        <p class="text-xs uppercase tracking-wide text-muted">Headline</p>
+                        <p class="mt-1 text-sm font-medium">
+                          {{ publicProfile.headline || 'Não informada' }}
+                        </p>
+                      </div>
+
+                      <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                        <p class="text-xs uppercase tracking-wide text-muted">E-mail público</p>
+                        <p class="mt-1 break-all text-sm font-medium">
+                          {{ publicProfile.publicEmail || 'Não informado' }}
+                        </p>
+                      </div>
+
+                      <UAlert
+                        class="dashboard-note-alert"
+                        :icon="publicProfileIsValid ? 'i-lucide-circle-check' : 'i-lucide-info'"
+                        :title="publicProfileIsValid ? 'Perfil público pronto' : 'Perfil público pendente'"
+                        :description="publicProfileIsValid ? 'Os dados públicos mínimos já permitem seguir para a próxima etapa.' : 'Faltam dados públicos obrigatórios para liberar o próximo passo.'"
+                        :color="publicProfileIsValid ? 'success' : 'warning'"
+                        variant="outline"
+                      />
+                    </template>
+
+                    <template v-else-if="isProfessionalStep">
+                      <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                        <p class="text-xs uppercase tracking-wide text-muted">Título / cargo</p>
+                        <p class="mt-1 text-sm font-medium">
+                          {{ professional.roleTitle || 'Não informado' }}
+                        </p>
+                      </div>
+
+                      <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                        <p class="text-xs uppercase tracking-wide text-muted">Área de atuação</p>
+                        <p class="mt-1 text-sm font-medium">
+                          {{ professional.workArea || 'Não informada' }}
+                        </p>
+                      </div>
+
+                      <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                        <p class="text-xs uppercase tracking-wide text-muted">Nível de experiência</p>
+                        <p class="mt-1 text-sm font-medium">
+                          {{ professional.experienceLevel || 'Não informado' }}
+                        </p>
+                      </div>
+
+                      <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+                        <p class="text-xs uppercase tracking-wide text-muted">Habilidades principais</p>
+
+                        <div v-if="professional.mainSkills.length" class="mt-2 flex flex-wrap gap-2">
+                          <UBadge
+                            v-for="skill in professional.mainSkills"
+                            :key="skill"
+                            color="primary"
+                            variant="soft"
+                          >
+                            {{ skill }}
+                          </UBadge>
+                        </div>
+
+                        <p v-else class="mt-1 text-sm text-muted">
+                          Nenhuma habilidade selecionada.
+                        </p>
+                      </div>
+
+                      <UAlert
+                        class="dashboard-note-alert"
+                        :icon="professionalIsValid ? 'i-lucide-circle-check' : 'i-lucide-info'"
+                        :title="professionalIsValid ? 'Base profissional pronta' : 'Base profissional pendente'"
+                        :description="professionalIsValid ? 'Os dados profissionais mínimos já permitem seguir para a próxima etapa.' : 'Faltam cargo, resumo, área, senioridade e habilidades para liberar o próximo passo.'"
+                        :color="professionalIsValid ? 'success' : 'warning'"
+                        variant="outline"
+                      />
+                    </template>
                   </div>
                 </div>
 
@@ -400,4 +509,4 @@ function handleStepClick(stepId: string | number | undefined) {
       </div>
     </main>
   </div>
-</template>
+</template> 

@@ -37,37 +37,70 @@ export type OnboardingAccountErrors = {
   acceptTerms: string
 }
 
+export type OnboardingPublicProfileData = {
+  publicName: string
+  headline: string
+  location: string
+  publicEmail: string
+  bio: string
+  linkedin: string
+  github: string
+}
+
+export type OnboardingPublicProfileErrors = {
+  publicName: string
+  headline: string
+  publicEmail: string
+  bio: string
+}
+
+export type OnboardingProfessionalData = {
+  roleTitle: string
+  professionalSummary: string
+  workArea: string
+  experienceLevel: string
+  mainSkills: string[]
+}
+
+export type OnboardingProfessionalErrors = {
+  roleTitle: string
+  professionalSummary: string
+  workArea: string
+  experienceLevel: string
+  mainSkills: string
+}
+
 const onboardingSteps: OnboardingStep[] = [
-  {
-    id: 'account',
-    title: 'Conta',
-    description: 'Base de acesso e preferências iniciais',
-    icon: 'i-lucide-user-round',
-    eyebrow: 'Primeiro acesso',
-    headline: 'Vamos preparar sua conta',
-    body: 'Aqui entram os dados de acesso e as preferências iniciais da conta antes de seguir para os dados públicos do portfólio.',
-    required: true,
-    canSkip: false
-  },
+{
+  id: 'professional',
+  title: 'Profissional',
+  description: 'Resumo, área, experiência e competências',
+  icon: 'i-lucide-briefcase-business',
+  eyebrow: 'Conteúdo profissional',
+  headline: 'Vamos estruturar sua base profissional',
+  body: 'Aqui entram cargo, resumo profissional, área de atuação, nível de experiência e competências principais que depois alimentam o template e o editor.',
+  required: true,
+  canSkip: true
+},
   {
     id: 'profile',
     title: 'Perfil público',
     description: 'Dados que alimentam o portfólio',
     icon: 'i-lucide-id-card',
     eyebrow: 'Dados públicos',
-    headline: 'Perfil e apresentação profissional',
-    body: 'Aqui entrarão os campos que depois alimentam o template público do portfólio e o editor visual.',
+    headline: 'Agora vamos montar sua apresentação pública',
+    body: 'Nesta etapa entram os dados que depois alimentam o portfólio, os templates e o editor visual.',
     required: true,
     canSkip: false
   },
   {
     id: 'professional',
     title: 'Profissional',
-    description: 'Resumo, áreas e experiência',
+    description: 'Resumo, área, senioridade e skills',
     icon: 'i-lucide-briefcase-business',
     eyebrow: 'Conteúdo profissional',
-    headline: 'Vamos estruturar sua parte profissional',
-    body: 'Esta etapa vai concentrar informações como headline, bio profissional, habilidades e experiência base.',
+    headline: 'Vamos estruturar sua base profissional',
+    body: 'Aqui entram cargo, resumo profissional, área de atuação, nível de experiência e habilidades principais que depois alimentam o template e o editor.',
     required: true,
     canSkip: true
   },
@@ -115,6 +148,24 @@ export function useOnboardingState() {
     confirmPassword: '',
     acceptTerms: false,
     acceptUpdates: true
+  }))
+
+  const publicProfile = useState<OnboardingPublicProfileData>('onboarding-public-profile', () => ({
+    publicName: '',
+    headline: '',
+    location: '',
+    publicEmail: '',
+    bio: '',
+    linkedin: '',
+    github: ''
+  }))
+
+  const professional = useState<OnboardingProfessionalData>('onboarding-professional', () => ({
+    roleTitle: '',
+    professionalSummary: '',
+    workArea: '',
+    experienceLevel: '',
+    mainSkills: []
   }))
 
   const steps = computed(() => onboardingSteps)
@@ -182,8 +233,70 @@ export function useOnboardingState() {
     return !errors.email && !errors.username && !errors.password && !errors.confirmPassword && !errors.acceptTerms
   })
 
+  const publicProfileErrors = computed<OnboardingPublicProfileErrors>(() => {
+    const value = publicProfile.value
+
+    return {
+      publicName:
+        !value.publicName.trim()
+          ? 'Informe o nome público.'
+          : value.publicName.trim().length < 2
+            ? 'Use pelo menos 2 caracteres.'
+            : '',
+      headline:
+        !value.headline.trim()
+          ? 'Informe sua headline.'
+          : value.headline.trim().length < 4
+            ? 'A headline está muito curta.'
+            : '',
+      publicEmail:
+        value.publicEmail.trim() && !isValidEmail(value.publicEmail.trim())
+          ? 'Digite um e-mail público válido.'
+          : '',
+      bio:
+        !value.bio.trim()
+          ? 'Escreva uma bio curta.'
+          : value.bio.trim().length < 20
+            ? 'A bio deve ter pelo menos 20 caracteres.'
+            : ''
+    }
+  })
+
+  const publicProfileIsValid = computed(() => {
+    const errors = publicProfileErrors.value
+    return !errors.publicName && !errors.headline && !errors.publicEmail && !errors.bio
+  })
+const professionalErrors = computed<OnboardingProfessionalErrors>(() => {
+  const value = professional.value
+
+  return {
+    roleTitle:
+      !value.roleTitle.trim()
+        ? 'Informe seu título ou cargo.'
+        : value.roleTitle.trim().length < 2
+          ? 'Use pelo menos 2 caracteres.'
+          : '',
+    professionalSummary:
+      !value.professionalSummary.trim()
+        ? 'Escreva um resumo profissional.'
+        : value.professionalSummary.trim().length < 40
+          ? 'O resumo deve ter pelo menos 40 caracteres.'
+          : '',
+    workArea: !value.workArea ? 'Selecione sua área de atuação.' : '',
+    experienceLevel: !value.experienceLevel ? 'Selecione seu nível de experiência.' : '',
+    mainSkills: value.mainSkills.length < 2 ? 'Adicione pelo menos 2 competências principais.' : ''
+  }
+})
+
+  const professionalIsValid = computed(() => {
+    const errors = professionalErrors.value
+    return !errors.roleTitle && !errors.professionalSummary && !errors.workArea && !errors.experienceLevel && !errors.mainSkills
+  })
+
   const currentStepIsValid = computed(() => {
     if (currentStep.value.id === 'account') return accountIsValid.value
+    if (currentStep.value.id === 'profile') return publicProfileIsValid.value
+    if (currentStep.value.id === 'professional') return professionalIsValid.value
     return true
   })
 
@@ -227,7 +340,13 @@ export function useOnboardingState() {
       return true
     }
 
-    nextStep()
+    const next = steps.value[currentIndex.value + 1]
+    if (!next) {
+      finished.value = true
+      return true
+    }
+
+    activeStep.value = next.id
     return true
   }
 
@@ -243,6 +362,7 @@ export function useOnboardingState() {
     activeStep.value = 'account'
     completedSteps.value = []
     finished.value = false
+
     account.value = {
       email: '',
       username: '',
@@ -250,6 +370,24 @@ export function useOnboardingState() {
       confirmPassword: '',
       acceptTerms: false,
       acceptUpdates: true
+    }
+
+    publicProfile.value = {
+      publicName: '',
+      headline: '',
+      location: '',
+      publicEmail: '',
+      bio: '',
+      linkedin: '',
+      github: ''
+    }
+
+    professional.value = {
+      roleTitle: '',
+      professionalSummary: '',
+      workArea: '',
+      experienceLevel: '',
+      mainSkills: []
     }
   }
 
@@ -269,6 +407,12 @@ export function useOnboardingState() {
     finished,
     isLastStep,
     progressValue,
+    publicProfile,
+    publicProfileErrors,
+    publicProfileIsValid,
+    professional,
+    professionalErrors,
+    professionalIsValid,
     steps,
     stepperItems,
     canGoPrev,
