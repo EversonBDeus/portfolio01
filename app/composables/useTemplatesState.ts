@@ -1,5 +1,6 @@
 import { computed } from 'vue'
 import type { PlanTier } from '~/composables/usePerfilState'
+import { useTemplateSelection } from '~/composables/useTemplateSelection'
 import {
   PORTFOLIO_TEMPLATES,
   TEMPLATE_CATEGORIES,
@@ -45,7 +46,12 @@ export function useTemplatesState() {
   //  ----------- Preview e Seleção --------------
 
   const previewTemplateId = useState<string | null>('templates-preview-template-id', () => null)
-  const selectedTemplateId = useState<string | null>('templates-selected-template-id', () => null)
+
+  const {
+    selectedTemplate,
+    selectedTemplateId,
+    setSelectedTemplate
+  } = useTemplateSelection()
 
   //  =========== Catálogo ================
   //  ----------- Dados Mockados --------------
@@ -68,10 +74,6 @@ export function useTemplatesState() {
 
       return matchesCategory && matchesQuery
     })
-  })
-
-  const selectedTemplate = computed(() => {
-    return templates.value.find((template) => template.id === selectedTemplateId.value) ?? null
   })
 
   const previewTemplate = computed(() => {
@@ -157,7 +159,7 @@ export function useTemplatesState() {
       }
     }
 
-    selectedTemplateId.value = template.id
+    setSelectedTemplate(template.id)
 
     return {
       allowed: true,
