@@ -1,35 +1,62 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import EditorPreview from '~/components/dashboard/editor/EditorPreview.vue'
+import EditorSectionModal from '~/components/dashboard/editor/EditorSectionModal.vue'
+import EditorSectionsPanel from '~/components/dashboard/editor/EditorSectionsPanel.vue'
+import type {
+  EditorAboutForm,
+  EditorHeroForm
+} from '~/composables/useEditorState'
+import type { EditorSectionId } from '~/data/editor-sections'
+import { useEditorState } from '~/composables/useEditorState'
+
 definePageMeta({ layout: 'dashboard' })
 useSeoMeta({ title: 'Editor' })
 
-import EditorPreview from '~/components/dashboard/editor/EditorPreview.vue'
-import EditorSectionsPanel from '~/components/dashboard/editor/EditorSectionsPanel.vue'
-import { useEditorState } from '~/composables/useEditorState'
+const isSectionModalOpen = ref(false)
 
 const {
+  aboutForm,
   activeSection,
   device,
   hasSelectedTemplate,
+  heroForm,
   previewData,
+  resetSection,
   sections,
   selectedTemplate,
+  setAboutForm,
   setActiveSection,
   setDevice,
+  setHeroForm,
   toggleSection,
   visibility
 } = useEditorState()
+
+function handleHeroForm(value: EditorHeroForm) {
+  setHeroForm(value)
+}
+
+function handleAboutForm(value: EditorAboutForm) {
+  setAboutForm(value)
+}
+
+function handleSelectSection(sectionId: EditorSectionId) {
+  setActiveSection(sectionId)
+  isSectionModalOpen.value = true
+}
 </script>
 
 <template>
   <div class="space-y-6">
     <!--  =========== Cabeçalho da Página ================ -->
-    <!--  ----------- Título e Introdução -------------- -->
+    <!--  ----------- Título e Viewport -------------- -->
 
     <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
       <div class="space-y-1">
         <h1 class="text-2xl font-semibold">Editor</h1>
         <p class="text-sm text-muted">
-          Base inicial do editor visual conectada ao template atual e aos dados já coletados no onboarding.
+          Agora a edição das seções acontece em modal, mantendo o preview visível durante o ajuste.
         </p>
       </div>
 
@@ -60,7 +87,7 @@ const {
       class="dashboard-note-alert"
       icon="i-lucide-sliders-horizontal"
       title="Escopo desta etapa"
-      description="Aqui fechamos a base do editor visual. Persistência real, reorder, blocos avançados e edição detalhada entram nas próximas fases."
+      description="A edição agora abre em modal. Hero e Sobre continuam com preview em tempo real. Projetos e Contato entram na próxima fase."
       color="neutral"
       variant="outline"
     />
@@ -107,7 +134,7 @@ const {
 
     <div
       v-else
-      class="grid items-start gap-6 xl:grid-cols-[320px_minmax(0,1fr)]"
+      class="grid items-start gap-6 xl:grid-cols-[360px_minmax(0,1fr)]"
     >
       <div class="space-y-6">
         <div
@@ -117,7 +144,7 @@ const {
             <div class="space-y-1">
               <p class="font-medium">Template atual</p>
               <p class="text-sm text-muted">
-                Esta tela já está ligada ao template escolhido na galeria.
+                Esta tela continua ligada ao template escolhido na galeria.
               </p>
             </div>
 
@@ -165,7 +192,7 @@ const {
         <EditorSectionsPanel
           :sections="sections"
           :active-section="activeSection"
-          @select="setActiveSection"
+          @select="handleSelectSection"
           @toggle="toggleSection"
         />
       </div>
@@ -178,5 +205,16 @@ const {
         :visibility="visibility"
       />
     </div>
+
+    <EditorSectionModal
+      :open="isSectionModalOpen"
+      :active-section="activeSection"
+      :hero-form="heroForm"
+      :about-form="aboutForm"
+      @update:open="isSectionModalOpen = $event"
+      @update:hero-form="handleHeroForm"
+      @update:about-form="handleAboutForm"
+      @reset="resetSection"
+    />
   </div>
 </template>

@@ -1,5 +1,4 @@
 import { computed } from 'vue'
-import type { PortfolioTemplate } from '~/data/templates'
 import {
   EDITOR_SECTIONS,
   type EditorSectionDefinition,
@@ -14,6 +13,18 @@ export type EditorSectionVisibility = Record<EditorSectionId, boolean>
 
 export type EditorSectionListItem = EditorSectionDefinition & {
   enabled: boolean
+}
+
+export type EditorHeroForm = {
+  publicName: string
+  headline: string
+  roleTitle: string
+  location: string
+  skillsText: string
+}
+
+export type EditorAboutForm = {
+  summary: string
 }
 
 export type EditorPreviewProject = {
@@ -51,9 +62,17 @@ function createInitialVisibility(): EditorSectionVisibility {
   }
 }
 
+function normalizeSkills(skillsText: string) {
+  return skillsText
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 6)
+}
+
 export function useEditorState() {
-  //  =========== Dados de Entrada ================
-  //  ----------- Onboarding e Template Selecionado --------------
+  //  =========== Dados do Onboarding ================
+  //  ----------- Base do Preview --------------
 
   const { publicProfile, professional, projects } = useOnboardingState()
 
@@ -62,25 +81,8 @@ export function useEditorState() {
     selectedTemplate
   } = useTemplateSelection()
 
-  //  =========== Estado do Editor ================
-  //  ----------- Viewport e Seções --------------
-
-  const device = useState<EditorDevice>('editor-device', () => 'desktop')
-  const activeSection = useState<EditorSectionId>('editor-active-section', () => 'hero')
-  const visibility = useState<EditorSectionVisibility>('editor-section-visibility', createInitialVisibility)
-
-  const sections = computed<EditorSectionListItem[]>(() => {
-    return EDITOR_SECTIONS.map((section) => ({
-      ...section,
-      enabled: visibility.value[section.id]
-    }))
-  })
-
-  //  =========== Preview de Projetos ================
-  //  ----------- Ordenação da Vitrine --------------
-
   const previewProjects = computed<EditorPreviewProject[]>(() => {
-    return [...projects.value.items]
+    return [...(projects.value.items ?? [])]
       .sort((current, next) => Number(next.featured) - Number(current.featured))
       .slice(0, 3)
       .map((item) => ({
@@ -92,9 +94,6 @@ export function useEditorState() {
         featured: item.featured
       }))
   })
-
-  //  =========== Preview de Contato ================
-  //  ----------- Links Públicos --------------
 
   const previewLinks = computed<EditorPreviewLink[]>(() => {
     const items: EditorPreviewLink[] = []
@@ -130,10 +129,7 @@ export function useEditorState() {
     return items
   })
 
-  //  =========== Preview Geral ================
-  //  ----------- Dados Renderizados --------------
-
-  const previewData = computed<EditorPreviewData>(() => {
+  const basePreviewData = computed<EditorPreviewData>(() => {
     return {
       publicName: publicProfile.value.publicName.trim() || 'Seu nome público',
       headline:
@@ -146,7 +142,57 @@ export function useEditorState() {
         publicProfile.value.bio.trim() ||
         'Adicione seu resumo profissional no onboarding ou no painel para alimentar esta seção do template.',
       location: publicProfile.value.location.trim() || 'Sua localização',
-      skills: professional.value.mainSkills.slice(0, 6),
+      skills: Array.isArray(professional.value.mainSkills)
+        ? professional.value.mainSkills.slice(0, 6)
+        : [],
+      projects: previewProjects.value,
+      links: previewLinks.value
+    }
+  })
+
+  //  =========== Estado do Editor ================
+  //  ----------- Viewport, Seção e Visibilidade --------------
+
+  const device = useState<EditorDevice>('editor-device', () => 'desktop')
+  const activeSection = useState<EditorSectionId>('editor-active-section', () => 'hero')
+  const visibility = useState<EditorSectionVisibility>('editor-section-visibility', createInitialVisibility)
+
+  const sections = computed<EditorSectionListItem[]>(() => {
+    return EDITOR_SECTIONS.map((section) => ({
+      ...section,
+      enabled: visibility.value[section.id]
+    }))
+  })
+
+  //  =========== Estado da Hero ================
+  //  ----------- Edição Local --------------
+
+  const heroForm = useState<EditorHeroForm>('editor-hero-form', () => ({
+    publicName: basePreviewData.value.publicName,
+    headline: basePreviewData.value.headline,
+    roleTitle: basePreviewData.value.roleTitle,
+    location: basePreviewData.value.location,
+    skillsText: basePreviewData.value.skills.join(', ')
+  }))
+
+  //  =========== Estado do Sobre ================
+  //  ----------- Edição Local --------------
+
+  const aboutForm = useState<EditorAboutForm>('editor-about-form', () => ({
+    summary: basePreviewData.value.summary
+  }))
+
+  //  =========== Preview Final ================
+  //  ----------- Dados Renderizados --------------
+
+  const previewData = computed<EditorPreviewData>(() => {
+    return {
+      publicName: heroForm.value.publicName.trim(),
+      headline: heroForm.value.headline.trim(),
+      roleTitle: heroForm.value.roleTitle.trim(),
+      summary: aboutForm.value.summary.trim(),
+      location: heroForm.value.location.trim(),
+      skills: normalizeSkills(heroForm.value.skillsText),
       projects: previewProjects.value,
       links: previewLinks.value
     }
@@ -170,15 +216,48 @@ export function useEditorState() {
     }
   }
 
+  function setHeroForm(nextValue: EditorHeroForm) {
+    heroForm.value = nextValue
+  }
+
+  function setAboutForm(nextValue: EditorAboutForm) {
+    aboutForm.value = nextValue
+  }
+
+  function resetSection(sectionId: EditorSectionId) {
+    if (sectionId === 'hero') {
+      heroForm.value = {
+        publicName: basePreviewData.value.publicName,
+        headline: basePreviewData.value.headline,
+        roleTitle: basePreviewData.value.roleTitle,
+        location: basePreviewData.value.location,
+        skillsText: basePreviewData.value.skills.join(', ')
+      }
+
+      return
+    }
+
+    if (sectionId === 'about') {
+      aboutForm.value = {
+        summary: basePreviewData.value.summary
+      }
+    }
+  }
+
   return {
+    aboutForm,
     activeSection,
     device,
     hasSelectedTemplate,
+    heroForm,
     previewData,
+    resetSection,
     sections,
     selectedTemplate,
+    setAboutForm,
     setActiveSection,
     setDevice,
+    setHeroForm,
     toggleSection,
     visibility
   }
