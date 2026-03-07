@@ -186,11 +186,11 @@ function removeSkill(skillToRemove: string) {
           :ui="titleInputUi"
         >
           <template #leading>
-            <UIcon name="i-lucide-badge-check" class="size-5 text-[var(--dashboard-field-icon)]" />
+            <UIcon name="i-lucide-badge-check" class="size-5 text-(--dashboard-field-icon)" />
           </template>
 
           <template #default>
-            <label :class="getFloatingLabelClass(model.roleTitle, 'start-10')">
+            <label :class="getFloatingLabelClass(model.roleTitle, 'inset-s-10')">
               <span :class="labelSurfaceClass">
                 Título / cargo
               </span>
@@ -206,7 +206,7 @@ function removeSkill(skillToRemove: string) {
 <div class="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]">
   <div class="space-y-2">
     <div :class="['relative', topSectionMinHeight]">
-      <div class="absolute right-0 top-0 z-[2]">
+      <div class="absolute right-0 top-0 z-2">
         <UButton
           color="neutral"
           variant="outline"
@@ -227,7 +227,7 @@ function removeSkill(skillToRemove: string) {
             class="h-full w-full"
             :ui="summaryTextareaUi"
           />
-          <label :class="getFloatingLabelClass(model.professionalSummary, 'start-3')">
+          <label :class="getFloatingLabelClass(model.professionalSummary, 'inset-s-3')">
             <span :class="labelSurfaceClass">
               Resumo profissional
             </span>
@@ -289,7 +289,7 @@ function removeSkill(skillToRemove: string) {
               @keydown.enter.prevent="applyCustomExperience"
             >
               <template #default>
-                <label :class="getFloatingLabelClass(customExperience, 'start-3')">
+                <label :class="getFloatingLabelClass(customExperience, 'inset-s-3')">
                   <span :class="labelSurfaceClass">
                     Informar outro nível
                   </span>
@@ -359,7 +359,7 @@ function removeSkill(skillToRemove: string) {
                   @keydown.enter.prevent="applyCustomArea"
                 >
                   <template #default>
-                    <label :class="getFloatingLabelClass(customArea, 'start-3')">
+                    <label :class="getFloatingLabelClass(customArea, 'inset-s-3')">
                       <span :class="labelSurfaceClass">
                         Informar outra área
                       </span>
@@ -431,7 +431,7 @@ function removeSkill(skillToRemove: string) {
                   @keydown.enter.prevent="addCustomSkill"
                 >
                   <template #default>
-                    <label :class="getFloatingLabelClass(customSkill, 'start-3')">
+                    <label :class="getFloatingLabelClass(customSkill, 'inset-s-3')">
                       <span :class="labelSurfaceClass">
                         Adicionar competência personalizada
                       </span>
