@@ -3,6 +3,8 @@ import type { AuthLoginInput } from '~/schemas/auth-login'
 import type { AuthRegisterInput } from '~/schemas/auth-register'
 import { useOnboardingAccess } from '~/composables/useOnboardingAccess'
 
+export const AUTH_MOCK_VERIFY_CODE = '123456'
+
 export type AuthSession = {
   email: string
   username: string
@@ -119,7 +121,7 @@ export function useAuthState() {
 
     await wait()
 
-    if (code !== '123456') {
+    if (code !== AUTH_MOCK_VERIFY_CODE) {
       throw new Error('O código informado não confere.')
     }
 

@@ -15,6 +15,12 @@ const {
   floatingLabelSurfaceClass
 } = useDashboardFormUi()
 
+const ROLE_TITLE_MAX = 60
+const SUMMARY_MAX = 600
+const CUSTOM_AREA_MAX = 50
+const CUSTOM_EXPERIENCE_MAX = 40
+const CUSTOM_SKILL_MAX = 40
+
 const customArea = ref('')
 const customSkill = ref('')
 const customExperience = ref('')
@@ -30,8 +36,8 @@ const fixedTextareaUi = {
 }
 
 const labelSurfaceClass = `${floatingLabelSurfaceClass} leading-none`
-
 const topSectionMinHeight = 'min-h-[26rem]'
+
 const summaryTextareaUi = {
   ...fixedTextareaUi,
   base: `${fixedTextareaUi.base} h-full`
@@ -85,6 +91,16 @@ const skillSuggestions = [
   'Relacionamento com cliente'
 ]
 
+function limitText(value: string, max: number) {
+  return value.slice(0, max)
+}
+
+props.model.roleTitle = limitText(props.model.roleTitle, ROLE_TITLE_MAX)
+props.model.professionalSummary = limitText(props.model.professionalSummary, SUMMARY_MAX)
+props.model.workArea = limitText(props.model.workArea, CUSTOM_AREA_MAX)
+props.model.experienceLevel = limitText(props.model.experienceLevel, CUSTOM_EXPERIENCE_MAX)
+props.model.mainSkills = props.model.mainSkills.map(skill => limitText(skill, CUSTOM_SKILL_MAX))
+
 const selectedSkillsLabel = computed(() => {
   return props.model.mainSkills.length
     ? `${props.model.mainSkills.length} competência(s) selecionada(s)`
@@ -113,7 +129,7 @@ function toggleArea(option: string) {
 }
 
 function applyCustomArea() {
-  const value = customArea.value.trim()
+  const value = limitText(customArea.value.trim(), CUSTOM_AREA_MAX)
 
   if (!value) return
 
@@ -126,7 +142,7 @@ function toggleExperienceLevel(option: string) {
 }
 
 function applyCustomExperience() {
-  const value = customExperience.value.trim()
+  const value = limitText(customExperience.value.trim(), CUSTOM_EXPERIENCE_MAX)
 
   if (!value) return
 
@@ -142,11 +158,11 @@ function toggleSkill(option: string) {
     return
   }
 
-  props.model.mainSkills = [...props.model.mainSkills, option]
+  props.model.mainSkills = [...props.model.mainSkills, limitText(option, CUSTOM_SKILL_MAX)]
 }
 
 function addCustomSkill() {
-  const value = customSkill.value.trim()
+  const value = limitText(customSkill.value.trim(), CUSTOM_SKILL_MAX)
 
   if (!value) return
 
@@ -174,11 +190,12 @@ function removeSkill(skillToRemove: string) {
       color="neutral"
       variant="outline"
     />
-``
-    <div class="space-y-2">
+
+    <div class="max-w-3xl space-y-2">
       <div class="relative">
         <UInput
           v-model="model.roleTitle"
+          :maxlength="ROLE_TITLE_MAX"
           :placeholder="' '"
           autocomplete="organization-title"
           size="lg"
@@ -199,126 +216,150 @@ function removeSkill(skillToRemove: string) {
         </UInput>
       </div>
 
-      <p v-if="errors.roleTitle" class="text-sm text-red-500">
-        {{ errors.roleTitle }}
-      </p>
-    </div>
-<div class="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]">
-  <div class="space-y-2">
-    <div :class="['relative', topSectionMinHeight]">
-      <div class="absolute right-0 top-0 z-2">
-        <UButton
-          color="neutral"
-          variant="outline"
-          size="xs"
-          icon="i-lucide-sparkles"
-          disabled
-        >
-          IA em breve
-        </UButton>
-      </div>
+      <div class="flex items-center justify-between gap-3">
+        <p v-if="errors.roleTitle" class="text-sm text-red-500">
+          {{ errors.roleTitle }}
+        </p>
 
-      <div class="h-full pt-8">
-        <div class="relative h-full">
-          <UTextarea
-            v-model="model.professionalSummary"
-            :rows="10"
-            :placeholder="' '"
-            class="h-full w-full"
-            :ui="summaryTextareaUi"
-          />
-          <label :class="getFloatingLabelClass(model.professionalSummary, 'inset-s-3')">
-            <span :class="labelSurfaceClass">
-              Resumo profissional
-            </span>
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <p v-if="errors.professionalSummary" class="text-sm text-red-500">
-      {{ errors.professionalSummary }}
-    </p>
-  </div>
-
-  <div
-    :class="[
-      'dashboard-form-surface-2 flex flex-col rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4',
-      topSectionMinHeight
-    ]"
-  >
-    <div class="flex items-start justify-between gap-3">
-      <div>
-        <p class="text-sm font-medium">Nível de experiência</p>
-        <p class="mt-1 text-sm text-muted">
-          Escolha uma sugestão ou informe um nível personalizado.
+        <p class="ml-auto text-xs text-muted">
+          {{ model.roleTitle.length }}/{{ ROLE_TITLE_MAX }}
         </p>
       </div>
-
-      <UBadge
-        :color="model.experienceLevel ? 'primary' : 'neutral'"
-        variant="soft"
-      >
-        {{ model.experienceLevel || 'Não definido' }}
-      </UBadge>
     </div>
 
-    <div class="mt-5 flex flex-1 flex-col justify-between gap-5">
-      <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-2">
-        <UButton
-          v-for="option in experienceOptions"
-          :key="option"
-          :color="model.experienceLevel === option ? 'primary' : 'neutral'"
-          :variant="model.experienceLevel === option ? 'soft' : 'outline'"
-          class="w-full justify-start"
-          @click="toggleExperienceLevel(option)"
-        >
-          {{ option }}
-        </UButton>
-      </div>
-
-      <div class="border-t border-(--dashboard-border-soft) pt-5">
-        <div class="space-y-3">
-          <div class="relative">
-            <UInput
-              v-model="customExperience"
-              :placeholder="' '"
-              size="lg"
-              class="w-full"
-              :ui="inputUi"
-              @keydown.enter.prevent="applyCustomExperience"
+    <div class="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]">
+      <div class="space-y-2">
+        <div :class="['relative', topSectionMinHeight]">
+          <div class="absolute right-0 top-0 z-2">
+            <UButton
+              color="neutral"
+              variant="outline"
+              size="xs"
+              icon="i-lucide-sparkles"
+              disabled
             >
-              <template #default>
-                <label :class="getFloatingLabelClass(customExperience, 'inset-s-3')">
-                  <span :class="labelSurfaceClass">
-                    Informar outro nível
-                  </span>
-                </label>
-              </template>
-            </UInput>
+              IA em breve
+            </UButton>
           </div>
 
-          <UButton
-            color="primary"
-            variant="soft"
-            @click="applyCustomExperience"
-          >
-            Usar nível informado
-          </UButton>
+          <div class="h-full pt-8">
+            <div class="relative h-full">
+              <UTextarea
+                v-model="model.professionalSummary"
+                :maxlength="SUMMARY_MAX"
+                :rows="10"
+                :placeholder="' '"
+                class="h-full w-full"
+                :ui="summaryTextareaUi"
+              />
+              <label :class="getFloatingLabelClass(model.professionalSummary, 'inset-s-3')">
+                <span :class="labelSurfaceClass">
+                  Resumo profissional
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-3">
+          <p v-if="errors.professionalSummary" class="text-sm text-red-500">
+            {{ errors.professionalSummary }}
+          </p>
+
+          <p class="ml-auto text-xs text-muted">
+            {{ model.professionalSummary.length }}/{{ SUMMARY_MAX }}
+          </p>
         </div>
       </div>
-    </div>
 
-    <p v-if="errors.experienceLevel" class="mt-4 text-sm text-red-500">
-      {{ errors.experienceLevel }}
-    </p>
-  </div>
-</div>
+      <div
+        :class="[
+          'dashboard-form-surface-2 flex flex-col rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4',
+          topSectionMinHeight
+        ]"
+      >
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-medium">Nível de experiência</p>
+            <p class="mt-1 text-sm text-muted">
+              Escolha uma sugestão ou informe um nível personalizado.
+            </p>
+          </div>
+
+          <UBadge
+            :color="model.experienceLevel ? 'primary' : 'neutral'"
+            variant="soft"
+            class="max-w-[12rem] overflow-hidden"
+          >
+            <span class="block truncate">
+              {{ model.experienceLevel || 'Não definido' }}
+            </span>
+          </UBadge>
+        </div>
+
+        <div class="mt-5 flex flex-1 flex-col justify-between gap-5">
+          <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-2">
+            <UButton
+              v-for="option in experienceOptions"
+              :key="option"
+              :color="model.experienceLevel === option ? 'primary' : 'neutral'"
+              :variant="model.experienceLevel === option ? 'soft' : 'outline'"
+              class="w-full justify-start"
+              @click="toggleExperienceLevel(option)"
+            >
+              {{ option }}
+            </UButton>
+          </div>
+
+          <div class="border-t border-(--dashboard-border-soft) pt-5">
+            <div class="space-y-3">
+              <div class="relative">
+                <UInput
+                  v-model="customExperience"
+                  :maxlength="CUSTOM_EXPERIENCE_MAX"
+                  :placeholder="' '"
+                  size="lg"
+                  class="w-full"
+                  :ui="inputUi"
+                  @keydown.enter.prevent="applyCustomExperience"
+                >
+                  <template #default>
+                    <label :class="getFloatingLabelClass(customExperience, 'inset-s-3')">
+                      <span :class="labelSurfaceClass">
+                        Informar outro nível
+                      </span>
+                    </label>
+                  </template>
+                </UInput>
+              </div>
+
+              <div class="flex items-center justify-between gap-3">
+                <UButton
+                  color="primary"
+                  variant="soft"
+                  @click="applyCustomExperience"
+                >
+                  Usar nível informado
+                </UButton>
+
+                <p class="text-xs text-muted">
+                  {{ customExperience.length }}/{{ CUSTOM_EXPERIENCE_MAX }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p v-if="errors.experienceLevel" class="mt-4 text-sm text-red-500">
+          {{ errors.experienceLevel }}
+        </p>
+      </div>
+    </div>
 
     <div class="grid items-start gap-4 xl:grid-cols-2">
       <div class="dashboard-form-surface-2 rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
         <div class="flex items-start justify-between gap-3">
-          <div>
+          <div class="min-w-0">
             <p class="text-sm font-medium">Área de atuação</p>
             <p class="mt-1 text-sm text-muted">
               Selecione uma sugestão ou informe sua área específica.
@@ -328,8 +369,11 @@ function removeSkill(skillToRemove: string) {
           <UBadge
             :color="model.workArea ? 'primary' : 'neutral'"
             variant="soft"
+            class="max-w-[12rem] overflow-hidden"
           >
-            {{ model.workArea || 'Não definida' }}
+            <span class="block truncate">
+              {{ model.workArea || 'Não definida' }}
+            </span>
           </UBadge>
         </div>
 
@@ -347,11 +391,12 @@ function removeSkill(skillToRemove: string) {
             </UButton>
           </div>
 
-          <div class="border-t border-(--dashboard-border-soft) pt-5 pb-1">
+          <div class="border-t border-(--dashboard-border-soft) pb-1 pt-5">
             <div class="space-y-3">
               <div class="relative">
                 <UInput
                   v-model="customArea"
+                  :maxlength="CUSTOM_AREA_MAX"
                   :placeholder="' '"
                   size="lg"
                   class="w-full"
@@ -368,13 +413,19 @@ function removeSkill(skillToRemove: string) {
                 </UInput>
               </div>
 
-              <UButton
-                color="primary"
-                variant="soft"
-                @click="applyCustomArea"
-              >
-                Usar área informada
-              </UButton>
+              <div class="flex items-center justify-between gap-3">
+                <UButton
+                  color="primary"
+                  variant="soft"
+                  @click="applyCustomArea"
+                >
+                  Usar área informada
+                </UButton>
+
+                <p class="text-xs text-muted">
+                  {{ customArea.length }}/{{ CUSTOM_AREA_MAX }}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -386,7 +437,7 @@ function removeSkill(skillToRemove: string) {
 
       <div class="dashboard-form-surface-2 rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
         <div class="flex items-start justify-between gap-3">
-          <div>
+          <div class="min-w-0">
             <p class="text-sm font-medium">Competências principais</p>
             <p class="mt-1 text-sm text-muted">
               Selecione sugestões ou adicione competências específicas da sua profissão.
@@ -396,8 +447,11 @@ function removeSkill(skillToRemove: string) {
           <UBadge
             :color="model.mainSkills.length ? 'primary' : 'neutral'"
             variant="soft"
+            class="max-w-[12rem] overflow-hidden"
           >
-            {{ selectedSkillsLabel }}
+            <span class="block truncate">
+              {{ selectedSkillsLabel }}
+            </span>
           </UBadge>
         </div>
 
@@ -419,11 +473,12 @@ function removeSkill(skillToRemove: string) {
             </div>
           </div>
 
-          <div class="border-t border-(--dashboard-border-soft) pt-5 pb-1">
+          <div class="border-t border-(--dashboard-border-soft) pb-1 pt-5">
             <div class="space-y-3">
               <div class="relative">
                 <UInput
                   v-model="customSkill"
+                  :maxlength="CUSTOM_SKILL_MAX"
                   :placeholder="' '"
                   size="lg"
                   class="w-full"
@@ -440,13 +495,19 @@ function removeSkill(skillToRemove: string) {
                 </UInput>
               </div>
 
-              <UButton
-                color="primary"
-                variant="soft"
-                @click="addCustomSkill"
-              >
-                Adicionar competência
-              </UButton>
+              <div class="flex items-center justify-between gap-3">
+                <UButton
+                  color="primary"
+                  variant="soft"
+                  @click="addCustomSkill"
+                >
+                  Adicionar competência
+                </UButton>
+
+                <p class="text-xs text-muted">
+                  {{ customSkill.length }}/{{ CUSTOM_SKILL_MAX }}
+                </p>
+              </div>
             </div>
           </div>
 
@@ -459,9 +520,11 @@ function removeSkill(skillToRemove: string) {
                 :key="skill"
                 color="primary"
                 variant="soft"
-                class="pr-1"
+                class="max-w-full pr-1"
               >
-                <span class="mr-1">{{ skill }}</span>
+                <span class="mr-1 break-words [overflow-wrap:anywhere]">
+                  {{ skill }}
+                </span>
 
                 <button
                   type="button"

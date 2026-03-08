@@ -8,13 +8,15 @@ type Props = {
   type?: string
   autocomplete?: string
   disabled?: boolean
+  maxlength?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   icon: '',
   type: 'text',
   autocomplete: undefined,
-  disabled: false
+  disabled: false,
+  maxlength: undefined
 })
 
 defineSlots<{
@@ -35,26 +37,30 @@ const labelOffsetClass = computed(() =>
 </script>
 
 <template>
-  <UInput
-    v-model="model"
-    :type="props.type"
-    :placeholder="' '"
-    :icon="props.icon"
-    :autocomplete="props.autocomplete"
-    :disabled="props.disabled"
-    size="lg"
-    :ui="inputUi"
-  >
-    <template #default>
-      <label :class="[floatingLabelBaseClass, labelOffsetClass]">
-        <span :class="floatingLabelSurfaceClass">
-          {{ props.label }}
-        </span>
-      </label>
-    </template>
+  <div class="w-full min-w-0">
+    <UInput
+      v-model="model"
+      :type="props.type"
+      :placeholder="' '"
+      :icon="props.icon"
+      :autocomplete="props.autocomplete"
+      :disabled="props.disabled"
+      :maxlength="props.maxlength"
+      size="lg"
+      class="w-full"
+      :ui="inputUi"
+    >
+      <template #default>
+        <label :class="[floatingLabelBaseClass, labelOffsetClass]">
+          <span :class="floatingLabelSurfaceClass">
+            {{ props.label }}
+          </span>
+        </label>
+      </template>
 
-    <template v-if="$slots.trailing" #trailing>
-      <slot name="trailing" />
-    </template>
-  </UInput>
+      <template v-if="$slots.trailing" #trailing>
+        <slot name="trailing" />
+      </template>
+    </UInput>
+  </div>
 </template>

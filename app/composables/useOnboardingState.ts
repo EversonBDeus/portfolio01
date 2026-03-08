@@ -1,12 +1,12 @@
 import { computed } from 'vue'
 import type { StepperItem } from '@nuxt/ui'
+import { useAuthState } from '~/composables/useAuthState'
 import { useOnboardingAccess } from '~/composables/useOnboardingAccess'
 
 //  =========== Tipos das Etapas ================
 //  ----------- Identificadores do Fluxo --------------
 
 export type OnboardingStepId =
-  | 'account'
   | 'profile'
   | 'professional'
   | 'projects'
@@ -22,26 +22,6 @@ export type OnboardingStep = {
   body: string
   required: boolean
   canSkip: boolean
-}
-
-//  =========== Dados da Conta ================
-//  ----------- Tipos da Etapa Conta --------------
-
-export type OnboardingAccountData = {
-  email: string
-  username: string
-  password: string
-  confirmPassword: string
-  acceptTerms: boolean
-  acceptUpdates: boolean
-}
-
-export type OnboardingAccountErrors = {
-  email: string
-  username: string
-  password: string
-  confirmPassword: string
-  acceptTerms: string
 }
 
 //  =========== Dados do Perfil Público ================
@@ -117,17 +97,6 @@ export type OnboardingProjectsErrors = {
 
 const onboardingSteps: OnboardingStep[] = [
   {
-    id: 'account',
-    title: 'Conta',
-    description: 'Base de acesso e preferências iniciais',
-    icon: 'i-lucide-user-round',
-    eyebrow: 'Primeiro acesso',
-    headline: 'Vamos preparar sua conta',
-    body: 'Aqui entram os dados de acesso e as preferências iniciais da conta antes de seguir para os dados públicos do portfólio.',
-    required: true,
-    canSkip: false
-  },
-  {
     id: 'profile',
     title: 'Perfil público',
     description: 'Dados que alimentam o portfólio',
@@ -180,10 +149,6 @@ function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 }
 
-function isValidUsername(value: string) {
-  return /^[a-zA-Z0-9._-]{3,20}$/.test(value)
-}
-
 function createEmptyProjectsDraft(): OnboardingProjectsDraft {
   return {
     title: '',
@@ -217,11 +182,10 @@ function createProjectItem(
 }
 
 export function useOnboardingState() {
-  //  =========== Estado do Fluxo ================
-  //  ----------- Etapa Atual e Conclusão --------------
+  //  =========== Estados Base ================
+  //  ----------- Auth e Acesso --------------
 
-    //  =========== Acesso do Onboarding ================
-  //  ----------- Status do Fluxo --------------
+  const { session } = useAuthState()
 
   const {
     keepOnboardingInProgress,
@@ -229,30 +193,21 @@ export function useOnboardingState() {
     onboardingCompleted
   } = useOnboardingAccess()
 
-  const activeStep = useState<OnboardingStepId>('onboarding-active-step', () => 'account')
+  //  =========== Estado do Fluxo ================
+  //  ----------- Etapa Atual e Conclusão --------------
+
+  const activeStep = useState<OnboardingStepId>('onboarding-active-step', () => 'profile')
   const completedSteps = useState<OnboardingStepId[]>('onboarding-completed-steps', () => [])
   const finished = useState<boolean>('onboarding-finished', () => onboardingCompleted.value)
-
-  //  =========== Estado da Conta ================
-  //  ----------- Dados da Etapa Conta --------------
-
-  const account = useState<OnboardingAccountData>('onboarding-account', () => ({
-    email: '',
-    username: '',
-    password: '',
-    confirmPassword: '',
-    acceptTerms: false,
-    acceptUpdates: true
-  }))
 
   //  =========== Estado do Perfil Público ================
   //  ----------- Dados da Etapa Perfil Público --------------
 
   const publicProfile = useState<OnboardingPublicProfileData>('onboarding-public-profile', () => ({
-    publicName: '',
+    publicName: session.value?.username ?? '',
     headline: '',
     location: '',
-    publicEmail: '',
+    publicEmail: session.value?.email ?? '',
     bio: '',
     linkedin: '',
     github: ''
@@ -276,6 +231,25 @@ export function useOnboardingState() {
     draft: createEmptyProjectsDraft(),
     items: []
   }))
+
+  //  =========== Migração do Fluxo Antigo ================
+  //  ----------- Limpeza da Etapa Conta --------------
+
+  if ((activeStep.value as string) === 'account') {
+    activeStep.value = 'profile'
+  }
+
+  completedSteps.value = (completedSteps.value as string[]).filter((stepId): stepId is OnboardingStepId => {
+    return onboardingSteps.some(step => step.id === stepId)
+  })
+
+  if (!publicProfile.value.publicEmail && session.value?.email) {
+    publicProfile.value.publicEmail = session.value.email
+  }
+
+  if (!publicProfile.value.publicName && session.value?.username) {
+    publicProfile.value.publicName = session.value.username
+  }
 
   //  =========== Estrutura das Etapas ================
   //  ----------- Navegação e Progresso --------------
@@ -306,47 +280,6 @@ export function useOnboardingState() {
       icon: step.icon,
       value: step.id
     }))
-  })
-
-  //  =========== Validação da Conta ================
-  //  ----------- Regras da Etapa Conta --------------
-
-  const accountErrors = computed<OnboardingAccountErrors>(() => {
-    const value = account.value
-
-    return {
-      email:
-        !value.email.trim()
-          ? 'Informe seu e-mail de acesso.'
-          : !isValidEmail(value.email.trim())
-            ? 'Digite um e-mail válido.'
-            : '',
-      username:
-        !value.username.trim()
-          ? 'Informe um nome de usuário.'
-          : !isValidUsername(value.username.trim())
-            ? 'Use de 3 a 20 caracteres sem espaços.'
-            : '',
-      password:
-        !value.password
-          ? 'Crie uma senha.'
-          : value.password.length < 8
-            ? 'A senha deve ter pelo menos 8 caracteres.'
-            : '',
-      confirmPassword:
-        !value.confirmPassword
-          ? 'Confirme sua senha.'
-          : value.password !== value.confirmPassword
-            ? 'As senhas não coincidem.'
-            : '',
-      acceptTerms: value.acceptTerms ? '' : 'Você precisa aceitar os termos para continuar.'
-    }
-  })
-
-  const accountIsValid = computed(() => {
-    const errors = accountErrors.value
-
-    return !errors.email && !errors.username && !errors.password && !errors.confirmPassword && !errors.acceptTerms
   })
 
   //  =========== Validação do Perfil Público ================
@@ -383,7 +316,6 @@ export function useOnboardingState() {
 
   const publicProfileIsValid = computed(() => {
     const errors = publicProfileErrors.value
-
     return !errors.publicName && !errors.headline && !errors.publicEmail && !errors.bio
   })
 
@@ -414,7 +346,6 @@ export function useOnboardingState() {
 
   const professionalIsValid = computed(() => {
     const errors = professionalErrors.value
-
     return !errors.roleTitle && !errors.professionalSummary && !errors.workArea && !errors.experienceLevel && !errors.mainSkills
   })
 
@@ -437,7 +368,6 @@ export function useOnboardingState() {
 
   const projectsCanAdd = computed(() => {
     const errors = projectsErrors.value
-
     return !errors.title && !errors.summary
   })
 
@@ -448,7 +378,6 @@ export function useOnboardingState() {
   //  ----------- Liberação de Avanço --------------
 
   const currentStepIsValid = computed(() => {
-    if (currentStep.value.id === 'account') return accountIsValid.value
     if (currentStep.value.id === 'profile') return publicProfileIsValid.value
     if (currentStep.value.id === 'professional') return professionalIsValid.value
 
@@ -487,29 +416,29 @@ export function useOnboardingState() {
     }
   }
 
-//  =========== Ações dos Projetos ================
-//  ----------- Remover Projeto --------------
+  //  =========== Ações dos Projetos ================
+  //  ----------- Remover e Destacar --------------
 
-function removeProject(projectId: string) {
-  const removedProject = projects.value.items.find(item => item.id === projectId)
-  let nextItems = projects.value.items.filter(item => item.id !== projectId)
+  function removeProject(projectId: string) {
+    const removedProject = projects.value.items.find(item => item.id === projectId)
+    let nextItems = projects.value.items.filter(item => item.id !== projectId)
 
-  if (removedProject?.featured && nextItems.length > 0 && !nextItems.some(item => item.featured)) {
-    const firstItem = nextItems[0]
+    if (removedProject?.featured && nextItems.length > 0 && !nextItems.some(item => item.featured)) {
+      const firstItem = nextItems[0]
 
-    if (firstItem) {
-      nextItems = [
-        { ...firstItem, featured: true },
-        ...nextItems.slice(1)
-      ]
+      if (firstItem) {
+        nextItems = [
+          { ...firstItem, featured: true },
+          ...nextItems.slice(1)
+        ]
+      }
+    }
+
+    projects.value = {
+      ...projects.value,
+      items: nextItems
     }
   }
-
-  projects.value = {
-    ...projects.value,
-    items: nextItems
-  }
-}
 
   function toggleProjectFeatured(projectId: string) {
     projects.value = {
@@ -527,7 +456,6 @@ function removeProject(projectId: string) {
 
   function markStepCompleted(stepId: OnboardingStepId) {
     if (completedSteps.value.includes(stepId)) return
-
     completedSteps.value = [...completedSteps.value, stepId]
   }
 
@@ -579,9 +507,6 @@ function removeProject(projectId: string) {
     return true
   }
 
-  //  =========== Navegação do Fluxo ================
-  //  ----------- Concluir Onboarding --------------
-
   function finishOnboarding() {
     if (!currentStepIsValid.value) return false
 
@@ -591,30 +516,22 @@ function removeProject(projectId: string) {
 
     return true
   }
+
   //  =========== Navegação do Fluxo ================
   //  ----------- Reiniciar Onboarding --------------
 
   function resetOnboarding() {
     keepOnboardingInProgress()
 
-    activeStep.value = 'account'
+    activeStep.value = 'profile'
     completedSteps.value = []
     finished.value = false
 
-    account.value = {
-      email: '',
-      username: '',
-      password: '',
-      confirmPassword: '',
-      acceptTerms: false,
-      acceptUpdates: true
-    }
-
     publicProfile.value = {
-      publicName: '',
+      publicName: session.value?.username ?? '',
       headline: '',
       location: '',
-      publicEmail: '',
+      publicEmail: session.value?.email ?? '',
       bio: '',
       linkedin: '',
       github: ''
@@ -640,9 +557,6 @@ function removeProject(projectId: string) {
 
   return {
     activeStep,
-    account,
-    accountErrors,
-    accountIsValid,
     addProject,
     canGoNext,
     canGoPrev,

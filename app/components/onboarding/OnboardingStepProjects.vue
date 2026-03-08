@@ -5,10 +5,6 @@ import type {
   OnboardingProjectsData,
   OnboardingProjectsErrors
 } from '~/composables/useOnboardingState'
-import DashboardFloatingInput from '~/components/dashboard/profile/DashboardFloatingInput.vue'
-
-//  =========== Props e Eventos ================
-//  ----------- Entrada da Etapa Projetos --------------
 
 const props = defineProps<{
   model: OnboardingProjectsData
@@ -25,10 +21,16 @@ const emit = defineEmits<{
   'toggle-featured': [projectId: string]
 }>()
 
-//  =========== UI Local ================
-//  ----------- Textarea e Estado Visual --------------
+const {
+  inputUi,
+  textareaUi,
+  floatingLabelSurfaceClass
+} = useDashboardFormUi()
 
-const { textareaUi, floatingLabelBaseClass, floatingLabelSurfaceClass } = useDashboardFormUi()
+const PROJECT_TITLE_MAX = 80
+const PROJECT_CATEGORY_MAX = 60
+const PROJECT_SUMMARY_MAX = 800
+const PROJECT_LINK_MAX = 200
 
 const showDraftValidation = ref(false)
 
@@ -37,8 +39,7 @@ const summaryTextareaUi = {
   base: `${textareaUi.base} resize-none overflow-y-auto min-h-[12rem] max-h-[12rem]`
 }
 
-//  =========== Opções da Etapa ================
-//  ----------- Sugestões de Categoria --------------
+const labelSurfaceClass = `${floatingLabelSurfaceClass} leading-none`
 
 const categorySuggestions = [
   'Projeto autoral',
@@ -52,8 +53,14 @@ const categorySuggestions = [
   'Outro'
 ]
 
-//  =========== Computeds da Etapa ================
-//  ----------- Estado do Rascunho --------------
+function limitText(value: string, max: number) {
+  return value.slice(0, max)
+}
+
+props.model.draft.title = limitText(props.model.draft.title, PROJECT_TITLE_MAX)
+props.model.draft.category = limitText(props.model.draft.category, PROJECT_CATEGORY_MAX)
+props.model.draft.summary = limitText(props.model.draft.summary, PROJECT_SUMMARY_MAX)
+props.model.draft.link = limitText(props.model.draft.link, PROJECT_LINK_MAX)
 
 const hasDraftContent = computed(() => {
   return Object.values(props.model.draft).some(value => value.trim().length > 0)
@@ -67,11 +74,29 @@ const draftCategoryLabel = computed(() => {
   return props.model.draft.category.trim() || 'Não definida'
 })
 
-//  =========== Ações da Etapa ================
-//  ----------- Manipulação do Rascunho --------------
+const counters = computed(() => ({
+  title: `${props.model.draft.title.length}/${PROJECT_TITLE_MAX}`,
+  category: `${props.model.draft.category.length}/${PROJECT_CATEGORY_MAX}`,
+  summary: `${props.model.draft.summary.length}/${PROJECT_SUMMARY_MAX}`,
+  link: `${props.model.draft.link.length}/${PROJECT_LINK_MAX}`
+}))
+
+function getFloatingLabelClass(value: string, offsetClass = 'start-3') {
+  const hasValue = value.trim().length > 0
+
+  return [
+    'pointer-events-none absolute z-[1] transition-all duration-200',
+    offsetClass,
+    hasValue
+      ? 'top-px -translate-y-1/2 text-xs font-medium text-highlighted'
+      : 'top-1/2 -translate-y-1/2 text-sm font-normal text-dimmed peer-focus:top-px peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-highlighted'
+  ]
+}
 
 function selectCategory(option: string) {
-  props.model.draft.category = props.model.draft.category === option ? '' : option
+  props.model.draft.category = props.model.draft.category === option
+    ? ''
+    : option.slice(0, PROJECT_CATEGORY_MAX)
 }
 
 function handleAddProject() {
@@ -91,9 +116,6 @@ function handleClearDraft() {
 
 <template>
   <div class="space-y-6">
-    <!--  =========== Introdução da Etapa Projetos ================ -->
-    <!--  ----------- Contexto Inicial -------------- -->
-
     <UAlert
       class="dashboard-note-alert"
       icon="i-lucide-folder-kanban"
@@ -104,9 +126,6 @@ function handleClearDraft() {
     />
 
     <div class="grid items-start gap-4 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
-      <!--  =========== Formulário do Projeto ================ -->
-      <!--  ----------- Cadastro Rápido -------------- -->
-
       <div class="dashboard-form-surface-2 rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
         <div class="space-y-5">
           <div class="space-y-1">
@@ -116,24 +135,65 @@ function handleClearDraft() {
             </p>
           </div>
 
-          <div class="space-y-2">
-            <DashboardFloatingInput
-              v-model="model.draft.title"
-              label="Nome do projeto ou trabalho"
-            />
-            <p
-              v-if="shouldShowDraftErrors && errors.title"
-              class="text-sm text-red-500"
-            >
-              {{ errors.title }}
-            </p>
+          <div class="min-w-0 space-y-2">
+            <div class="relative">
+              <UInput
+                v-model="model.draft.title"
+                :maxlength="PROJECT_TITLE_MAX"
+                :placeholder="' '"
+                size="lg"
+                class="w-full"
+                :ui="inputUi"
+              >
+                <template #default>
+                  <label :class="getFloatingLabelClass(model.draft.title, 'inset-s-3')">
+                    <span :class="labelSurfaceClass">
+                      Nome do projeto ou trabalho
+                    </span>
+                  </label>
+                </template>
+              </UInput>
+            </div>
+
+            <div class="flex min-h-5 items-start justify-between gap-3">
+              <p
+                v-if="shouldShowDraftErrors && errors.title"
+                class="text-sm text-red-500"
+              >
+                {{ errors.title }}
+              </p>
+
+              <span class="ml-auto shrink-0 text-xs text-muted">
+                {{ counters.title }}
+              </span>
+            </div>
           </div>
 
-          <div class="space-y-3">
-            <DashboardFloatingInput
-              v-model="model.draft.category"
-              label="Categoria ou tipo"
-            />
+          <div class="min-w-0 space-y-3">
+            <div class="relative">
+              <UInput
+                v-model="model.draft.category"
+                :maxlength="PROJECT_CATEGORY_MAX"
+                :placeholder="' '"
+                size="lg"
+                class="w-full"
+                :ui="inputUi"
+              >
+                <template #default>
+                  <label :class="getFloatingLabelClass(model.draft.category, 'inset-s-3')">
+                    <span :class="labelSurfaceClass">
+                      Categoria ou tipo
+                    </span>
+                  </label>
+                </template>
+              </UInput>
+            </div>
+
+            <div class="flex min-h-5 justify-end">
+              <span class="shrink-0 text-xs text-muted">
+                {{ counters.category }}
+              </span>
+            </div>
 
             <div class="flex flex-wrap gap-2">
               <UButton
@@ -142,51 +202,84 @@ function handleClearDraft() {
                 :color="model.draft.category === option ? 'primary' : 'neutral'"
                 :variant="model.draft.category === option ? 'soft' : 'outline'"
                 size="sm"
+                type="button"
                 @click="selectCategory(option)"
               >
                 {{ option }}
               </UButton>
             </div>
 
-            <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) px-3 py-2">
+            <div class="min-w-0 rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) px-3 py-2">
               <p class="text-xs uppercase tracking-wide text-muted">Categoria atual</p>
-              <p class="mt-1 text-sm font-medium">{{ draftCategoryLabel }}</p>
+              <p class="mt-1 break-words text-sm font-medium [overflow-wrap:anywhere]">
+                {{ draftCategoryLabel }}
+              </p>
             </div>
           </div>
 
-          <div class="space-y-2">
+          <div class="min-w-0 space-y-2">
             <div class="relative">
               <UTextarea
                 v-model="model.draft.summary"
                 :rows="8"
+                :maxlength="PROJECT_SUMMARY_MAX"
                 :placeholder="' '"
                 class="w-full"
                 :ui="summaryTextareaUi"
               />
-              <label :class="[floatingLabelBaseClass, 'inset-3']">
-                <span :class="floatingLabelSurfaceClass">
+              <label :class="getFloatingLabelClass(model.draft.summary, 'inset-s-3')">
+                <span :class="labelSurfaceClass">
                   Resumo do projeto ou trabalho
                 </span>
               </label>
             </div>
 
-            <p
-              v-if="shouldShowDraftErrors && errors.summary"
-              class="text-sm text-red-500"
-            >
-              {{ errors.summary }}
-            </p>
+            <div class="flex min-h-5 items-start justify-between gap-3">
+              <p
+                v-if="shouldShowDraftErrors && errors.summary"
+                class="text-sm text-red-500"
+              >
+                {{ errors.summary }}
+              </p>
+
+              <span class="ml-auto shrink-0 text-xs text-muted">
+                {{ counters.summary }}
+              </span>
+            </div>
           </div>
 
-          <DashboardFloatingInput
-            v-model="model.draft.link"
-            label="Link opcional"
-            type="url"
-          />
+          <div class="min-w-0 space-y-2">
+            <div class="relative">
+              <UInput
+                v-model="model.draft.link"
+                :maxlength="PROJECT_LINK_MAX"
+                :placeholder="' '"
+                type="url"
+                size="lg"
+                class="w-full"
+                :ui="inputUi"
+              >
+                <template #default>
+                  <label :class="getFloatingLabelClass(model.draft.link, 'inset-s-3')">
+                    <span :class="labelSurfaceClass">
+                      Link opcional
+                    </span>
+                  </label>
+                </template>
+              </UInput>
+            </div>
+
+            <div class="flex min-h-5 justify-end">
+              <span class="shrink-0 text-xs text-muted">
+                {{ counters.link }}
+              </span>
+            </div>
+          </div>
 
           <div class="flex flex-wrap gap-3">
             <UButton
               color="primary"
+              type="button"
               @click="handleAddProject"
             >
               Adicionar projeto
@@ -196,6 +289,7 @@ function handleClearDraft() {
               color="neutral"
               variant="outline"
               :disabled="!hasDraftContent"
+              type="button"
               @click="handleClearDraft"
             >
               Limpar rascunho
@@ -203,9 +297,6 @@ function handleClearDraft() {
           </div>
         </div>
       </div>
-
-      <!--  =========== Resumo da Etapa Projetos ================ -->
-      <!--  ----------- Indicadores e Dicas -------------- -->
 
       <div class="dashboard-form-surface-2 rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
         <div class="space-y-5">
@@ -251,14 +342,11 @@ function handleClearDraft() {
       </div>
     </div>
 
-    <!--  =========== Lista de Projetos Adicionados ================ -->
-    <!--  ----------- Cards da Etapa Projetos -------------- -->
-
     <div class="dashboard-form-surface-2 rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
       <div class="space-y-4">
-        <div class="space-y-1">
+        <div class="space-y-1 min-w-0">
           <h3 class="text-base font-semibold">Projetos adicionados</h3>
-          <p class="text-sm text-muted">
+          <p class="break-words text-sm text-muted [overflow-wrap:anywhere]">
             Os itens desta lista já representam a primeira vitrine do usuário no fluxo inicial.
           </p>
         </div>
@@ -270,15 +358,19 @@ function handleClearDraft() {
           <div
             v-for="item in model.items"
             :key="item.id"
-            class="rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4"
+            class="min-w-0 rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4"
           >
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <p class="truncate text-base font-semibold">{{ item.title }}</p>
+                <p class="break-words text-base font-semibold [overflow-wrap:anywhere]">
+                  {{ item.title }}
+                </p>
 
                 <div class="mt-2 flex flex-wrap gap-2">
-                  <UBadge color="neutral" variant="soft">
-                    {{ item.category }}
+                  <UBadge color="neutral" variant="soft" class="max-w-full">
+                    <span class="break-words [overflow-wrap:anywhere]">
+                      {{ item.category }}
+                    </span>
                   </UBadge>
 
                   <UBadge
@@ -295,11 +387,12 @@ function handleClearDraft() {
                 color="neutral"
                 variant="ghost"
                 icon="i-lucide-trash-2"
+                type="button"
                 @click="emit('remove-project', item.id)"
               />
             </div>
 
-            <p class="mt-4 text-sm text-muted">
+            <p class="mt-4 whitespace-pre-line break-words text-sm text-muted [overflow-wrap:anywhere]">
               {{ item.summary }}
             </p>
 
@@ -308,7 +401,7 @@ function handleClearDraft() {
               :href="item.link"
               target="_blank"
               rel="noreferrer"
-              class="mt-4 inline-flex text-sm font-medium text-primary hover:underline"
+              class="mt-4 inline-flex max-w-full break-all text-sm font-medium text-primary hover:underline"
             >
               {{ item.link }}
             </a>
@@ -318,6 +411,7 @@ function handleClearDraft() {
                 :color="item.featured ? 'success' : 'neutral'"
                 :variant="item.featured ? 'soft' : 'outline'"
                 size="sm"
+                type="button"
                 @click="emit('toggle-featured', item.id)"
               >
                 {{ item.featured ? 'Remover destaque' : 'Marcar como destaque' }}
@@ -336,9 +430,6 @@ function handleClearDraft() {
         </div>
       </div>
     </div>
-
-    <!--  =========== Status da Etapa Projetos ================ -->
-    <!--  ----------- Feedback Final -------------- -->
 
     <UAlert
       class="dashboard-note-alert"
