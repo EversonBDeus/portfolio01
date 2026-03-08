@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import EditorAboutControls from '~/components/dashboard/editor/EditorAboutControls.vue'
+import EditorContactControls from '~/components/dashboard/editor/EditorContactControls.vue'
 import EditorHeroControls from '~/components/dashboard/editor/EditorHeroControls.vue'
 import EditorProjectsControls from '~/components/dashboard/editor/EditorProjectsControls.vue'
 import type {
   EditorAboutForm,
+  EditorContactForm,
   EditorHeroForm,
   EditorProjectFieldUpdate
 } from '~/composables/useEditorState'
@@ -16,6 +18,7 @@ const props = defineProps<{
   activeSection: EditorSectionId
   heroForm: EditorHeroForm
   aboutForm: EditorAboutForm
+  contactForm: EditorContactForm
   projects: EditorProjectForm[]
   activeProjectId: string | null
   projectErrors: Record<string, EditorProjectErrors>
@@ -26,6 +29,7 @@ const emit = defineEmits<{
   'update:open': [value: boolean]
   'update:heroForm': [value: EditorHeroForm]
   'update:aboutForm': [value: EditorAboutForm]
+  'update:contactForm': [value: EditorContactForm]
   addProject: []
   removeProject: [projectId: string]
   selectProject: [projectId: string]
@@ -63,10 +67,10 @@ const sectionMeta = computed(() => {
   }
 
   return {
-    title: 'Contato',
-    description: 'A edição detalhada desta seção entra na próxima etapa.',
+    title: 'Editar Contato',
+    description: 'Ajuste e-mail público, website e canais principais exibidos na seção Contato.',
     icon: 'i-lucide-send',
-    badge: 'Próxima etapa'
+    badge: 'Contato ativa'
   }
 })
 
@@ -76,6 +80,10 @@ function handleHeroUpdate(value: EditorHeroForm) {
 
 function handleAboutUpdate(value: EditorAboutForm) {
   emit('update:aboutForm', value)
+}
+
+function handleContactUpdate(value: EditorContactForm) {
+  emit('update:contactForm', value)
 }
 
 function handleProjectFieldUpdate(value: EditorProjectFieldUpdate) {
@@ -92,6 +100,10 @@ function handleResetAbout() {
 
 function handleResetProjects() {
   emit('reset', 'projects')
+}
+
+function handleResetContact() {
+  emit('reset', 'contact')
 }
 </script>
 
@@ -146,7 +158,7 @@ function handleResetProjects() {
 
           <div class="px-5 py-5 sm:px-6 sm:py-6">
             <!--  =========== Conteúdo da Seção ================ -->
-            <!--  ----------- Hero, Sobre, Projetos e Próximas Etapas -------------- -->
+            <!--  ----------- Hero, Sobre, Projetos e Contato -------------- -->
 
             <EditorHeroControls
               v-if="activeSection === 'hero'"
@@ -178,18 +190,13 @@ function handleResetProjects() {
               @reset="handleResetProjects"
             />
 
-            <div v-else class="space-y-4">
-              <div class="rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-5">
-                <UAlert
-                  class="dashboard-note-alert"
-                  icon="i-lucide-clock-3"
-                  title="Controles desta seção entram na próxima etapa"
-                  :description="`A edição detalhada de ${sectionMeta.title} será adicionada depois da base de Hero, Sobre e Projetos.`"
-                  color="neutral"
-                  variant="outline"
-                />
-              </div>
-            </div>
+            <EditorContactControls
+              v-else
+              :model-value="contactForm"
+              embedded
+              @update:model-value="handleContactUpdate"
+              @reset="handleResetContact"
+            />
           </div>
         </div>
       </div>

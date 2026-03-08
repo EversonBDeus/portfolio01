@@ -5,14 +5,20 @@ import EditorSectionModal from '~/components/dashboard/editor/EditorSectionModal
 import EditorSectionsPanel from '~/components/dashboard/editor/EditorSectionsPanel.vue'
 import type {
   EditorAboutForm,
+  EditorContactForm,
   EditorHeroForm,
   EditorProjectFieldUpdate
 } from '~/composables/useEditorState'
 import type { EditorSectionId } from '~/data/editor-sections'
 import { useEditorState } from '~/composables/useEditorState'
 
-definePageMeta({ layout: 'dashboard' })
-useSeoMeta({ title: 'Editor' })
+definePageMeta({
+  layout: 'dashboard'
+})
+
+useSeoMeta({
+  title: 'Editor'
+})
 
 const isSectionModalOpen = ref(false)
 
@@ -22,6 +28,7 @@ const {
   activeSection,
   addProject,
   canAddProject,
+  contactForm,
   device,
   hasSelectedTemplate,
   heroForm,
@@ -35,6 +42,7 @@ const {
   setAboutForm,
   setActiveProject,
   setActiveSection,
+  setContactForm,
   setDevice,
   setFeaturedProject,
   setHeroForm,
@@ -49,6 +57,10 @@ function handleHeroForm(value: EditorHeroForm) {
 
 function handleAboutForm(value: EditorAboutForm) {
   setAboutForm(value)
+}
+
+function handleContactForm(value: EditorContactForm) {
+  setContactForm(value)
 }
 
 function handleProjectFieldUpdate(value: EditorProjectFieldUpdate) {
@@ -86,7 +98,7 @@ function handleSetFeaturedProject(projectId: string) {
       <div class="space-y-1">
         <h1 class="text-2xl font-semibold">Editor</h1>
         <p class="text-sm text-muted">
-          O editor já permite ajustar Hero, Sobre e agora também a vitrine de Projetos em tempo real.
+          O editor já permite ajustar Hero, Sobre, Projetos e Contato em tempo real.
         </p>
       </div>
 
@@ -117,7 +129,7 @@ function handleSetFeaturedProject(projectId: string) {
       class="dashboard-note-alert"
       icon="i-lucide-sliders-horizontal"
       title="Escopo desta etapa"
-      description="Hero, Sobre e Projetos já podem ser ajustados localmente no editor. Contato, reorder e persistência entram depois."
+      description="Hero, Sobre, Projetos e Contato já podem ser ajustados localmente no editor. Reorder e persistência entram depois."
       color="neutral"
       variant="outline"
     />
@@ -241,6 +253,7 @@ function handleSetFeaturedProject(projectId: string) {
       :active-section="activeSection"
       :hero-form="heroForm"
       :about-form="aboutForm"
+      :contact-form="contactForm"
       :projects="projectsForm"
       :active-project-id="activeProjectId"
       :project-errors="projectErrors"
@@ -248,6 +261,7 @@ function handleSetFeaturedProject(projectId: string) {
       @update:open="isSectionModalOpen = $event"
       @update:hero-form="handleHeroForm"
       @update:about-form="handleAboutForm"
+      @update:contact-form="handleContactForm"
       @add-project="handleAddProject"
       @remove-project="handleRemoveProject"
       @select-project="handleSelectProject"

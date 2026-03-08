@@ -12,6 +12,13 @@ import {
   type EditorProjectErrors,
   type EditorProjectForm
 } from '~/schemas/editor-project'
+import {
+  editorContactSchema,
+  type EditorContactForm
+} from '~/schemas/editor-contact'
+
+export type { EditorContactForm } from '~/schemas/editor-contact'
+
 export type EditorDevice = 'desktop' | 'mobile'
 
 export type EditorSectionVisibility = Record<EditorSectionId, boolean>
@@ -105,16 +112,70 @@ function createProjectErrorsMap(items: EditorProjectForm[]) {
   }, {})
 }
 
+function normalizePublicUrl(value: string) {
+  const trimmed = value.trim()
+
+  if (!trimmed) {
+    return ''
+  }
+
+  return trimmed.startsWith('http://') || trimmed.startsWith('https://')
+    ? trimmed
+    : `https://${trimmed}`
+}
+
+function normalizeWhatsAppHref(value: string) {
+  const digits = value.replace(/\D/g, '')
+
+  if (!digits) {
+    return ''
+  }
+
+  return `https://wa.me/${digits}`
+}
+
 export function useEditorState() {
   //  =========== Dados do Onboarding ================
   //  ----------- Base do Preview --------------
 
   const { publicProfile, professional, projects } = useOnboardingState()
-
   const { hasSelectedTemplate, selectedTemplate } = useTemplateSelection()
 
+  //  =========== Base Pública Segura ================
+  //  ----------- Fallback do Onboarding --------------
+
+  const publicProfileBase = computed(() => {
+    const source = publicProfile.value
+
+    return {
+      publicName: source?.publicName?.trim() ?? '',
+      headline: source?.headline?.trim() ?? '',
+      location: source?.location?.trim() ?? '',
+      publicEmail: source?.publicEmail?.trim() ?? '',
+      bio: source?.bio ?? '',
+      linkedin: source?.linkedin?.trim() ?? '',
+      github: source?.github?.trim() ?? ''
+    }
+  })
+
+  const professionalBase = computed(() => {
+    const source = professional.value
+
+    return {
+      roleTitle: source?.roleTitle?.trim() ?? '',
+      professionalSummary: source?.professionalSummary ?? '',
+      mainSkills: Array.isArray(source?.mainSkills)
+        ? source.mainSkills
+            .map((item) => String(item ?? '').trim())
+            .filter(Boolean)
+        : []
+    }
+  })
+
   const onboardingProjects = computed<EditorPreviewProject[]>(() => {
-    return [...(projects.value.items ?? [])]
+    const items = Array.isArray(projects.value?.items) ? projects.value.items : []
+
+    return [...items]
       .sort((current, next) => Number(next.featured) - Number(current.featured))
       .slice(0, 3)
       .map((item) => ({
@@ -127,58 +188,22 @@ export function useEditorState() {
       }))
   })
 
-  const previewLinks = computed<EditorPreviewLink[]>(() => {
-    const items: EditorPreviewLink[] = []
-
-    if (publicProfile.value.linkedin.trim()) {
-      items.push({
-        label: 'LinkedIn',
-        value: publicProfile.value.linkedin.trim(),
-        href: publicProfile.value.linkedin.trim().startsWith('http')
-          ? publicProfile.value.linkedin.trim()
-          : `https://${publicProfile.value.linkedin.trim()}`
-      })
-    }
-
-    if (publicProfile.value.github.trim()) {
-      items.push({
-        label: 'GitHub',
-        value: publicProfile.value.github.trim(),
-        href: publicProfile.value.github.trim().startsWith('http')
-          ? publicProfile.value.github.trim()
-          : `https://${publicProfile.value.github.trim()}`
-      })
-    }
-
-    if (publicProfile.value.publicEmail.trim()) {
-      items.push({
-        label: 'E-mail',
-        value: publicProfile.value.publicEmail.trim(),
-        href: `mailto:${publicProfile.value.publicEmail.trim()}`
-      })
-    }
-
-    return items
-  })
-
   const basePreviewData = computed<EditorPreviewData>(() => {
     return {
-      publicName: publicProfile.value.publicName.trim() || 'Seu nome público',
+      publicName: publicProfileBase.value.publicName || 'Seu nome público',
       headline:
-        publicProfile.value.headline.trim() ||
-        professional.value.roleTitle.trim() ||
+        publicProfileBase.value.headline ||
+        professionalBase.value.roleTitle ||
         'Sua headline profissional',
-      roleTitle: professional.value.roleTitle.trim() || 'Seu cargo principal',
+      roleTitle: professionalBase.value.roleTitle || 'Seu cargo principal',
       summary:
-        professional.value.professionalSummary.trim() ||
-        publicProfile.value.bio.trim() ||
+        professionalBase.value.professionalSummary.trim() ||
+        publicProfileBase.value.bio.trim() ||
         'Adicione seu resumo profissional no onboarding ou no painel para alimentar esta seção do template.',
-      location: publicProfile.value.location.trim() || 'Sua localização',
-      skills: Array.isArray(professional.value.mainSkills)
-        ? professional.value.mainSkills.slice(0, 6)
-        : [],
+      location: publicProfileBase.value.location || 'Sua localização',
+      skills: professionalBase.value.mainSkills.slice(0, 6),
       projects: onboardingProjects.value,
-      links: previewLinks.value
+      links: []
     }
   })
 
@@ -213,6 +238,67 @@ export function useEditorState() {
   const aboutForm = useState<EditorAboutForm>('editor-about-form', () => ({
     summary: basePreviewData.value.summary
   }))
+
+  //  =========== Estado do Contato ================
+  //  ----------- Edição Local --------------
+
+  const contactForm = useState<EditorContactForm>('editor-contact-form', () => ({
+    publicEmail: publicProfileBase.value.publicEmail,
+    whatsapp: '',
+    website: '',
+    linkedin: publicProfileBase.value.linkedin,
+    github: publicProfileBase.value.github
+  }))
+
+  const previewLinks = computed<EditorPreviewLink[]>(() => {
+    const items: EditorPreviewLink[] = []
+
+    if (contactForm.value.linkedin.trim()) {
+      items.push({
+        label: 'LinkedIn',
+        value: contactForm.value.linkedin.trim(),
+        href: normalizePublicUrl(contactForm.value.linkedin)
+      })
+    }
+
+    if (contactForm.value.github.trim()) {
+      items.push({
+        label: 'GitHub',
+        value: contactForm.value.github.trim(),
+        href: normalizePublicUrl(contactForm.value.github)
+      })
+    }
+
+    if (contactForm.value.website.trim()) {
+      items.push({
+        label: 'Website',
+        value: contactForm.value.website.trim(),
+        href: normalizePublicUrl(contactForm.value.website)
+      })
+    }
+
+    if (contactForm.value.publicEmail.trim()) {
+      items.push({
+        label: 'E-mail',
+        value: contactForm.value.publicEmail.trim(),
+        href: `mailto:${contactForm.value.publicEmail.trim()}`
+      })
+    }
+
+    if (contactForm.value.whatsapp.trim()) {
+      const href = normalizeWhatsAppHref(contactForm.value.whatsapp)
+
+      if (href) {
+        items.push({
+          label: 'WhatsApp',
+          value: contactForm.value.whatsapp.trim(),
+          href
+        })
+      }
+    }
+
+    return items
+  })
 
   //  =========== Estado dos Projetos ================
   //  ----------- Edição Local --------------
@@ -253,11 +339,11 @@ export function useEditorState() {
 
   const previewData = computed<EditorPreviewData>(() => {
     return {
-      publicName: heroForm.value.publicName.trim(),
-      headline: heroForm.value.headline.trim(),
-      roleTitle: heroForm.value.roleTitle.trim(),
-      summary: aboutForm.value.summary.trim(),
-      location: heroForm.value.location.trim(),
+      publicName: heroForm.value.publicName.trim() || basePreviewData.value.publicName,
+      headline: heroForm.value.headline.trim() || basePreviewData.value.headline,
+      roleTitle: heroForm.value.roleTitle.trim() || basePreviewData.value.roleTitle,
+      summary: aboutForm.value.summary.trim() || basePreviewData.value.summary,
+      location: heroForm.value.location.trim() || basePreviewData.value.location,
       skills: normalizeSkills(heroForm.value.skillsText),
       projects: previewProjects.value,
       links: previewLinks.value
@@ -267,44 +353,44 @@ export function useEditorState() {
   //  =========== Validação dos Projetos ================
   //  ----------- Zod Local --------------
 
-function validateProject(projectId: string) {
-  const project = projectsForm.value.find((item) => item.id === projectId)
+  function validateProject(projectId: string) {
+    const project = projectsForm.value.find((item) => item.id === projectId)
 
-  if (!project) {
+    if (!project) {
+      return false
+    }
+
+    const result = editorProjectSchema.safeParse(project)
+
+    if (result.success) {
+      projectErrors.value = {
+        ...projectErrors.value,
+        [projectId]: {}
+      }
+
+      return true
+    }
+
+    const nextErrors: EditorProjectErrors = {}
+
+    for (const issue of result.error.issues) {
+      const field = issue.path[0]
+
+      if (isEditorProjectErrorField(field) && !nextErrors[field]) {
+        nextErrors[field] = issue.message
+      }
+    }
+
+    projectErrors.value = {
+      ...projectErrors.value,
+      [projectId]: nextErrors
+    }
+
     return false
   }
 
-  const result = editorProjectSchema.safeParse(project)
-
-  if (result.success) {
-    projectErrors.value = {
-      ...projectErrors.value,
-      [projectId]: {}
-    }
-
-    return true
-  }
-
-  const nextErrors: EditorProjectErrors = {}
-
-  for (const issue of result.error.issues) {
-    const field = issue.path[0]
-
-    if (isEditorProjectErrorField(field) && !nextErrors[field]) {
-      nextErrors[field] = issue.message
-    }
-  }
-
-  projectErrors.value = {
-    ...projectErrors.value,
-    [projectId]: nextErrors
-  }
-
-  return false
-}
-
   //  =========== Ações Gerais ================
-  //  ----------- Hero, Sobre e Seção --------------
+  //  ----------- Hero, Sobre, Contato e Seção --------------
 
   function setDevice(nextDevice: EditorDevice) {
     device.value = nextDevice
@@ -327,6 +413,11 @@ function validateProject(projectId: string) {
 
   function setAboutForm(nextValue: EditorAboutForm) {
     aboutForm.value = nextValue
+  }
+
+  function setContactForm(nextValue: EditorContactForm) {
+    const result = editorContactSchema.safeParse(nextValue)
+    contactForm.value = result.success ? result.data : nextValue
   }
 
   //  =========== Ações dos Projetos ================
@@ -434,6 +525,18 @@ function validateProject(projectId: string) {
       return
     }
 
+    if (sectionId === 'contact') {
+      contactForm.value = {
+        publicEmail: publicProfileBase.value.publicEmail,
+        whatsapp: '',
+        website: '',
+        linkedin: publicProfileBase.value.linkedin,
+        github: publicProfileBase.value.github
+      }
+
+      return
+    }
+
     if (sectionId === 'projects') {
       const nextProjects = onboardingProjects.value.map(toEditorProjectForm)
 
@@ -449,6 +552,7 @@ function validateProject(projectId: string) {
     activeSection,
     addProject,
     canAddProject,
+    contactForm,
     device,
     hasSelectedTemplate,
     heroForm,
@@ -462,6 +566,7 @@ function validateProject(projectId: string) {
     setAboutForm,
     setActiveProject,
     setActiveSection,
+    setContactForm,
     setDevice,
     setFeaturedProject,
     setHeroForm,

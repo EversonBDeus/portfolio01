@@ -88,11 +88,11 @@ function sectionClass(sectionId: EditorSectionId) {
               </div>
 
               <div class="space-y-2">
-                <h2 class="text-2xl font-semibold sm:text-3xl">
+                <h2 class="break-words text-2xl font-semibold sm:text-3xl">
                   {{ preview.publicName }}
                 </h2>
 
-                <p class="text-sm text-white/85 sm:text-base">
+                <p class="break-words text-sm text-white/85 sm:text-base">
                   {{ preview.headline }}
                 </p>
               </div>
@@ -102,8 +102,11 @@ function sectionClass(sectionId: EditorSectionId) {
                   v-if="preview.location"
                   color="neutral"
                   variant="soft"
+                  class="max-w-full"
                 >
-                  {{ preview.location }}
+                  <span class="break-words">
+                    {{ preview.location }}
+                  </span>
                 </UBadge>
 
                 <UBadge
@@ -111,8 +114,11 @@ function sectionClass(sectionId: EditorSectionId) {
                   :key="skill"
                   color="neutral"
                   variant="soft"
+                  class="max-w-full"
                 >
-                  {{ skill }}
+                  <span class="break-words">
+                    {{ skill }}
+                  </span>
                 </UBadge>
               </div>
             </div>
@@ -122,12 +128,15 @@ function sectionClass(sectionId: EditorSectionId) {
           <!--  ----------- Seções Principais -------------- -->
 
           <div class="space-y-4 bg-(--dashboard-surface-3) p-4 sm:p-6">
+            <!--  =========== Sobre ================ -->
+            <!--  ----------- Resumo Profissional -------------- -->
+
             <section
               v-if="visibility.about"
               class="rounded-2xl border bg-(--dashboard-surface-2) p-5"
               :class="sectionClass('about')"
             >
-              <div class="space-y-2">
+              <div class="space-y-2 min-w-0">
                 <p class="text-xs font-medium uppercase tracking-wide text-muted">
                   Sobre
                 </p>
@@ -136,18 +145,21 @@ function sectionClass(sectionId: EditorSectionId) {
                   Resumo profissional
                 </h3>
 
-                <p class="text-sm text-muted">
+                <p class="whitespace-pre-line break-words text-sm text-muted">
                   {{ preview.summary }}
                 </p>
               </div>
             </section>
+
+            <!--  =========== Projetos ================ -->
+            <!--  ----------- Vitrine Inicial -------------- -->
 
             <section
               v-if="visibility.projects"
               class="rounded-2xl border bg-(--dashboard-surface-2) p-5"
               :class="sectionClass('projects')"
             >
-              <div class="space-y-4">
+              <div class="space-y-4 min-w-0">
                 <div class="space-y-1">
                   <p class="text-xs font-medium uppercase tracking-wide text-muted">
                     Projetos
@@ -165,10 +177,10 @@ function sectionClass(sectionId: EditorSectionId) {
                   <article
                     v-for="project in preview.projects"
                     :key="project.id"
-                    class="rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4 shadow-(--dashboard-shadow-xs)"
+                    class="min-w-0 rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4 shadow-(--dashboard-shadow-xs)"
                   >
                     <div class="flex flex-wrap items-center gap-2">
-                      <p class="font-medium">
+                      <p class="break-words font-medium">
                         {{ project.title }}
                       </p>
 
@@ -181,20 +193,23 @@ function sectionClass(sectionId: EditorSectionId) {
                       </UBadge>
                     </div>
 
-                    <p class="mt-2 text-xs text-muted">
+                    <p class="mt-2 break-words text-xs text-muted">
                       {{ project.category }}
                     </p>
 
-                    <p class="mt-3 text-sm text-muted">
+                    <p class="mt-3 whitespace-pre-line break-words text-sm text-muted">
                       {{ project.summary }}
                     </p>
 
-                    <p
+                    <a
                       v-if="project.link"
-                      class="mt-3 truncate text-xs text-primary"
+                      :href="project.link"
+                      target="_blank"
+                      rel="noreferrer"
+                      class="mt-3 block max-w-full break-all text-xs text-primary hover:underline"
                     >
                       {{ project.link }}
-                    </p>
+                    </a>
                   </article>
                 </div>
 
@@ -209,12 +224,15 @@ function sectionClass(sectionId: EditorSectionId) {
               </div>
             </section>
 
+            <!--  =========== Contato ================ -->
+            <!--  ----------- Links Públicos -------------- -->
+
             <section
               v-if="visibility.contact"
               class="rounded-2xl border bg-(--dashboard-surface-2) p-5"
               :class="sectionClass('contact')"
             >
-              <div class="space-y-4">
+              <div class="space-y-4 min-w-0">
                 <div class="space-y-1">
                   <p class="text-xs font-medium uppercase tracking-wide text-muted">
                     Contato
@@ -227,23 +245,41 @@ function sectionClass(sectionId: EditorSectionId) {
 
                 <div
                   v-if="preview.links.length > 0"
-                  class="flex flex-wrap gap-2"
+                  class="space-y-3 min-w-0"
                 >
-                  <UBadge
-                    v-for="link in preview.links"
-                    :key="`${link.label}-${link.value}`"
-                    color="neutral"
-                    variant="soft"
+                  <div
+                    v-for="item in preview.links"
+                    :key="`${item.label}-${item.value}`"
+                    class="min-w-0 rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) px-3 py-2"
                   >
-                    {{ link.label }} · {{ link.value }}
-                  </UBadge>
+                    <p class="text-xs uppercase tracking-wide text-muted">
+                      {{ item.label }}
+                    </p>
+
+                    <a
+                      v-if="item.href"
+                      :href="item.href"
+                      target="_blank"
+                      rel="noreferrer"
+                      class="mt-1 block max-w-full break-all text-sm font-medium text-primary hover:underline"
+                    >
+                      {{ item.value }}
+                    </a>
+
+                    <p
+                      v-else
+                      class="mt-1 break-words text-sm font-medium"
+                    >
+                      {{ item.value }}
+                    </p>
+                  </div>
                 </div>
 
                 <UAlert
                   v-else
-                  icon="i-lucide-mail-search"
-                  title="Sem links públicos por enquanto"
-                  description="Preencha LinkedIn, GitHub ou e-mail público para ativar esta seção no preview."
+                  icon="i-lucide-send"
+                  title="Nenhum link público disponível ainda"
+                  description="Adicione canais públicos no editor para alimentar esta seção do template."
                   color="neutral"
                   variant="outline"
                 />
