@@ -46,28 +46,27 @@ const navigationItems = [
 
       <!--  =========== Ações ================ -->
       <!--  ----------- Portfólio, tema e templates -------------- -->
+            <div class="flex items-center gap-2">
+              <UButton
+                to="/auth/login"
+                color="neutral"
+                variant="ghost"
+                size="sm"
+                class="hidden sm:inline-flex text-slate-600 dark:text-slate-300"
+              >
+                Entrar
+              </UButton>
 
-      <div class="flex items-center gap-2">
-        <UButton
-          to="/portfolio"
-          color="neutral"
-          variant="ghost"
-          size="sm"
-          class="hidden sm:inline-flex text-slate-600 dark:text-slate-300"
-        >
-          Ver portfólio
-        </UButton>
+              <UColorModeButton />
 
-        <UColorModeButton />
-
-        <UButton
-          to="/dashboard/templates"
-          size="sm"
-          icon="i-lucide-layout-template"
-        >
-          Templates
-        </UButton>
-      </div>
+              <UButton
+                to="/auth/register"
+                size="sm"
+                icon="i-lucide-user-plus"
+              >
+                Criar conta
+              </UButton>
+            </div>
     </div>
   </header>
 </template>
