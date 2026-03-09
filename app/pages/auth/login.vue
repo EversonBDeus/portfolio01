@@ -7,6 +7,7 @@ import { useAuthState } from '~/composables/useAuthState'
 import AuthFloatingInput from '~/components/auth/AuthFloatingInput.vue'
 import AuthFloatingPasswordInput from '~/components/auth/AuthFloatingPasswordInput.vue'
 import AuthSocialButton from '~/components/auth/AuthSocialButton.vue'
+
 definePageMeta({
   layout: 'auth'
 })
@@ -115,6 +116,7 @@ async function handleSubmit() {
           Retome seu onboarding, revise seus dados e siga para o dashboard.
         </p>
       </div>
+
       <div class="flex items-center justify-center gap-4">
         <AuthSocialButton
           provider="google"
@@ -139,9 +141,10 @@ async function handleSubmit() {
         <div class="space-y-2">
           <AuthFloatingInput
             v-model="form.identifier"
-            label="E-mail ou usuário"
+            label="E-mail"
             icon="i-lucide-mail"
-            autocomplete="username"
+            type="email"
+            autocomplete="email"
             :spellcheck="false"
             @blur="touched.identifier = true"
           />

@@ -14,6 +14,10 @@ export default defineNuxtRouteMiddleware((to) => {
   const { isAuthenticated, hasPendingVerification } = useAuthState()
   const { onboardingStatus, onboardingCompleted } = useOnboardingAccess()
 
+  function redirect(path: string) {
+    return navigateTo(path, { replace: true })
+  }
+
   if (isPreviewMode) {
     return
   }
@@ -23,11 +27,11 @@ export default defineNuxtRouteMiddleware((to) => {
 
   if (isDashboardRoute) {
     if (!isAuthenticated.value) {
-      return navigateTo('/auth/login')
+      return redirect('/auth/login')
     }
 
     if (onboardingStatus.value === 'not_started') {
-      return navigateTo('/onboarding')
+      return redirect('/onboarding')
     }
 
     return
@@ -38,11 +42,11 @@ export default defineNuxtRouteMiddleware((to) => {
 
   if (isOnboardingRoute) {
     if (!isAuthenticated.value) {
-      return navigateTo('/auth/login')
+      return redirect('/auth/login')
     }
 
     if (onboardingCompleted.value) {
-      return navigateTo('/dashboard/perfil')
+      return redirect('/dashboard/perfil')
     }
 
     return
@@ -64,8 +68,12 @@ export default defineNuxtRouteMiddleware((to) => {
   }
 
   if (onboardingCompleted.value) {
-    return navigateTo('/dashboard/perfil')
+    return redirect('/dashboard/perfil')
   }
 
-  return navigateTo('/onboarding')
+  if (onboardingStatus.value === 'in_progress') {
+    return redirect('/dashboard/perfil')
+  }
+
+  return redirect('/onboarding')
 })

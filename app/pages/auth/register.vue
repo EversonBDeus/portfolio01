@@ -122,10 +122,10 @@ async function handleSubmit() {
     const target = await register(result.data)
 
     toast.add({
-      title: 'Cadastro iniciado',
-      description: 'Use o código de verificação enviado para continuar.',
+      title: 'Conta criada',
+      description: 'Sua conta já está pronta. Vamos seguir para o onboarding.',
       color: 'success',
-      icon: 'i-lucide-mail-check'
+      icon: 'i-lucide-circle-check'
     })
 
     await navigateTo(target)
@@ -160,7 +160,7 @@ async function handleSubmit() {
             <span class="inline-flex size-7 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-400 ring-1 ring-slate-200 dark:bg-white/5 dark:text-slate-500 dark:ring-white/10">
               2
             </span>
-            <span>Verificação</span>
+            <span>Onboarding</span>
           </div>
         </div>
 
@@ -170,23 +170,25 @@ async function handleSubmit() {
           </h2>
 
           <p class="text-sm leading-6 text-slate-600 dark:text-slate-300">
-            Depois do cadastro e da verificação por e-mail, o fluxo segue para o onboarding antes do dashboard.
+            Depois do cadastro, o fluxo segue direto para o onboarding antes do dashboard.
           </p>
         </div>
       </div>
-        <div class="flex items-center justify-center gap-4">
-          <AuthSocialButton
-            provider="google"
-            tooltip="Continuar com Google"
-            @click="handleSocial('google')"
-          />
 
-          <AuthSocialButton
-            provider="facebook"
-            tooltip="Continuar com Facebook"
-            @click="handleSocial('facebook')"
-          />
-        </div>
+      <div class="flex items-center justify-center gap-4">
+        <AuthSocialButton
+          provider="google"
+          tooltip="Continuar com Google"
+          @click="handleSocial('google')"
+        />
+
+        <AuthSocialButton
+          provider="facebook"
+          tooltip="Continuar com Facebook"
+          @click="handleSocial('facebook')"
+        />
+      </div>
+
       <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
         <span class="h-px flex-1 bg-slate-200 dark:bg-white/10" />
         <span>ou cadastre com e-mail</span>
