@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import TemplatesHeader from '~/components/dashboard/templates/TemplatesHeader.vue'
 import TemplatesFilters from '~/components/dashboard/templates/TemplatesFilters.vue'
 import TemplateCard from '~/components/dashboard/templates/TemplateCard.vue'
@@ -18,6 +18,9 @@ const {
   categories,
   closePreview,
   filteredTemplates,
+  hydrateSelection,
+  isSyncingSelection,
+  isTemplateAvailable,
   openPreview,
   previewPlan,
   previewTemplate,
@@ -35,14 +38,26 @@ const {
   totalPlus,
   totalPro,
   templates,
-  viewMode,
-  isTemplateAvailable
+  viewMode
 } = useTemplatesState()
 
 const selectedTemplateDescription = computed(() => {
   if (!selectedTemplate.value) return ''
 
-  return `${selectedTemplate.value.name} está marcado como template atual desta etapa visual. A ligação com o editor entra na próxima fase.`
+  return `${selectedTemplate.value.name} está salvo como template atual desta conta e já alimenta o editor visual.`
+})
+
+onMounted(async () => {
+  const loaded = await hydrateSelection()
+
+  if (!loaded) {
+    toast.add({
+      title: 'Modo local temporário',
+      description: 'Não foi possível carregar o template salvo agora. Você ainda pode escolher outro template nesta sessão.',
+      color: 'warning',
+      icon: 'i-lucide-cloud-off'
+    })
+  }
 })
 
 function handleViewMode(mode: 'grid' | 'list') {
@@ -65,12 +80,12 @@ function handleOpenPreview(templateId: string) {
   openPreview(templateId)
 }
 
-function handleSelectTemplate(templateId: string) {
-  const result = selectTemplate(templateId)
+async function handleSelectTemplate(templateId: string) {
+  const result = await selectTemplate(templateId)
 
   if (!result.allowed) {
     toast.add({
-      title: 'Template bloqueado',
+      title: 'Não foi possível selecionar',
       description: result.reason,
       color: 'warning',
       icon: 'i-lucide-lock'
@@ -81,7 +96,7 @@ function handleSelectTemplate(templateId: string) {
 
   toast.add({
     title: 'Template selecionado',
-    description: `${result.template.name} foi marcado como template atual desta etapa.`,
+    description: `${result.template.name} foi salvo como template atual da sua conta.`,
     color: 'success',
     icon: 'i-lucide-circle-check'
   })
@@ -115,7 +130,17 @@ function handleModalOpenChange(value: boolean) {
       class="dashboard-note-alert"
       icon="i-lucide-layout-template"
       title="Escopo desta tela"
-      description="Aqui o usuário escolhe a base visual do portfólio. O template continua separado dos dados públicos e internos do sistema."
+      description="Aqui o usuário escolhe a base visual do portfólio. A seleção agora fica persistida na conta e continua separada dos dados públicos e internos do sistema."
+      color="neutral"
+      variant="outline"
+    />
+
+    <UAlert
+      v-if="isSyncingSelection"
+      class="dashboard-note-alert"
+      icon="i-lucide-refresh-cw"
+      title="Sincronizando template"
+      description="Carregando ou salvando a seleção atual desta conta."
       color="neutral"
       variant="outline"
     />

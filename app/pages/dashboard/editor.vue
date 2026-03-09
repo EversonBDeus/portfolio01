@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import EditorPreview from '~/components/dashboard/editor/EditorPreview.vue'
 import EditorSectionModal from '~/components/dashboard/editor/EditorSectionModal.vue'
 import EditorSectionsPanel from '~/components/dashboard/editor/EditorSectionsPanel.vue'
@@ -11,6 +11,7 @@ import type {
 } from '~/composables/useEditorState'
 import type { EditorSectionId } from '~/data/editor-sections'
 import { useEditorState } from '~/composables/useEditorState'
+import { useTemplateSelection } from '~/composables/useTemplateSelection'
 
 definePageMeta({
   layout: 'dashboard'
@@ -57,6 +58,17 @@ const {
   updateProjectField,
   visibility
 } = useEditorState()
+
+const {
+  loadSelectionFromServer,
+  loadingFromServer: loadingTemplateSelectionFromServer
+} = useTemplateSelection()
+
+const isTemplateSelectionLoading = computed(() => loadingTemplateSelectionFromServer.value)
+
+onMounted(async () => {
+  await loadSelectionFromServer()
+})
 
 const draftStatusTitle = computed(() => {
   if (hasPendingChanges.value) {
@@ -227,11 +239,24 @@ function handleRestoreBase() {
       variant="outline"
     />
 
+<div
+  v-if="isTemplateSelectionLoading"
+  class="dashboard-form-surface-2 rounded-2xl border border-(--dashboard-border-strong) bg-(--dashboard-surface-2) p-6 shadow-(--dashboard-shadow-xs)"
+>
+  <UAlert
+    icon="i-lucide-refresh-cw"
+    title="Carregando template salvo"
+    description="Estamos buscando o template atual da sua conta para montar o editor."
+    color="neutral"
+    variant="outline"
+  />
+</div>
+
     <!--  =========== Estado sem Template ================ -->
     <!--  ----------- Seleção Necessária -------------- -->
 
     <div
-      v-if="!hasSelectedTemplate || !selectedTemplate"
+      v-else-if="!hasSelectedTemplate || !selectedTemplate"
       class="dashboard-form-surface-2 rounded-2xl border border-(--dashboard-border-strong) bg-(--dashboard-surface-2) p-6 shadow-(--dashboard-shadow-xs)"
     >
       <div class="space-y-4">

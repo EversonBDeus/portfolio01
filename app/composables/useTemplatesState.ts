@@ -48,10 +48,15 @@ export function useTemplatesState() {
   const previewTemplateId = useState<string | null>('templates-preview-template-id', () => null)
 
   const {
+    loadingFromServer,
+    loadSelectionFromServer,
+    saveSelectionToServer,
+    savingToServer,
     selectedTemplate,
-    selectedTemplateId,
-    setSelectedTemplate
+    selectedTemplateId
   } = useTemplateSelection()
+
+  const isSyncingSelection = computed(() => loadingFromServer.value || savingToServer.value)
 
   //  =========== Catálogo ================
   //  ----------- Dados Mockados --------------
@@ -139,10 +144,14 @@ export function useTemplatesState() {
     searchQuery.value = ''
   }
 
+  async function hydrateSelection(force = false) {
+    return loadSelectionFromServer(force)
+  }
+
   //  =========== Seleção do Template ================
   //  ----------- Estado Atual --------------
 
-  function selectTemplate(templateId: string): TemplateSelectionResult {
+  async function selectTemplate(templateId: string): Promise<TemplateSelectionResult> {
     const template = templates.value.find((item) => item.id === templateId)
 
     if (!template) {
@@ -159,7 +168,14 @@ export function useTemplatesState() {
       }
     }
 
-    setSelectedTemplate(template.id)
+    const saveResult = await saveSelectionToServer(template.id)
+
+    if (!saveResult.ok) {
+      return {
+        allowed: false,
+        reason: saveResult.error
+      }
+    }
 
     return {
       allowed: true,
@@ -172,6 +188,9 @@ export function useTemplatesState() {
     categories,
     closePreview,
     filteredTemplates,
+    hydrateSelection,
+    isSyncingSelection,
+    isTemplateAvailable,
     openPreview,
     previewPlan,
     previewTemplate,
@@ -185,11 +204,10 @@ export function useTemplatesState() {
     setPreviewPlan,
     setSearchQuery,
     setViewMode,
+    templates,
     totalFree,
     totalPlus,
     totalPro,
-    viewMode,
-    isTemplateAvailable,
-    templates
+    viewMode
   }
 }

@@ -1,11 +1,35 @@
 import { computed, watch } from 'vue'
 import { PORTFOLIO_TEMPLATES } from '~/data/templates'
+import { useAuthState } from '~/composables/useAuthState'
+
+type TemplateSelectionResponse = {
+  templateId: string | null
+}
+
+type TemplateSelectionSaveResult =
+  | {
+      ok: true
+      templateId: string
+    }
+  | {
+      ok: false
+      error: string
+    }
+
+function normalizeTemplateId(value: unknown) {
+  const templateId = String(value ?? '').trim()
+
+  return templateId || null
+}
 
 export function useTemplateSelection() {
-  //  =========== Estado do Template Atual ================
-  //  ----------- State + Cookie Sincronizados --------------
+  //  =========== Dependências da Auth ================
+  //  ----------- Sessão Atual --------------
 
-  const selectedTemplateIdState = useState<string | null>('selected-template-id', () => null)
+  const { session } = useAuthState()
+
+  //  =========== Estado do Template Atual ================
+  //  ----------- Cookie + State Sincronizados --------------
 
   const selectedTemplateIdCookie = useCookie<string | null>('portfolio-selected-template-id', {
     sameSite: 'lax',
@@ -13,23 +37,36 @@ export function useTemplateSelection() {
     default: () => null
   })
 
-  watch(
-    selectedTemplateIdCookie,
-    (value) => {
-      if (value !== selectedTemplateIdState.value) {
-        selectedTemplateIdState.value = value
-      }
-    },
-    {
-      immediate: true
-    }
+  const selectedTemplateIdState = useState<string | null>(
+    'selected-template-id',
+    () => selectedTemplateIdCookie.value ?? null
   )
 
+  const loadingFromServer = useState<boolean>('template-selection-loading-from-server', () => false)
+  const savingToServer = useState<boolean>('template-selection-saving-to-server', () => false)
+  const hydratedForAccount = useState<string | null>('template-selection-hydrated-for-account', () => null)
+
+  function applySelection(templateId: string | null) {
+    selectedTemplateIdState.value = templateId
+    selectedTemplateIdCookie.value = templateId
+  }
+
+  function getCurrentAccountKey() {
+    return session.value?.email?.trim().toLowerCase() ?? null
+  }
+
   watch(
-    selectedTemplateIdState,
-    (value) => {
-      if (value !== selectedTemplateIdCookie.value) {
-        selectedTemplateIdCookie.value = value
+    () => getCurrentAccountKey(),
+    (accountKey, previousAccountKey) => {
+      if (!accountKey) {
+        applySelection(null)
+        hydratedForAccount.value = null
+        return
+      }
+
+      if (accountKey !== previousAccountKey) {
+        applySelection(null)
+        hydratedForAccount.value = null
       }
     },
     {
@@ -38,10 +75,9 @@ export function useTemplateSelection() {
   )
 
   const selectedTemplateId = computed<string | null>({
-    get: () => selectedTemplateIdState.value ?? selectedTemplateIdCookie.value ?? null,
+    get: () => selectedTemplateIdState.value,
     set: (value) => {
-      selectedTemplateIdState.value = value
-      selectedTemplateIdCookie.value = value
+      applySelection(value)
     }
   })
 
@@ -50,18 +86,104 @@ export function useTemplateSelection() {
   })
 
   const hasSelectedTemplate = computed(() => Boolean(selectedTemplate.value))
+  const isTemplateSelectionBusy = computed(() => loadingFromServer.value || savingToServer.value)
+
+  async function loadSelectionFromServer(force = false) {
+    const accountKey = getCurrentAccountKey()
+
+    if (!import.meta.client || !accountKey) {
+      return false
+    }
+
+    if (!force && hydratedForAccount.value === accountKey) {
+      return true
+    }
+
+    loadingFromServer.value = true
+
+    try {
+      const response = await $fetch<TemplateSelectionResponse>('/api/template-selection')
+
+      applySelection(normalizeTemplateId(response.templateId))
+      hydratedForAccount.value = accountKey
+
+      return true
+    } catch {
+      return false
+    } finally {
+      loadingFromServer.value = false
+    }
+  }
+
+  async function saveSelectionToServer(templateId: string): Promise<TemplateSelectionSaveResult> {
+    const normalizedTemplateId = normalizeTemplateId(templateId)
+
+    if (!normalizedTemplateId) {
+      return {
+        ok: false,
+        error: 'Selecione um template válido antes de salvar.'
+      }
+    }
+
+    if (!session.value) {
+      return {
+        ok: false,
+        error: 'Sua sessão expirou. Faça login novamente para salvar o template.'
+      }
+    }
+
+    const templateExists = PORTFOLIO_TEMPLATES.some((template) => template.id === normalizedTemplateId)
+
+    if (!templateExists) {
+      return {
+        ok: false,
+        error: 'Template não encontrado.'
+      }
+    }
+
+    savingToServer.value = true
+
+    try {
+      const response = await $fetch<{ ok: true; templateId: string }>('/api/template-selection', {
+        method: 'POST',
+        body: {
+          templateId: normalizedTemplateId
+        }
+      })
+
+      applySelection(normalizeTemplateId(response.templateId))
+      hydratedForAccount.value = getCurrentAccountKey()
+
+      return {
+        ok: true,
+        templateId: response.templateId
+      }
+    } catch (error) {
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : 'Não foi possível salvar o template agora.'
+      }
+    } finally {
+      savingToServer.value = false
+    }
+  }
 
   function setSelectedTemplate(templateId: string) {
-    selectedTemplateId.value = templateId
+    applySelection(normalizeTemplateId(templateId))
   }
 
   function clearSelectedTemplate() {
-    selectedTemplateId.value = null
+    applySelection(null)
   }
 
   return {
     clearSelectedTemplate,
     hasSelectedTemplate,
+    isTemplateSelectionBusy,
+    loadingFromServer,
+    loadSelectionFromServer,
+    savingToServer,
+    saveSelectionToServer,
     selectedTemplate,
     selectedTemplateId,
     setSelectedTemplate
