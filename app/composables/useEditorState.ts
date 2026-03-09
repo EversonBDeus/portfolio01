@@ -1,9 +1,10 @@
-import { computed } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import {
   EDITOR_SECTIONS,
   type EditorSectionDefinition,
   type EditorSectionId
 } from '~/data/editor-sections'
+import { useEditorDraft, type EditorDraftPayload } from '~/composables/useEditorDraft'
 import { useOnboardingState } from '~/composables/useOnboardingState'
 import { useTemplateSelection } from '~/composables/useTemplateSelection'
 import {
@@ -73,6 +74,8 @@ export type EditorPreviewData = {
   links: EditorPreviewLink[]
 }
 
+type EditorSnapshot = Omit<EditorDraftPayload, 'version' | 'updatedAt'>
+
 function createInitialVisibility(): EditorSectionVisibility {
   return {
     hero: true,
@@ -134,12 +137,29 @@ function normalizeWhatsAppHref(value: string) {
   return `https://wa.me/${digits}`
 }
 
+function serializeSnapshot(snapshot: EditorSnapshot) {
+  return JSON.stringify(snapshot)
+}
+
 export function useEditorState() {
   //  =========== Dados do Onboarding ================
   //  ----------- Base do Preview --------------
 
   const { publicProfile, professional, projects } = useOnboardingState()
-  const { hasSelectedTemplate, selectedTemplate } = useTemplateSelection()
+  const {
+    hasSelectedTemplate,
+    selectedTemplate,
+    selectedTemplateId
+  } = useTemplateSelection()
+
+  const {
+    clearDraft,
+    hasSavedDraft,
+    lastSavedAt,
+    loadDraft,
+    resetDraftMeta,
+    saveDraft
+  } = useEditorDraft()
 
   //  =========== Base Pública Segura ================
   //  ----------- Fallback do Onboarding --------------
@@ -207,12 +227,65 @@ export function useEditorState() {
     }
   })
 
+  function createBaseHeroForm(): EditorHeroForm {
+    return {
+      publicName: basePreviewData.value.publicName,
+      headline: basePreviewData.value.headline,
+      roleTitle: basePreviewData.value.roleTitle,
+      location: basePreviewData.value.location,
+      skillsText: basePreviewData.value.skills.join(', ')
+    }
+  }
+
+  function createBaseAboutForm(): EditorAboutForm {
+    return {
+      summary: basePreviewData.value.summary
+    }
+  }
+
+  function createBaseContactForm(): EditorContactForm {
+    return {
+      publicEmail: publicProfileBase.value.publicEmail,
+      whatsapp: '',
+      website: '',
+      linkedin: publicProfileBase.value.linkedin,
+      github: publicProfileBase.value.github
+    }
+  }
+
+  function createBaseProjectsState() {
+    const nextProjects = onboardingProjects.value.map(toEditorProjectForm)
+
+    return {
+      activeProjectId: nextProjects[0]?.id ?? null,
+      projectErrors: createProjectErrorsMap(nextProjects),
+      projects: nextProjects
+    }
+  }
+
+  function createBaseSnapshot(templateId: string): EditorSnapshot {
+    const baseProjectsState = createBaseProjectsState()
+
+    return {
+      templateId,
+      device: 'desktop',
+      activeSection: 'hero',
+      activeProjectId: baseProjectsState.activeProjectId,
+      visibility: createInitialVisibility(),
+      hero: createBaseHeroForm(),
+      about: createBaseAboutForm(),
+      contact: createBaseContactForm(),
+      projects: baseProjectsState.projects
+    }
+  }
+
   //  =========== Estado do Editor ================
   //  ----------- Viewport, Seção e Visibilidade --------------
 
   const device = useState<EditorDevice>('editor-device', () => 'desktop')
   const activeSection = useState<EditorSectionId>('editor-active-section', () => 'hero')
   const visibility = useState<EditorSectionVisibility>('editor-section-visibility', createInitialVisibility)
+  const savedSnapshotHash = useState<string | null>('editor-saved-snapshot-hash', () => null)
 
   const sections = computed<EditorSectionListItem[]>(() => {
     return EDITOR_SECTIONS.map((section) => ({
@@ -224,31 +297,17 @@ export function useEditorState() {
   //  =========== Estado da Hero ================
   //  ----------- Edição Local --------------
 
-  const heroForm = useState<EditorHeroForm>('editor-hero-form', () => ({
-    publicName: basePreviewData.value.publicName,
-    headline: basePreviewData.value.headline,
-    roleTitle: basePreviewData.value.roleTitle,
-    location: basePreviewData.value.location,
-    skillsText: basePreviewData.value.skills.join(', ')
-  }))
+  const heroForm = useState<EditorHeroForm>('editor-hero-form', createBaseHeroForm)
 
   //  =========== Estado do Sobre ================
   //  ----------- Edição Local --------------
 
-  const aboutForm = useState<EditorAboutForm>('editor-about-form', () => ({
-    summary: basePreviewData.value.summary
-  }))
+  const aboutForm = useState<EditorAboutForm>('editor-about-form', createBaseAboutForm)
 
   //  =========== Estado do Contato ================
   //  ----------- Edição Local --------------
 
-  const contactForm = useState<EditorContactForm>('editor-contact-form', () => ({
-    publicEmail: publicProfileBase.value.publicEmail,
-    whatsapp: '',
-    website: '',
-    linkedin: publicProfileBase.value.linkedin,
-    github: publicProfileBase.value.github
-  }))
+  const contactForm = useState<EditorContactForm>('editor-contact-form', createBaseContactForm)
 
   const previewLinks = computed<EditorPreviewLink[]>(() => {
     const items: EditorPreviewLink[] = []
@@ -304,16 +363,16 @@ export function useEditorState() {
   //  ----------- Edição Local --------------
 
   const projectsForm = useState<EditorProjectForm[]>('editor-projects-form', () => {
-    return onboardingProjects.value.map(toEditorProjectForm)
+    return createBaseProjectsState().projects
   })
 
   const activeProjectId = useState<string | null>('editor-active-project-id', () => {
-    return onboardingProjects.value[0]?.id ?? null
+    return createBaseProjectsState().activeProjectId
   })
 
   const projectErrors = useState<Record<string, EditorProjectErrors>>(
     'editor-project-errors',
-    () => createProjectErrorsMap(onboardingProjects.value.map(toEditorProjectForm))
+    () => createBaseProjectsState().projectErrors
   )
 
   const canAddProject = computed(() => projectsForm.value.length < 3)
@@ -348,6 +407,16 @@ export function useEditorState() {
       projects: previewProjects.value,
       links: previewLinks.value
     }
+  })
+
+  const hasPendingChanges = computed(() => {
+    const templateId = selectedTemplateId.value
+
+    if (!templateId || !savedSnapshotHash.value) {
+      return false
+    }
+
+    return serializeSnapshot(createCurrentSnapshot(templateId)) !== savedSnapshotHash.value
   })
 
   //  =========== Validação dos Projetos ================
@@ -389,6 +458,126 @@ export function useEditorState() {
     return false
   }
 
+  //  =========== Helpers do Rascunho ================
+  //  ----------- Snapshot, Aplicação e Persistência --------------
+
+  const lastHydratedTemplateId = useState<string | null>('editor-last-hydrated-template-id', () => null)
+
+  function createCurrentSnapshot(templateId: string): EditorSnapshot {
+    return {
+      templateId,
+      device: device.value,
+      activeSection: activeSection.value,
+      activeProjectId: activeProjectId.value,
+      visibility: {
+        ...visibility.value
+      },
+      hero: {
+        ...heroForm.value
+      },
+      about: {
+        ...aboutForm.value
+      },
+      contact: {
+        ...contactForm.value
+      },
+      projects: projectsForm.value.map((project) => ({
+        ...project
+      }))
+    }
+  }
+
+  function applySnapshot(snapshot: EditorSnapshot) {
+    device.value = snapshot.device
+    activeSection.value = snapshot.activeSection
+    visibility.value = {
+      ...snapshot.visibility
+    }
+    heroForm.value = {
+      ...snapshot.hero
+    }
+    aboutForm.value = {
+      ...snapshot.about
+    }
+    contactForm.value = {
+      ...snapshot.contact
+    }
+    projectsForm.value = snapshot.projects.map((project) => ({
+      ...project
+    }))
+    activeProjectId.value = snapshot.projects.some((project) => project.id === snapshot.activeProjectId)
+      ? snapshot.activeProjectId
+      : snapshot.projects[0]?.id ?? null
+    projectErrors.value = createProjectErrorsMap(projectsForm.value)
+  }
+
+  function updateSavedSnapshot(snapshot: EditorSnapshot) {
+    savedSnapshotHash.value = serializeSnapshot(snapshot)
+  }
+
+  function hydrateEditorForTemplate(templateId: string) {
+    const savedDraft = loadDraft(templateId)
+
+    if (savedDraft) {
+      const snapshot: EditorSnapshot = {
+        templateId: savedDraft.templateId,
+        device: savedDraft.device,
+        activeSection: savedDraft.activeSection,
+        activeProjectId: savedDraft.activeProjectId,
+        visibility: savedDraft.visibility,
+        hero: savedDraft.hero,
+        about: savedDraft.about,
+        contact: savedDraft.contact,
+        projects: savedDraft.projects
+      }
+
+      applySnapshot(snapshot)
+      updateSavedSnapshot(snapshot)
+      lastHydratedTemplateId.value = templateId
+      return
+    }
+
+    const baseSnapshot = createBaseSnapshot(templateId)
+
+    applySnapshot(baseSnapshot)
+    updateSavedSnapshot(baseSnapshot)
+    lastHydratedTemplateId.value = templateId
+  }
+
+  function resetHydrationState() {
+    resetDraftMeta()
+    savedSnapshotHash.value = null
+    lastHydratedTemplateId.value = null
+  }
+
+  function hydrateEditorState(force = false) {
+    const templateId = selectedTemplateId.value
+
+    if (!templateId) {
+      resetHydrationState()
+      return
+    }
+
+    if (!force && lastHydratedTemplateId.value === templateId) {
+      return
+    }
+
+    hydrateEditorForTemplate(templateId)
+  }
+
+  watch(
+    selectedTemplateId,
+    () => {
+      hydrateEditorState(true)
+    },
+    {
+      immediate: true
+    }
+  )
+
+  onMounted(() => {
+    hydrateEditorState(true)
+  })
   //  =========== Ações Gerais ================
   //  ----------- Hero, Sobre, Contato e Seção --------------
 
@@ -501,48 +690,107 @@ export function useEditorState() {
     validateProject(projectId)
   }
 
+  //  =========== Ações do Rascunho ================
+  //  ----------- Salvar, Descartar e Restaurar --------------
+
+function saveEditorDraft() {
+  const templateId = selectedTemplateId.value
+
+  if (!templateId) {
+    return false
+  }
+
+  const currentSnapshot = createCurrentSnapshot(templateId)
+  const result = saveDraft(currentSnapshot)
+
+  if (!result) {
+    return false
+  }
+
+  updateSavedSnapshot(currentSnapshot)
+  lastHydratedTemplateId.value = templateId
+
+  return true
+}
+
+  function discardChanges() {
+    const templateId = selectedTemplateId.value
+
+    if (!templateId) {
+      return 'unavailable' as const
+    }
+
+    const savedDraft = loadDraft(templateId)
+
+    if (savedDraft) {
+      const snapshot: EditorSnapshot = {
+        templateId: savedDraft.templateId,
+        device: savedDraft.device,
+        activeSection: savedDraft.activeSection,
+        activeProjectId: savedDraft.activeProjectId,
+        visibility: savedDraft.visibility,
+        hero: savedDraft.hero,
+        about: savedDraft.about,
+        contact: savedDraft.contact,
+        projects: savedDraft.projects
+      }
+
+      applySnapshot(snapshot)
+      updateSavedSnapshot(snapshot)
+
+      return 'draft' as const
+    }
+
+    const baseSnapshot = createBaseSnapshot(templateId)
+
+    applySnapshot(baseSnapshot)
+    updateSavedSnapshot(baseSnapshot)
+
+    return 'base' as const
+  }
+
+function restoreBaseState() {
+  const templateId = selectedTemplateId.value
+
+  if (!templateId) {
+    return false
+  }
+
+  clearDraft(templateId)
+
+  const baseSnapshot = createBaseSnapshot(templateId)
+
+  applySnapshot(baseSnapshot)
+  updateSavedSnapshot(baseSnapshot)
+  lastHydratedTemplateId.value = templateId
+
+  return true
+}
   //  =========== Reset das Seções ================
   //  ----------- Restaurar Base --------------
 
   function resetSection(sectionId: EditorSectionId) {
     if (sectionId === 'hero') {
-      heroForm.value = {
-        publicName: basePreviewData.value.publicName,
-        headline: basePreviewData.value.headline,
-        roleTitle: basePreviewData.value.roleTitle,
-        location: basePreviewData.value.location,
-        skillsText: basePreviewData.value.skills.join(', ')
-      }
-
+      heroForm.value = createBaseHeroForm()
       return
     }
 
     if (sectionId === 'about') {
-      aboutForm.value = {
-        summary: basePreviewData.value.summary
-      }
-
+      aboutForm.value = createBaseAboutForm()
       return
     }
 
     if (sectionId === 'contact') {
-      contactForm.value = {
-        publicEmail: publicProfileBase.value.publicEmail,
-        whatsapp: '',
-        website: '',
-        linkedin: publicProfileBase.value.linkedin,
-        github: publicProfileBase.value.github
-      }
-
+      contactForm.value = createBaseContactForm()
       return
     }
 
     if (sectionId === 'projects') {
-      const nextProjects = onboardingProjects.value.map(toEditorProjectForm)
+      const baseProjectsState = createBaseProjectsState()
 
-      projectsForm.value = nextProjects
-      activeProjectId.value = nextProjects[0]?.id ?? null
-      projectErrors.value = createProjectErrorsMap(nextProjects)
+      projectsForm.value = baseProjectsState.projects
+      activeProjectId.value = baseProjectsState.activeProjectId
+      projectErrors.value = baseProjectsState.projectErrors
     }
   }
 
@@ -554,15 +802,22 @@ export function useEditorState() {
     canAddProject,
     contactForm,
     device,
+    discardChanges,
+    hasPendingChanges,
+    hasSavedDraft,
     hasSelectedTemplate,
     heroForm,
+    lastSavedAt,
     previewData,
     projectErrors,
     projectsForm,
     removeProject,
     resetSection,
+    restoreBaseState,
+    saveEditorDraft,
     sections,
     selectedTemplate,
+    selectedTemplateId,
     setAboutForm,
     setActiveProject,
     setActiveSection,
