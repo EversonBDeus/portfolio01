@@ -31,11 +31,19 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxt/icon',
     '@nuxt/scripts',
-    // '@sidebase/nuxt-auth', // Fase 2: login
     'nuxt-security',
     '@nuxtjs/seo',
     '@nuxt/eslint'
   ],
+  runtimeConfig: {
+    supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+    public: {
+      supabaseUrl: process.env.SUPABASE_URL || '',
+      supabasePublishableKey: process.env.SUPABASE_PUBLISHABLE_KEY || ''
+    }
+  },
+
+
 
   css: ['~/assets/css/main.css',],
 
