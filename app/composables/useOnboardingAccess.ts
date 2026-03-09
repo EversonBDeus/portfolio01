@@ -64,6 +64,29 @@ export function useOnboardingAccess() {
     }
   }
 
+  function syncOnboardingAccess(status: OnboardingAccessStatus) {
+    if (status === 'not_started') {
+      clearOnboardingAccess()
+      return
+    }
+
+    if (status === 'completed') {
+      onboardingAccess.value = {
+        status: 'completed',
+        startedAt: onboardingAccess.value.startedAt ?? new Date().toISOString(),
+        completedAt: onboardingAccess.value.completedAt ?? new Date().toISOString()
+      }
+
+      return
+    }
+
+    onboardingAccess.value = {
+      status: 'in_progress',
+      startedAt: onboardingAccess.value.startedAt ?? new Date().toISOString(),
+      completedAt: null
+    }
+  }
+
   return {
     clearOnboardingAccess,
     keepOnboardingInProgress,
@@ -72,6 +95,7 @@ export function useOnboardingAccess() {
     onboardingCompleted,
     onboardingStarted,
     onboardingStatus,
-    startOnboarding
+    startOnboarding,
+    syncOnboardingAccess
   }
 }

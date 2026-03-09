@@ -165,14 +165,21 @@ const postAuthRoute = computed(() => (onboardingCompleted.value ? '/dashboard/pe
     return '/onboarding'
   }
 
-  async function verifyEmail() {
+  async function verifyEmail(_code?: string) {
+    if (session.value) {
+      return postAuthRoute.value
+    }
+
     throw new Error('A verificação por código foi removida deste fluxo. Entre com e-mail e senha.')
   }
 
   async function resendVerificationCode() {
+    if (session.value) {
+      return session.value.email
+    }
+
     throw new Error('O reenvio de código não faz parte do fluxo atual.')
   }
-
   function clearAuthState() {
     session.value = null
     pendingVerification.value = null

@@ -1,7 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import type { OnboardingStepId } from '~/composables/useOnboardingState'
+import { useOnboardingPersistence } from '~/composables/useOnboardingPersistence'
 import { useOnboardingState } from '~/composables/useOnboardingState'
+const {
+  loadOnboardingFromServer,
+  loadingFromServer,
+  saveOnboardingToServer,
+  savingToServer
+} = useOnboardingPersistence()
+
+const isRemoteBusy = computed(() => loadingFromServer.value || savingToServer.value)
 import OnboardingStepProfessional from '~/components/onboarding/OnboardingStepProfessional.vue'
 import OnboardingStepProjects from '~/components/onboarding/OnboardingStepProjects.vue'
 import OnboardingStepPublicProfile from '~/components/onboarding/OnboardingStepPublicProfile.vue'
@@ -25,10 +34,20 @@ const router = useRouter()
 
 const { startOnboarding, keepOnboardingInProgress } = useOnboardingAccess()
 
-onMounted(() => {
+onMounted(async () => {
   startOnboarding()
-})
 
+  const loaded = await loadOnboardingFromServer()
+
+  if (!loaded) {
+    toast.add({
+      title: 'Modo local temporário',
+      description: 'Não foi possível carregar os dados salvos agora. Você ainda pode continuar e tentar salvar novamente.',
+      color: 'warning',
+      icon: 'i-lucide-cloud-off'
+    })
+  }
+})
 //  =========== Estado da Página ================
 //  ----------- Composable do Onboarding --------------
 
@@ -116,7 +135,20 @@ async function handleNext() {
   nextStep()
 }
 
-function handleSkip() {
+async function handleSkip() {
+  const saved = await saveOnboardingToServer('in_progress')
+
+  if (!saved) {
+    toast.add({
+      title: 'Não foi possível salvar',
+      description: 'Tente novamente antes de pular esta etapa.',
+      color: 'error',
+      icon: 'i-lucide-circle-alert'
+    })
+
+    return
+  }
+
   const skipped = skipStep()
 
   if (!skipped) return
@@ -139,8 +171,19 @@ function handleReset() {
     icon: 'i-lucide-rotate-ccw'
   })
 }
-function handleContinueLater() {
-  keepOnboardingInProgress()
+async function handleContinueLater() {
+  const saved = await saveOnboardingToServer('in_progress')
+
+  if (!saved) {
+    toast.add({
+      title: 'Não foi possível salvar',
+      description: 'Tente novamente antes de sair do onboarding.',
+      color: 'error',
+      icon: 'i-lucide-circle-alert'
+    })
+
+    return
+  }
 
   toast.add({
     title: 'Você pode continuar depois',
@@ -183,14 +226,16 @@ function handleStepClick(stepId: string | number | undefined) {
 
         <div class="flex items-center gap-2">
               <UButton
-              type="button"
-              color="neutral"
-              variant="ghost"
-              class="hidden sm:inline-flex"
-              @click="handleContinueLater"
-            >
-              Continuar depois
-            </UButton>
+                type="button"
+                color="neutral"
+                variant="ghost"
+                class="hidden sm:inline-flex"
+                :loading="savingToServer"
+                :disabled="isRemoteBusy"
+                @click="handleContinueLater"
+              >
+                Continuar depois
+              </UButton>
 
           <UColorModeButton />
         </div>
@@ -364,6 +409,7 @@ function handleStepClick(stepId: string | number | undefined) {
                           v-if="currentStep.canSkip"
                           color="neutral"
                           variant="ghost"
+                          :disabled="isRemoteBusy"
                           @click="handleSkip"
                         >
                           Pular por agora
@@ -371,21 +417,25 @@ function handleStepClick(stepId: string | number | undefined) {
                       </div>
 
                       <div class="flex flex-wrap gap-3">
-                                  <UButton
-                        type="button"
-                        color="neutral"
-                        variant="ghost"
-                        @click="handleContinueLater"
-                      >
-                        Continuar depois
-                      </UButton>
-
                         <UButton
-                          color="primary"
-                          @click="handleNext"
+                          type="button"
+                          color="neutral"
+                          variant="ghost"
+                          :loading="savingToServer"
+                          :disabled="isRemoteBusy"
+                          @click="handleContinueLater"
                         >
-                          {{ isLastStep ? 'Concluir e abrir dashboard' : 'Próxima etapa' }}
+                          Continuar depois
                         </UButton>
+
+                      <UButton
+                        color="primary"
+                        :loading="savingToServer"
+                        :disabled="isRemoteBusy"
+                        @click="handleNext"
+                      >
+                        {{ isLastStep ? 'Concluir e abrir dashboard' : 'Próxima etapa' }}
+                      </UButton>
                       </div>
                     </div>
                   </div>
