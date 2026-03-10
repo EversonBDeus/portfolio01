@@ -1,32 +1,109 @@
 <script setup lang="ts">
+import { computed, onMounted } from 'vue'
+import { usePlansState } from '~/composables/usePlansState'
+
 definePageMeta({ layout: 'dashboard' })
 useSeoMeta({ title: 'Plans' })
-
-import { usePlansState } from '~/composables/usePlansState'
 
 const toast = useToast()
 
 const {
-  billing,
-  plans,
+  account,
+  billingCycle,
+  billingEnabled,
+  currentPlanCard,
   featureRows,
-  yearlyDiscountLabel,
   getDisplayPrice,
-  isCurrentPlan,
-  selectPlan,
-  setBillingCycle
+  lastLoadedAt,
+  loadPlansFromServer,
+  loadingFromServer,
+  planActions,
+  plans,
+  setBillingCycle,
+  yearlyDiscountLabel
 } = usePlansState()
 
-function handleSelectPlan(planId: 'free' | 'plus' | 'pro') {
-  selectPlan(planId)
+const currentPlanLabel = computed(() => {
+  return currentPlanCard.value?.label ?? 'Free'
+})
 
-  toast.add({
-    title: 'Plano selecionado',
-    description: `O plano ${planId.toUpperCase()} foi marcado como atual no modo visual desta etapa.`,
-    color: 'success',
-    icon: 'i-lucide-circle-check'
-  })
+const currentPlanDescription = computed(() => {
+  return currentPlanCard.value?.description ?? 'Plano atual da conta.'
+})
+
+const syncDescription = computed(() => {
+  if (!lastLoadedAt.value) {
+    return 'Esta tela agora lê o plano real da conta diretamente do backend.'
+  }
+
+  return `Última sincronização do plano: ${formatDateTime(lastLoadedAt.value)}.`
+})
+
+const publicationLabel = computed(() => {
+  return account.value.publicationStatus === 'published' ? 'Publicado' : 'Rascunho'
+})
+
+const publicationColor = computed(() => {
+  return account.value.publicationStatus === 'published' ? 'success' : 'warning'
+})
+
+const onboardingLabel = computed(() => {
+  if (account.value.onboardingStatus === 'completed') {
+    return 'Concluído'
+  }
+
+  if (account.value.onboardingStatus === 'in_progress') {
+    return 'Em andamento'
+  }
+
+  return 'Não iniciado'
+})
+
+const onboardingColor = computed(() => {
+  if (account.value.onboardingStatus === 'completed') {
+    return 'success'
+  }
+
+  if (account.value.onboardingStatus === 'in_progress') {
+    return 'warning'
+  }
+
+  return 'neutral'
+})
+
+const billingLabel = computed(() => {
+  return billingEnabled.value ? 'Ativo' : 'Planejado'
+})
+
+const accountPublicRoute = computed(() => {
+  return account.value.publicSlug ? `/p/${account.value.publicSlug}` : 'Nenhum slug salvo ainda'
+})
+
+function formatDateTime(value: string) {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return 'data indisponível'
+  }
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    dateStyle: 'short',
+    timeStyle: 'short'
+  }).format(date)
 }
+
+onMounted(async () => {
+  const payload = await loadPlansFromServer()
+
+  if (!payload) {
+    toast.add({
+      title: 'Não foi possível carregar o plano atual',
+      description: 'Tente recarregar a página quando a sessão estiver estável.',
+      color: 'warning',
+      icon: 'i-lucide-cloud-off'
+    })
+  }
+})
 </script>
 
 <template>
@@ -34,33 +111,161 @@ function handleSelectPlan(planId: 'free' | 'plus' | 'pro') {
     <div class="space-y-1">
       <h1 class="text-2xl font-semibold">Plans</h1>
       <p class="text-sm text-muted">
-        Compare os planos da plataforma e simule upgrade ou downgrade no painel.
+        Compare os planos da plataforma e acompanhe o plano real salvo atualmente na sua conta.
       </p>
     </div>
 
     <UAlert
       class="dashboard-note-alert"
-      icon="i-lucide-badge-dollar-sign"
-      title="Escopo desta tela"
-      description="Esta etapa fecha a visão comparativa dos planos. A cobrança real, cupom, reembolso e assinatura continuam preparados para integração futura."
+      icon="i-lucide-database"
+      title="Tela alinhada ao backend MVP"
+      description="O plano atual agora é carregado do backend real. Checkout, assinatura, cupom e downgrade continuam fora desta etapa para não abrir billing cedo demais."
       color="neutral"
       variant="outline"
     />
 
-    <div
-      class="dashboard-form-surface-2 rounded-2xl border border-(--dashboard-border-strong) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs)"
-    >
-      <div class="flex flex-wrap items-center justify-between gap-3">
+    <UAlert
+      class="dashboard-note-alert"
+      icon="i-lucide-refresh-cw"
+      title="Sincronização da tela"
+      :description="syncDescription"
+      color="neutral"
+      variant="outline"
+    />
+
+    <UAlert
+      v-if="loadingFromServer"
+      class="dashboard-note-alert"
+      icon="i-lucide-loader-circle"
+      title="Sincronizando plano"
+      description="Carregando o plano atual e o resumo real desta conta."
+      color="neutral"
+      variant="outline"
+    />
+
+    <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div
+        class="dashboard-form-surface-2 space-y-5 rounded-2xl border border-(--dashboard-border-strong) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs) sm:p-5"
+      >
         <div class="space-y-1">
-          <p class="font-medium">Ciclo de cobrança</p>
-          <p class="text-sm text-muted">{{ yearlyDiscountLabel }}</p>
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 class="text-base font-semibold">Plano atual da conta</h2>
+
+            <UBadge
+              color="primary"
+              variant="subtle"
+            >
+              {{ currentPlanLabel }}
+            </UBadge>
+          </div>
+
+          <p class="text-sm text-muted">
+            {{ currentPlanDescription }}
+          </p>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4 space-y-1">
+            <p class="text-sm text-muted">E-mail da conta</p>
+            <p class="font-medium break-words">
+              {{ account.email || '—' }}
+            </p>
+          </div>
+
+          <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4 space-y-1">
+            <p class="text-sm text-muted">Usuário</p>
+            <p class="font-medium break-words">
+              {{ account.username || '—' }}
+            </p>
+          </div>
+
+          <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4 space-y-2">
+            <p class="text-sm text-muted">Onboarding</p>
+
+            <UBadge
+              :color="onboardingColor"
+              variant="subtle"
+            >
+              {{ onboardingLabel }}
+            </UBadge>
+          </div>
+
+          <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4 space-y-2">
+            <p class="text-sm text-muted">Publicação</p>
+
+            <UBadge
+              :color="publicationColor"
+              variant="subtle"
+            >
+              {{ publicationLabel }}
+            </UBadge>
+          </div>
+
+          <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4 space-y-1">
+            <p class="text-sm text-muted">Template conectado</p>
+            <p class="font-medium break-words">
+              {{ account.templateId || 'Nenhum template salvo ainda' }}
+            </p>
+          </div>
+
+          <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4 space-y-1">
+            <p class="text-sm text-muted">Rota pública</p>
+            <p class="font-medium break-words">
+              {{ accountPublicRoute }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="dashboard-form-surface-2 space-y-4 rounded-2xl border border-(--dashboard-border-strong) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs) sm:p-5"
+      >
+        <div class="space-y-1">
+          <h2 class="text-base font-semibold">Billing do MVP</h2>
+          <p class="text-sm text-muted">
+            A comparação já está pronta, mas a cobrança real continua desacoplada desta etapa.
+          </p>
+        </div>
+
+        <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4 space-y-3">
+          <div class="flex items-center justify-between gap-3">
+            <p class="text-sm text-muted">Status do billing</p>
+
+            <UBadge
+              color="neutral"
+              variant="subtle"
+            >
+              {{ billingLabel }}
+            </UBadge>
+          </div>
+
+          <div class="space-y-1">
+            <p class="text-sm text-muted">Ciclo visual</p>
+            <p class="font-medium">
+              {{ billingCycle === 'yearly' ? 'Anual' : 'Mensal' }}
+            </p>
+          </div>
+
+          <div class="space-y-1">
+            <p class="text-sm text-muted">Escopo desta fase</p>
+            <p class="text-sm text-muted">
+              A leitura do plano já usa o backend. Upgrade, downgrade, assinatura, cupom e pagamento entram depois.
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <p class="text-sm font-medium">Ciclo de comparação</p>
+          <p class="text-sm text-muted">
+            {{ yearlyDiscountLabel }}
+          </p>
         </div>
 
         <div class="flex flex-wrap gap-2">
           <UButton
             size="sm"
-            :variant="billing.cycle === 'monthly' ? 'solid' : 'outline'"
-            :color="billing.cycle === 'monthly' ? 'primary' : 'neutral'"
+            :variant="billingCycle === 'monthly' ? 'solid' : 'outline'"
+            :color="billingCycle === 'monthly' ? 'primary' : 'neutral'"
             @click="setBillingCycle('monthly')"
           >
             Mensal
@@ -68,8 +273,8 @@ function handleSelectPlan(planId: 'free' | 'plus' | 'pro') {
 
           <UButton
             size="sm"
-            :variant="billing.cycle === 'yearly' ? 'solid' : 'outline'"
-            :color="billing.cycle === 'yearly' ? 'primary' : 'neutral'"
+            :variant="billingCycle === 'yearly' ? 'solid' : 'outline'"
+            :color="billingCycle === 'yearly' ? 'primary' : 'neutral'"
             @click="setBillingCycle('yearly')"
           >
             Anual
@@ -103,7 +308,7 @@ function handleSelectPlan(planId: 'free' | 'plus' | 'pro') {
               </UBadge>
 
               <UBadge
-                v-if="isCurrentPlan(plan.id)"
+                v-if="planActions[plan.id].label === 'Plano atual'"
                 color="neutral"
                 variant="soft"
               >
@@ -120,7 +325,7 @@ function handleSelectPlan(planId: 'free' | 'plus' | 'pro') {
         <div class="mt-5 space-y-1">
           <p class="text-2xl font-semibold">{{ getDisplayPrice(plan) }}</p>
           <p class="text-xs text-muted">
-            Valores visuais desta etapa. Integração real entra depois.
+            Comparativo visual desta etapa. O plano atual da conta já é real, mas a cobrança ainda não foi integrada.
           </p>
         </div>
 
@@ -130,7 +335,10 @@ function handleSelectPlan(planId: 'free' | 'plus' | 'pro') {
             :key="`${plan.id}-${feature.key}`"
             class="flex items-start gap-2 text-sm text-muted"
           >
-            <UIcon name="i-lucide-check" class="mt-0.5 shrink-0" />
+            <UIcon
+              name="i-lucide-check"
+              class="mt-0.5 shrink-0"
+            />
             <span>
               <strong class="text-default">{{ feature.label }}:</strong>
               {{ feature.value }}
@@ -138,15 +346,19 @@ function handleSelectPlan(planId: 'free' | 'plus' | 'pro') {
           </li>
         </ul>
 
-        <div class="mt-5">
+        <div class="mt-5 space-y-2">
           <UButton
             block
-            :color="isCurrentPlan(plan.id) ? 'neutral' : 'primary'"
-            :variant="isCurrentPlan(plan.id) ? 'outline' : 'solid'"
-            @click="handleSelectPlan(plan.id)"
+            :color="planActions[plan.id].color"
+            :variant="planActions[plan.id].variant"
+            :disabled="planActions[plan.id].disabled"
           >
-            {{ isCurrentPlan(plan.id) ? 'Plano atual' : plan.cta }}
+            {{ planActions[plan.id].label }}
           </UButton>
+
+          <p class="text-xs text-muted">
+            {{ planActions[plan.id].description }}
+          </p>
         </div>
       </article>
     </div>
@@ -199,17 +411,17 @@ function handleSelectPlan(planId: 'free' | 'plus' | 'pro') {
       <UAlert
         class="dashboard-note-alert"
         icon="i-lucide-bar-chart-3"
-        title="Analytics e recursos avançados"
-        description="A tela já deixa clara a progressão entre planos e prepara a interface para a futura regra real de liberação por assinatura."
+        title="Sem liberar analytics por billing ainda"
+        description="A tela já comunica a progressão entre planos, mas a liberação real de recursos por assinatura continua para a etapa futura de billing."
         color="neutral"
         variant="outline"
       />
 
       <UAlert
         class="dashboard-note-alert"
-        icon="i-lucide-undo-2"
-        title="Cobrança e reembolso"
-        description="Cupom, pagamento real, cancelamento e reembolso continuam fora desta etapa visual e entram depois na integração de assinatura."
+        icon="i-lucide-credit-card"
+        title="Cobrança ainda fora do escopo"
+        description="Pagamento, checkout, cupom, cancelamento e reembolso continuam fora desta fase. Aqui o foco é remover o mock e refletir o plano real da conta."
         color="neutral"
         variant="outline"
       />
