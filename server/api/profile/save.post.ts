@@ -122,7 +122,8 @@ export default defineEventHandler(async (event) => {
     { data: account, error: accountError },
     { data: freshProfile, error: freshProfileError },
     { data: freshProfessional, error: freshProfessionalError },
-    { data: settings, error: settingsError }
+    { data: settings, error: settingsError },
+    { data: existingEditor, error: existingEditorError }
   ] = await Promise.all([
     supabase
       .from('user_accounts')
@@ -146,10 +147,16 @@ export default defineEventHandler(async (event) => {
       .from('portfolio_settings')
       .select('public_slug, publication_status, template_id')
       .eq('id', user.id)
+      .maybeSingle(),
+
+    supabase
+      .from('portfolio_editor')
+      .select('id')
+      .eq('id', user.id)
       .maybeSingle()
   ])
 
-  if (accountError || freshProfileError || freshProfessionalError || settingsError) {
+  if (accountError || freshProfileError || freshProfessionalError || settingsError || existingEditorError) {
     throw createError({
       statusCode: 500,
       statusMessage:
@@ -157,8 +164,45 @@ export default defineEventHandler(async (event) => {
         freshProfileError?.message ||
         freshProfessionalError?.message ||
         settingsError?.message ||
+        existingEditorError?.message ||
         'Não foi possível confirmar o salvamento do perfil.'
     })
+  }
+
+  if (existingEditor?.id) {
+    const syncedMainSkills = parseMainSkills(freshProfessional?.main_skills ?? null)
+
+    const { error: editorSyncError } = await supabase
+      .from('portfolio_editor')
+      .update({
+        hero: {
+          publicName: normalizeText(freshProfile?.public_name),
+          headline: normalizeText(freshProfile?.headline),
+          roleTitle: normalizeText(freshProfessional?.role_title),
+          location: normalizeText(freshProfile?.location),
+          skillsText: syncedMainSkills.join(', ')
+        },
+        about: {
+          summary:
+            normalizeText(freshProfessional?.professional_summary) ||
+            normalizeText(freshProfile?.bio)
+        },
+        contact: {
+          publicEmail: normalizeText(freshProfile?.public_email || user.email).toLowerCase(),
+          whatsapp: normalizeText(freshProfile?.whatsapp),
+          website: normalizeOptionalUrl(freshProfile?.website),
+          linkedin: normalizeOptionalUrl(freshProfile?.linkedin),
+          github: normalizeOptionalUrl(freshProfile?.github)
+        }
+      })
+      .eq('id', user.id)
+
+    if (editorSyncError) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: editorSyncError.message
+      })
+    }
   }
 
   return {

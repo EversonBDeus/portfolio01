@@ -68,7 +68,7 @@ export default defineEventHandler(async (event) => {
 
     supabase
       .from('profiles')
-      .select('public_name, headline, location, public_email, bio, linkedin, github')
+      .select('public_name, headline, location, public_email, bio, linkedin, github, website, whatsapp')
       .eq('id', user.id)
       .maybeSingle(),
 
@@ -109,7 +109,9 @@ export default defineEventHandler(async (event) => {
       publicEmail: profile?.public_email ?? user.email ?? '',
       bio: profile?.bio ?? '',
       linkedin: profile?.linkedin ?? '',
-      github: profile?.github ?? ''
+      github: profile?.github ?? '',
+      website: profile?.website ?? '',
+      whatsapp: profile?.whatsapp ?? ''
     },
 
     professional: {

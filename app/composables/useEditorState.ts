@@ -9,6 +9,7 @@ import {
   useEditorPersistence,
   type EditorRemotePayload
 } from '~/composables/useEditorPersistence'
+import { useOnboardingPersistence } from '~/composables/useOnboardingPersistence'
 import { useOnboardingState } from '~/composables/useOnboardingState'
 import { useTemplateSelection } from '~/composables/useTemplateSelection'
 import {
@@ -184,6 +185,11 @@ export function useEditorState() {
   //  ----------- Base do Preview --------------
 
   const { publicProfile, professional, projects } = useOnboardingState()
+    const {
+    loadOnboardingFromServer,
+    loadingFromServer: loadingOnboardingFromServer
+  } = useOnboardingPersistence()
+
   const {
     hasSelectedTemplate,
     selectedTemplate,
@@ -207,6 +213,7 @@ export function useEditorState() {
   } = useEditorPersistence()
 
   const hasSavedDraft = computed(() => hasSavedEditor.value)
+    const loadingBaseFromServer = computed(() => loadingOnboardingFromServer.value)
 
   //  =========== Base Pública Segura ================
   //  ----------- Fallback do Onboarding --------------
@@ -221,7 +228,9 @@ export function useEditorState() {
       publicEmail: source?.publicEmail?.trim() ?? '',
       bio: source?.bio ?? '',
       linkedin: source?.linkedin?.trim() ?? '',
-      github: source?.github?.trim() ?? ''
+      github: source?.github?.trim() ?? '',
+      website: source?.website?.trim() ?? '',
+      whatsapp: source?.whatsapp?.trim() ?? ''
     }
   })
 
@@ -293,8 +302,8 @@ export function useEditorState() {
   function createBaseContactForm(): EditorContactForm {
     return {
       publicEmail: publicProfileBase.value.publicEmail,
-      whatsapp: '',
-      website: '',
+      whatsapp: publicProfileBase.value.whatsapp,
+      website: publicProfileBase.value.website,
       linkedin: publicProfileBase.value.linkedin,
       github: publicProfileBase.value.github
     }
@@ -612,6 +621,8 @@ export function useEditorState() {
   }
 
   async function hydrateEditorForTemplate(templateId: string, force = false) {
+    await loadOnboardingFromServer(force)
+
     const remoteResponse = await loadEditorFromServer(force)
 
     if (remoteResponse?.editor) {
@@ -907,6 +918,8 @@ export function useEditorState() {
       }
     }
 
+    await loadOnboardingFromServer(true)
+
     const baseSnapshot = createBaseSnapshot(templateId)
 
     const result = await saveEditorToServer({
@@ -978,6 +991,7 @@ export function useEditorState() {
     heroForm,
     lastSavedAt,
     loadingFromServer,
+    loadingBaseFromServer,
     previewData,
     projectErrors,
     projectsForm,
@@ -998,6 +1012,7 @@ export function useEditorState() {
     setHeroForm,
     toggleSection,
     updateProjectField,
-    visibility
+    visibility,
+
   }
 }

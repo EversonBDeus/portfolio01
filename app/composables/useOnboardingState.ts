@@ -26,7 +26,6 @@ export type OnboardingStep = {
 
 //  =========== Dados do Perfil Público ================
 //  ----------- Tipos da Etapa Perfil Público --------------
-
 export type OnboardingPublicProfileData = {
   publicName: string
   headline: string
@@ -35,6 +34,8 @@ export type OnboardingPublicProfileData = {
   bio: string
   linkedin: string
   github: string
+  website: string
+  whatsapp: string
 }
 
 export type OnboardingPublicProfileErrors = {
@@ -210,7 +211,9 @@ export function useOnboardingState() {
     publicEmail: session.value?.email ?? '',
     bio: '',
     linkedin: '',
-    github: ''
+    github: '',
+    website: '',
+    whatsapp: ''
   }))
 
   //  =========== Estado Profissional ================
@@ -534,7 +537,9 @@ export function useOnboardingState() {
       publicEmail: session.value?.email ?? '',
       bio: '',
       linkedin: '',
-      github: ''
+      github: '',
+      website: publicProfile.value.website?.trim() ?? '',
+      whatsapp: publicProfile.value.whatsapp?.trim() ?? ''
     }
 
     professional.value = {

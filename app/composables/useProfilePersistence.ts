@@ -182,7 +182,9 @@ export function useProfilePersistence() {
       publicEmail: normalized.profile.publicEmail || session.value?.email || '',
       bio: normalized.profile.bio,
       linkedin: normalized.profile.linkedin,
-      github: normalized.profile.github
+      github: normalized.profile.github,
+      website: normalized.profile.website,
+      whatsapp: normalized.profile.whatsapp
     }
 
     professional.value = {

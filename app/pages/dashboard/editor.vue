@@ -38,6 +38,7 @@ const {
   hasSelectedTemplate,
   heroForm,
   lastSavedAt,
+  loadingBaseFromServer,
   loadingFromServer,
   previewData,
   projectErrors,
@@ -62,14 +63,30 @@ const {
 } = useEditorState()
 const {
   loadSelectionFromServer,
+  
   loadingFromServer: loadingTemplateSelectionFromServer
+  
 } = useTemplateSelection()
 
 const isTemplateSelectionLoading = computed(() => loadingTemplateSelectionFromServer.value)
 
-const isEditorBusy = computed(() => loadingFromServer.value || savingToServer.value)
+const isEditorBootstrapLoading = computed(() => {
+  return isTemplateSelectionLoading.value || loadingBaseFromServer.value
+})
 
+const bootstrapAlertTitle = computed(() => {
+  return isTemplateSelectionLoading.value ? 'Carregando template salvo' : 'Carregando base do editor'
+})
 
+const bootstrapAlertDescription = computed(() => {
+  return isTemplateSelectionLoading.value
+    ? 'Estamos buscando o template atual da sua conta para montar o editor.'
+    : 'Estamos buscando a base real do onboarding e do perfil para montar o fallback do editor.'
+})
+
+const isEditorBusy = computed(() => {
+  return loadingBaseFromServer.value || loadingFromServer.value || savingToServer.value
+})
 onMounted(async () => {
   await loadSelectionFromServer()
 })
@@ -258,18 +275,17 @@ async function handleRestoreBase() {
         />
 
 <div
-  v-if="isTemplateSelectionLoading"
+  v-if="isEditorBootstrapLoading"
   class="dashboard-form-surface-2 rounded-2xl border border-(--dashboard-border-strong) bg-(--dashboard-surface-2) p-6 shadow-(--dashboard-shadow-xs)"
 >
   <UAlert
     icon="i-lucide-refresh-cw"
-    title="Carregando template salvo"
-    description="Estamos buscando o template atual da sua conta para montar o editor."
+    :title="bootstrapAlertTitle"
+    :description="bootstrapAlertDescription"
     color="neutral"
     variant="outline"
   />
 </div>
-
     <!--  =========== Estado sem Template ================ -->
     <!--  ----------- Seleção Necessária -------------- -->
 

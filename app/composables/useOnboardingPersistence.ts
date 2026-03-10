@@ -20,6 +20,8 @@ type OnboardingRemotePayload = {
     bio: string
     linkedin: string
     github: string
+    website: string
+    whatsapp: string
   }
   professional: {
     roleTitle: string
@@ -59,7 +61,9 @@ export function useOnboardingPersistence() {
       publicEmail: payload.profile.publicEmail || session.value?.email || '',
       bio: payload.profile.bio,
       linkedin: payload.profile.linkedin,
-      github: payload.profile.github
+      github: payload.profile.github,
+      website: payload.profile.website,
+      whatsapp: payload.profile.whatsapp
     }
 
     professional.value = {
