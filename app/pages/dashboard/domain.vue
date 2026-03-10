@@ -1,329 +1,273 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'dashboard' })
-useSeoMeta({ title: 'Domínio' })
+import { computed, onMounted } from 'vue'
+import { usePublicationState } from '~/composables/usePublicationState'
 
-import { computed } from 'vue'
-import type { PlanTier } from '~/composables/usePerfilState'
-import DashboardFloatingInput from '~/components/dashboard/profile/DashboardFloatingInput.vue'
-import { useDomainState } from '~/composables/useDomainState'
+definePageMeta({ layout: 'dashboard' })
+useSeoMeta({ title: 'Publicação' })
 
 const toast = useToast()
 
 const {
-  domain,
-  isPaidPlan,
-  normalizedDomain,
-  activationUrl,
-  dnsRecords,
-  statusMeta,
-  setPlanTier,
-  saveDomain,
-  validateDns,
-  simulateDnsError,
-  removeDomain
-} = useDomainState()
+  isPublished,
+  loadingFromServer,
+  normalizedPublicSlug,
+  publicationStatus,
+  publicSlug,
+  publicUrl,
+  savePublication,
+  savingToServer,
+  setPublicationStatus,
+  templateId,
+  loadPublication
+} = usePublicationState()
 
-const planOptions: Array<{ label: string; value: PlanTier }> = [
-  { label: 'Free', value: 'free' },
-  { label: 'Plus', value: 'plus' },
-  { label: 'Pro', value: 'pro' }
-]
+const statusLabel = computed(() => {
+  return isPublished.value ? 'Publicado' : 'Rascunho'
+})
 
-const hasCustomDomain = computed(() => Boolean(normalizedDomain.value))
-const canValidate = computed(() => isPaidPlan.value && hasCustomDomain.value)
+const statusColor = computed(() => {
+  return isPublished.value ? 'success' : 'warning'
+})
 
-function onSaveDomain() {
-  const ok = saveDomain()
+const absolutePublicUrl = computed(() => {
+  if (!publicUrl.value) {
+    return ''
+  }
+
+  if (import.meta.client) {
+    return `${window.location.origin}${publicUrl.value}`
+  }
+
+  return publicUrl.value
+})
+
+onMounted(async () => {
+  const loaded = await loadPublication()
+
+  if (!loaded) {
+    toast.add({
+      title: 'Não foi possível carregar a publicação',
+      description: 'Tente salvar novamente quando a sessão estiver estável.',
+      color: 'warning',
+      icon: 'i-lucide-cloud-off'
+    })
+  }
+})
+
+async function handleSavePublication() {
+  const result = await savePublication()
+
+  if (!result.ok) {
+    toast.add({
+      title: 'Não foi possível salvar',
+      description: result.error,
+      color: 'error',
+      icon: 'i-lucide-octagon-alert'
+    })
+
+    return
+  }
 
   toast.add({
-    title: ok ? 'Domínio salvo' : 'Plano insuficiente',
-    description: ok
-      ? 'Os registros DNS foram preparados para validação.'
-      : 'Faça upgrade para um plano pago para usar domínio próprio.',
-    color: ok ? 'success' : 'warning',
-    icon: ok ? 'i-lucide-circle-check' : 'i-lucide-lock'
+    title: result.publicationStatus === 'published' ? 'Portfólio publicado' : 'Rascunho salvo',
+    description:
+      result.publicationStatus === 'published'
+        ? 'A rota pública já está liberada pelo slug informado.'
+        : 'O slug foi salvo, mas a rota pública continua bloqueada até publicar.',
+    color: result.publicationStatus === 'published' ? 'success' : 'warning',
+    icon: result.publicationStatus === 'published' ? 'i-lucide-rocket' : 'i-lucide-save'
   })
 }
 
-function onValidateDns() {
-  const ok = validateDns()
+async function handleCopyLink() {
+  if (!import.meta.client || !absolutePublicUrl.value) {
+    return
+  }
 
-  if (!ok) return
+  try {
+    await navigator.clipboard.writeText(absolutePublicUrl.value)
 
-  toast.add({
-    title: 'DNS validado',
-    description: 'O domínio foi marcado como ativo no modo visual desta etapa.',
-    color: 'success',
-    icon: 'i-lucide-badge-check'
-  })
-}
-
-function onSimulateDnsError() {
-  const ok = simulateDnsError()
-
-  if (!ok) return
-
-  toast.add({
-    title: 'Falha simulada',
-    description: 'O domínio foi marcado com erro para testar o estado visual.',
-    color: 'error',
-    icon: 'i-lucide-octagon-alert'
-  })
-}
-
-function onRemoveDomain() {
-  removeDomain()
-
-  toast.add({
-    title: 'Domínio removido',
-    description: 'A configuração personalizada foi limpa neste modo visual.',
-    color: 'neutral',
-    icon: 'i-lucide-trash-2'
-  })
+    toast.add({
+      title: 'Link copiado',
+      description: 'A URL pública foi copiada para a área de transferência.',
+      color: 'success',
+      icon: 'i-lucide-copy'
+    })
+  } catch {
+    toast.add({
+      title: 'Não foi possível copiar',
+      description: 'Copie manualmente a URL exibida no painel ao lado.',
+      color: 'warning',
+      icon: 'i-lucide-copy-x'
+    })
+  }
 }
 </script>
 
 <template>
   <div class="space-y-6">
     <div class="space-y-1">
-      <h1 class="text-2xl font-semibold">Domínio</h1>
+      <h1 class="text-2xl font-semibold">Publicação</h1>
       <p class="text-sm text-muted">
-        Configure domínio próprio, valide DNS e acompanhe o status de ativação da publicação.
+        Defina o slug público e o status mínimo de publicação do portfólio.
       </p>
     </div>
 
     <UAlert
       class="dashboard-note-alert"
-      icon="i-lucide-globe"
-      title="Regras desta tela"
-      description="Usuários gratuitos usam o domínio padrão da plataforma. Domínio próprio fica liberado apenas em planos pagos."
+      icon="i-lucide-rocket"
+      title="Escopo desta etapa"
+      description="Agora a conta passa a ter slug público real, status draft/published e rota pública lendo diretamente do backend."
       color="neutral"
       variant="outline"
     />
 
-    <div class="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_360px]">
-      <div class="space-y-6">
-        <div
-          class="dashboard-form-surface-2 space-y-5 rounded-2xl border border-(--dashboard-border-strong) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs) sm:p-5"
-        >
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <div class="space-y-1">
-              <h2 class="text-base font-semibold">Configuração do domínio</h2>
-              <p class="text-sm text-muted">
-                Salve o domínio desejado para gerar os registros DNS que precisam ser configurados.
-              </p>
-            </div>
+    <UAlert
+      v-if="loadingFromServer"
+      class="dashboard-note-alert"
+      icon="i-lucide-refresh-cw"
+      title="Sincronizando publicação"
+      description="Carregando o slug e o status atuais desta conta."
+      color="neutral"
+      variant="outline"
+    />
 
-            <UBadge :color="statusMeta.color" variant="subtle" class="shrink-0">
-              {{ statusMeta.label }}
-            </UBadge>
-          </div>
+    <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div
+        class="dashboard-form-surface-2 space-y-5 rounded-2xl border border-(--dashboard-border-strong) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs) sm:p-5"
+      >
+        <div class="space-y-1">
+          <h2 class="text-base font-semibold">Slug público</h2>
+          <p class="text-sm text-muted">
+            Este slug será usado na rota pública do MVP.
+          </p>
+        </div>
 
-          <UAlert
-            v-if="!isPaidPlan"
-            class="dashboard-note-alert"
-            icon="i-lucide-lock"
-            title="Upgrade necessário"
-            description="No plano Free, a publicação continua usando apenas o domínio padrão da plataforma."
-            color="warning"
-            variant="outline"
+        <div class="space-y-2">
+          <label class="text-sm font-medium">Slug</label>
+
+          <UInput
+            v-model="publicSlug"
+            placeholder="seu-nome-ou-marca"
+            icon="i-lucide-link"
+            size="lg"
           />
 
-                  <div class="relative">
-                    <UInput
-                      v-model="domain.customDomain"
-                      placeholder=""
-                      autocomplete="off"
-                      size="lg"
-                      :disabled="!isPaidPlan"
-                      :ui="{
-                        base: 'peer w-full ps-10 bg-[color:var(--dashboard-form-surface)] text-[var(--dashboard-field-text)] placeholder:text-transparent ring-1 ring-inset ring-[color:var(--dashboard-field-ring)] transition-colors focus:ring-2 focus:ring-primary',
-                        leading: 'absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none',
-                        leadingIcon: 'size-5 text-[var(--dashboard-field-icon)]'
-                      }"
-                    >
-                      <template #leading>
-                        <UIcon name="i-lucide-globe" />
-                      </template>
+          <p class="text-xs text-muted">
+            URL final:
+            <span class="font-medium text-default">
+              {{ normalizedPublicSlug ? `/p/${normalizedPublicSlug}` : '/p/seu-slug' }}
+            </span>
+          </p>
+        </div>
 
-                      <template #default>
-                        <label
-                          class="pointer-events-none absolute start-10 z-[1] top-px -translate-y-1/2 text-xs font-medium text-highlighted transition-all duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-placeholder-shown:text-dimmed peer-focus:top-px peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:font-medium peer-focus:text-highlighted"
-                        >
-                          <span class="inline-block bg-[color:var(--dashboard-form-surface)] px-1 leading-none">
-                            Domínio personalizado
-                          </span>
-                        </label>
-                      </template>
-                    </UInput>
-                  </div>
+        <div class="space-y-2">
+          <p class="text-sm font-medium">Status da publicação</p>
 
           <div class="flex flex-wrap gap-3">
             <UButton
-              icon="i-lucide-save"
-              :disabled="!isPaidPlan"
-              @click="onSaveDomain"
-            >
-              Salvar domínio
-            </UButton>
-
-            <UButton
-              color="primary"
-              variant="outline"
-              icon="i-lucide-badge-check"
-              :disabled="!canValidate"
-              @click="onValidateDns"
-            >
-              Validar DNS
-            </UButton>
-
-            <UButton
+              :variant="publicationStatus === 'draft' ? 'solid' : 'outline'"
               color="warning"
-              variant="outline"
-              icon="i-lucide-octagon-alert"
-              :disabled="!canValidate"
-              @click="onSimulateDnsError"
+              icon="i-lucide-file-pen-line"
+              @click="setPublicationStatus('draft')"
             >
-              Simular erro DNS
+              Rascunho
             </UButton>
 
             <UButton
-              color="error"
-              variant="outline"
-              icon="i-lucide-trash-2"
-              :disabled="!hasCustomDomain"
-              @click="onRemoveDomain"
+              :variant="publicationStatus === 'published' ? 'solid' : 'outline'"
+              color="success"
+              icon="i-lucide-globe"
+              :disabled="!templateId"
+              @click="setPublicationStatus('published')"
             >
-              Remover domínio
+              Publicado
             </UButton>
           </div>
+
+          <p class="text-xs text-muted">
+            Em rascunho, a rota pública fica bloqueada. Em publicado, o slug responde com os dados persistidos.
+          </p>
         </div>
 
-        <div
-          class="dashboard-form-surface-2 space-y-5 rounded-2xl border border-(--dashboard-border-strong) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs) sm:p-5"
-        >
-          <div class="space-y-1">
-            <h2 class="text-base font-semibold">Registros DNS esperados</h2>
-            <p class="text-sm text-muted">
-              Use estes registros no provedor do domínio para concluir a ativação.
-            </p>
-          </div>
+        <UAlert
+          v-if="!templateId"
+          class="dashboard-note-alert"
+          icon="i-lucide-layout-template"
+          title="Template obrigatório"
+          description="Selecione e salve um template antes de publicar o portfólio."
+          color="warning"
+          variant="outline"
+        />
 
-          <UAlert
-            v-if="!hasCustomDomain"
-            class="dashboard-note-alert"
-            icon="i-lucide-info"
-            title="Nada para validar ainda"
-            description="Informe e salve um domínio para gerar os registros DNS desta tela."
-            color="neutral"
+        <div class="flex flex-wrap gap-3">
+          <UButton
+            icon="i-lucide-save"
+            :loading="savingToServer"
+            @click="handleSavePublication"
+          >
+            Salvar publicação
+          </UButton>
+
+          <UButton
+            v-if="publicUrl"
             variant="outline"
-          />
-
-          <div v-else class="grid gap-3">
-            <div
-              v-for="record in dnsRecords"
-              :key="`${record.type}-${record.host}`"
-              class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4"
-            >
-              <div class="flex flex-wrap items-start justify-between gap-3">
-                <div class="space-y-1">
-                  <div class="flex items-center gap-2">
-                    <UBadge color="neutral" variant="soft">{{ record.type }}</UBadge>
-                    <UBadge :color="record.isValid ? 'success' : 'warning'" variant="subtle">
-                      {{ record.isValid ? 'Válido' : 'Pendente' }}
-                    </UBadge>
-                  </div>
-
-                  <p class="text-sm text-muted">
-                    Host: <strong class="text-default">{{ record.host }}</strong>
-                  </p>
-
-                  <p class="break-all text-sm text-muted">
-                    Valor: <strong class="text-default">{{ record.value }}</strong>
-                  </p>
-                </div>
-
-                <div class="text-right text-sm text-muted">
-                  TTL: {{ record.ttl }}
-                </div>
-              </div>
-            </div>
-          </div>
+            icon="i-lucide-copy"
+            :disabled="!isPublished"
+            @click="handleCopyLink"
+          >
+            Copiar link público
+          </UButton>
         </div>
       </div>
 
-      <div class="space-y-6">
-        <div
-          class="dashboard-form-surface-2 space-y-4 rounded-2xl border border-(--dashboard-border-strong) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs) sm:p-5"
-        >
-          <div class="space-y-1">
-            <h2 class="text-base font-semibold">Status e publicação</h2>
-            <p class="text-sm text-muted">
-              Acompanhe o estado atual do domínio e o endereço público ativo.
-            </p>
-          </div>
-
-          <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4">
-            <div class="flex items-start gap-3">
-              <UIcon :name="statusMeta.icon" class="mt-0.5 size-5 shrink-0 text-primary" />
-              <div class="space-y-1">
-                <p class="font-medium">{{ statusMeta.label }}</p>
-                <p class="text-sm text-muted">{{ statusMeta.description }}</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="grid gap-3">
-            <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4">
-              <p class="text-xs uppercase tracking-wide text-muted">Domínio padrão</p>
-              <p class="mt-1 break-all text-sm font-medium">
-                {{ domain.platformUrl }}
-              </p>
-            </div>
-
-            <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4">
-              <p class="text-xs uppercase tracking-wide text-muted">Domínio personalizado</p>
-              <p class="mt-1 break-all text-sm font-medium">
-                {{ normalizedDomain || 'Não configurado' }}
-              </p>
-            </div>
-
-            <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4">
-              <p class="text-xs uppercase tracking-wide text-muted">Última verificação</p>
-              <p class="mt-1 text-sm font-medium">{{ domain.lastCheckedAt }}</p>
-            </div>
-          </div>
+      <div
+        class="dashboard-form-surface-2 space-y-4 rounded-2xl border border-(--dashboard-border-strong) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs) sm:p-5"
+      >
+        <div class="space-y-1">
+          <h2 class="text-base font-semibold">Resumo da publicação</h2>
+          <p class="text-sm text-muted">
+            Estado atual da rota pública desta conta.
+          </p>
         </div>
 
-        <div
-          class="dashboard-form-surface-2 space-y-4 rounded-2xl border border-(--dashboard-border-strong) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs) sm:p-5"
-        >
+        <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4 space-y-3">
+          <div class="flex items-center justify-between gap-3">
+            <p class="text-sm text-muted">Status</p>
+
+            <UBadge :color="statusColor" variant="subtle">
+              {{ statusLabel }}
+            </UBadge>
+          </div>
+
           <div class="space-y-1">
-            <h2 class="text-base font-semibold">Cenário de plano</h2>
-            <p class="text-sm text-muted">
-              Controle visual temporário para testar a regra de Free x plano pago antes da integração com cobrança real.
+            <p class="text-sm text-muted">Template conectado</p>
+            <p class="font-medium">
+              {{ templateId || 'Nenhum template salvo ainda' }}
             </p>
           </div>
 
-          <div class="flex flex-wrap gap-2">
-            <UButton
-              v-for="option in planOptions"
-              :key="option.value"
-              size="sm"
-              :variant="domain.planTier === option.value ? 'solid' : 'outline'"
-              :color="domain.planTier === option.value ? 'primary' : 'neutral'"
-              @click="setPlanTier(option.value)"
-            >
-              {{ option.label }}
-            </UButton>
+          <div class="space-y-1">
+            <p class="text-sm text-muted">Slug atual</p>
+            <p class="font-medium">
+              {{ normalizedPublicSlug || '—' }}
+            </p>
+          </div>
+
+          <div class="space-y-1">
+            <p class="text-sm text-muted">URL pública</p>
+            <p class="break-all font-medium">
+              {{ absolutePublicUrl || 'Defina um slug para gerar a URL.' }}
+            </p>
           </div>
 
           <UAlert
-            class="dashboard-note-alert"
-            icon="i-lucide-sparkles"
-            title="Regra do produto"
-            description="Free usa domínio padrão. Plus e Pro liberam domínio próprio, conforme a regra definida para a plataforma."
-            color="neutral"
+            :icon="isPublished ? 'i-lucide-badge-check' : 'i-lucide-lock'"
+            :title="isPublished ? 'Rota pública liberada' : 'Rota pública bloqueada'"
+            :description="isPublished
+              ? 'O portfólio já pode ser acessado externamente pelo slug salvo.'
+              : 'O portfólio continua privado até o status ser salvo como publicado.'"
+            :color="isPublished ? 'success' : 'warning'"
             variant="outline"
           />
         </div>
