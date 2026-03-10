@@ -3,10 +3,50 @@ import type { AccountData } from '~/composables/usePerfilState'
 import DashboardFloatingInput from '~/components/dashboard/profile/DashboardFloatingInput.vue'
 
 const props = defineProps<{ model: AccountData }>()
-const emit = defineEmits<{ dirty: [] }>()
 
-function markDirty() {
-  emit('dirty')
+function formatDateTime(value: string) {
+  if (!value) {
+    return '—'
+  }
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return '—'
+  }
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    dateStyle: 'short',
+    timeStyle: 'short'
+  }).format(date)
+}
+
+function formatPlan(value: AccountData['plan']) {
+  if (value === 'plus') {
+    return 'Plus'
+  }
+
+  if (value === 'pro') {
+    return 'Pro'
+  }
+
+  return 'Free'
+}
+
+function formatOnboardingStatus(value: AccountData['onboardingStatus']) {
+  if (value === 'completed') {
+    return 'Concluído'
+  }
+
+  if (value === 'in_progress') {
+    return 'Em andamento'
+  }
+
+  return 'Não iniciado'
+}
+
+function formatPublicationStatus(value: AccountData['publicationStatus']) {
+  return value === 'published' ? 'Publicado' : 'Draft'
 }
 </script>
 
@@ -15,31 +55,38 @@ function markDirty() {
     <div class="space-y-1">
       <h2 class="text-base font-semibold">Dados internos da conta</h2>
       <p class="text-sm text-muted">
-        Aqui ficam login, identificadores e metadados da conta. Plano, segurança e notificações têm abas próprias.
+        Esta aba mostra o estado real da conta, do onboarding e da publicação mínima já integrada ao backend.
       </p>
     </div>
 
+    <UAlert
+      class="dashboard-note-alert"
+      icon="i-lucide-lock-keyhole"
+      title="Leitura real da conta"
+      description="E-mail, plano, onboarding, slug e template vêm do backend. Alteração de segurança e billing entram em fluxos próprios."
+      color="neutral"
+      variant="outline"
+    />
+
     <div class="grid gap-4 sm:grid-cols-2">
       <DashboardFloatingInput
-        v-model="props.model.email"
+        :model-value="props.model.email || '—'"
         type="email"
         label="E-mail de acesso"
         icon="i-lucide-mail"
-        autocomplete="email"
-        @update:model-value="markDirty"
+        disabled
       />
 
       <DashboardFloatingInput
-        v-model="props.model.username"
+        :model-value="props.model.username || '—'"
         label="Usuário"
         icon="i-lucide-at-sign"
-        autocomplete="username"
-        @update:model-value="markDirty"
+        disabled
       />
 
       <div class="sm:col-span-2">
         <DashboardFloatingInput
-          v-model="props.model.accountId"
+          :model-value="props.model.accountId || '—'"
           label="ID da conta"
           icon="i-lucide-fingerprint"
           disabled
@@ -47,27 +94,55 @@ function markDirty() {
       </div>
 
       <DashboardFloatingInput
-        v-model="props.model.createdAt"
+        :model-value="formatPlan(props.model.plan)"
+        label="Plano"
+        icon="i-lucide-credit-card"
+        disabled
+      />
+
+      <DashboardFloatingInput
+        :model-value="formatOnboardingStatus(props.model.onboardingStatus)"
+        label="Status do onboarding"
+        icon="i-lucide-list-checks"
+        disabled
+      />
+
+      <DashboardFloatingInput
+        :model-value="props.model.publicSlug || '—'"
+        label="Slug público"
+        icon="i-lucide-link-2"
+        disabled
+      />
+
+      <DashboardFloatingInput
+        :model-value="formatPublicationStatus(props.model.publicationStatus)"
+        label="Publicação"
+        icon="i-lucide-send"
+        disabled
+      />
+
+      <div class="sm:col-span-2">
+        <DashboardFloatingInput
+          :model-value="props.model.templateId || 'Nenhum template salvo'"
+          label="Template atual"
+          icon="i-lucide-layout-template"
+          disabled
+        />
+      </div>
+
+      <DashboardFloatingInput
+        :model-value="formatDateTime(props.model.createdAt)"
         label="Conta criada em"
         icon="i-lucide-calendar-plus"
         disabled
       />
 
       <DashboardFloatingInput
-        v-model="props.model.lastLogin"
+        :model-value="formatDateTime(props.model.lastSignInAt)"
         label="Último acesso"
         icon="i-lucide-history"
         disabled
       />
     </div>
-
-    <UAlert
-      class="dashboard-note-alert"
-      icon="i-lucide-info"
-      title="Separação intencional"
-      description="Plano não fica mais aqui para evitar mistura entre dados da conta e assinatura. A aba Conta agora serve apenas para dados internos do usuário."
-      color="neutral"
-      variant="outline"
-    />
   </div>
 </template>

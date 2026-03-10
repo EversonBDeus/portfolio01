@@ -1,14 +1,28 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { UserProfile } from '~/composables/usePerfilState'
 import { useDashboardFormUi } from '~/composables/useDashboardFormUi'
-import { useDashboardThemeUi } from '~/composables/useDashboardThemeUi'
 import DashboardFloatingInput from '~/components/dashboard/profile/DashboardFloatingInput.vue'
 
 const props = defineProps<{ model: UserProfile }>()
 const emit = defineEmits<{ dirty: [] }>()
 
 const { textareaUi } = useDashboardFormUi()
-const { switchUi } = useDashboardThemeUi()
+
+const mainSkillsText = computed({
+  get() {
+    return props.model.mainSkills.join(', ')
+  },
+  set(value: string) {
+    props.model.mainSkills = String(value ?? '')
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 12)
+
+    markDirty()
+  }
+})
 
 function markDirty() {
   emit('dirty')
@@ -18,173 +32,199 @@ function markDirty() {
 <template>
   <div class="space-y-8">
     <div class="space-y-1">
-      <h2 class="text-base font-semibold">Dados públicos do portfólio</h2>
+      <h2 class="text-base font-semibold">Dados públicos e profissionais</h2>
       <p class="text-sm text-muted">
-        Estes campos alimentam o template público e, depois, também o editor visual.
+        Estes campos alimentam o portfólio público, a base profissional e o fallback do editor.
       </p>
     </div>
 
     <UAlert
       class="dashboard-note-alert"
-      icon="i-lucide-sparkles"
-      title="Esses dados são do portfólio"
-      description="Aqui ficam nome, headline, bio, contatos e links públicos. Dados internos da conta ficam nas outras abas."
+      icon="i-lucide-database-zap"
+      title="Conectado ao backend"
+      description="Esta aba agora salva em profiles e professional_data. Aqui ficam os dados-base do seu portfólio."
       color="neutral"
       variant="outline"
     />
 
-    <div class="grid gap-4 sm:grid-cols-2">
-      <DashboardFloatingInput
-        v-model="props.model.nome"
-        label="Nome público"
-        icon="i-lucide-user-round"
-        autocomplete="name"
-        @update:model-value="markDirty"
-      />
-
-      <DashboardFloatingInput
-        v-model="props.model.location"
-        label="Localização"
-        icon="i-lucide-map-pin"
-        autocomplete="address-level2"
-        @update:model-value="markDirty"
-      />
-
-      <div class="sm:col-span-2">
-        <DashboardFloatingInput
-          v-model="props.model.headline"
-          label="Título profissional"
-          icon="i-lucide-briefcase-business"
-          autocomplete="organization-title"
-          @update:model-value="markDirty"
-        />
+    <div class="space-y-4">
+      <div class="space-y-1">
+        <p class="font-medium">Base pública</p>
+        <p class="text-sm text-muted">
+          Nome, headline, bio e contatos públicos exibidos no portfólio.
+        </p>
       </div>
 
-      <DashboardFloatingInput
-        v-model="props.model.publicEmail"
-        type="email"
-        label="E-mail público"
-        icon="i-lucide-mail"
-        autocomplete="email"
-        @update:model-value="markDirty"
-      />
-
-      <DashboardFloatingInput
-        v-model="props.model.externalPortfolio"
-        label="Link externo do portfólio"
-        icon="i-lucide-globe"
-        autocomplete="url"
-        @update:model-value="markDirty"
-      />
-
-      <UFormField label="Bio" class="sm:col-span-2">
-        <UTextarea
-          v-model="props.model.bio"
-          :rows="5"
-          class="w-full"
-          :ui="textareaUi"
+      <div class="grid gap-4 sm:grid-cols-2">
+        <DashboardFloatingInput
+          v-model="props.model.publicName"
+          label="Nome público"
+          icon="i-lucide-user-round"
+          autocomplete="name"
+          :maxlength="120"
           @update:model-value="markDirty"
         />
-      </UFormField>
+
+        <DashboardFloatingInput
+          v-model="props.model.location"
+          label="Localização"
+          icon="i-lucide-map-pin"
+          autocomplete="address-level2"
+          :maxlength="120"
+          @update:model-value="markDirty"
+        />
+
+        <div class="sm:col-span-2">
+          <DashboardFloatingInput
+            v-model="props.model.headline"
+            label="Headline"
+            icon="i-lucide-briefcase-business"
+            autocomplete="organization-title"
+            :maxlength="180"
+            @update:model-value="markDirty"
+          />
+        </div>
+
+        <DashboardFloatingInput
+          v-model="props.model.publicEmail"
+          type="email"
+          label="E-mail público"
+          icon="i-lucide-mail"
+          autocomplete="email"
+          :maxlength="160"
+          @update:model-value="markDirty"
+        />
+
+        <DashboardFloatingInput
+          v-model="props.model.website"
+          label="Website"
+          icon="i-lucide-globe"
+          autocomplete="url"
+          :maxlength="180"
+          @update:model-value="markDirty"
+        />
+
+        <UFormField label="Bio" class="sm:col-span-2">
+          <UTextarea
+            v-model="props.model.bio"
+            :rows="5"
+            class="w-full"
+            :maxlength="600"
+            :ui="textareaUi"
+            @update:model-value="markDirty"
+          />
+        </UFormField>
+      </div>
     </div>
 
     <USeparator />
 
-    <div class="grid gap-4 lg:grid-cols-2">
-      <div
-       class="dashboard-form-surface-2 space-y-4 rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs)"
-      >
-        <div class="space-y-1">
-          <p class="font-medium">Ações públicas</p>
-          <p class="text-sm text-muted">
-            Controle o que poderá aparecer no template sem mexer em assinatura ou segurança.
-          </p>
-        </div>
-
-        <div class="flex items-center justify-between gap-4">
-          <div class="min-w-0">
-            <p class="text-sm font-medium">Exibir botão de currículo</p>
-            <p class="text-xs text-muted">Mostra a ação de download no template.</p>
-          </div>
-
-          <USwitch
-            v-model="props.model.allowResumeDownload"
-            size="lg"
-            color="success"
-            :ui="switchUi"
-            @update:model-value="markDirty"
-          />
-        </div>
-
-        <div class="flex items-center justify-between gap-4">
-          <div class="min-w-0">
-            <p class="text-sm font-medium">Exibir botões rápidos de contato</p>
-            <p class="text-xs text-muted">WhatsApp e Messenger no template, quando preenchidos.</p>
-          </div>
-
-          <USwitch
-            v-model="props.model.allowContactButtons"
-            size="lg"
-            color="success"
-            :ui="switchUi"
-            @update:model-value="markDirty"
-          />
-        </div>
+    <div class="space-y-4">
+      <div class="space-y-1">
+        <p class="font-medium">Base profissional</p>
+        <p class="text-sm text-muted">
+          Dados profissionais centrais usados pelo onboarding, editor e rota pública.
+        </p>
       </div>
 
-      <div
-      class="dashboard-form-surface-2 space-y-4 rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs)"
-      >
-        <div class="space-y-1">
-          <p class="font-medium">Canais de contato</p>
-          <p class="text-sm text-muted">
-            Estes campos servem para ações rápidas do template e futuras configurações do editor.
-          </p>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <DashboardFloatingInput
+          v-model="props.model.roleTitle"
+          label="Cargo principal"
+          icon="i-lucide-badge-check"
+          :maxlength="120"
+          @update:model-value="markDirty"
+        />
+
+        <DashboardFloatingInput
+          v-model="props.model.workArea"
+          label="Área de atuação"
+          icon="i-lucide-briefcase"
+          :maxlength="120"
+          @update:model-value="markDirty"
+        />
+
+        <div class="sm:col-span-2">
+          <DashboardFloatingInput
+            v-model="props.model.experienceLevel"
+            label="Nível de experiência"
+            icon="i-lucide-chart-column"
+            :maxlength="120"
+            @update:model-value="markDirty"
+          />
         </div>
+
+        <UFormField label="Resumo profissional" class="sm:col-span-2">
+          <UTextarea
+            v-model="props.model.professionalSummary"
+            :rows="5"
+            class="w-full"
+            :maxlength="900"
+            :ui="textareaUi"
+            @update:model-value="markDirty"
+          />
+        </UFormField>
+
+        <UFormField
+          label="Habilidades principais"
+          description="Separe por vírgula. Exemplo: Nuxt, TypeScript, Supabase"
+          class="sm:col-span-2"
+        >
+          <UTextarea
+            v-model="mainSkillsText"
+            :rows="3"
+            class="w-full"
+            :maxlength="400"
+            :ui="textareaUi"
+          />
+        </UFormField>
+      </div>
+    </div>
+
+    <USeparator />
+
+    <div class="space-y-4">
+      <div class="space-y-1">
+        <p class="font-medium">Links e contato</p>
+        <p class="text-sm text-muted">
+          Canais públicos usados pela rota publicada e por futuras integrações do editor.
+        </p>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <DashboardFloatingInput
+          v-model="props.model.linkedin"
+          label="LinkedIn"
+          icon="i-simple-icons-linkedin"
+          autocomplete="url"
+          :maxlength="180"
+          @update:model-value="markDirty"
+        />
+
+        <DashboardFloatingInput
+          v-model="props.model.github"
+          label="GitHub"
+          icon="i-simple-icons-github"
+          autocomplete="url"
+          :maxlength="180"
+          @update:model-value="markDirty"
+        />
 
         <DashboardFloatingInput
           v-model="props.model.whatsapp"
           label="WhatsApp"
           icon="i-simple-icons-whatsapp"
           autocomplete="tel"
+          :maxlength="40"
           @update:model-value="markDirty"
         />
 
         <DashboardFloatingInput
-          v-model="props.model.messenger"
-          label="Messenger"
-          icon="i-simple-icons-messenger"
+          v-model="props.model.website"
+          label="Link principal"
+          icon="i-lucide-link"
           autocomplete="url"
-          @update:model-value="markDirty"
-        />
-      </div>
-    </div>
-
-    <USeparator />
-
-    <div class="grid gap-4 sm:grid-cols-2">
-      <DashboardFloatingInput
-        v-model="props.model.linkedin"
-        label="LinkedIn"
-        icon="i-simple-icons-linkedin"
-        autocomplete="url"
-        @update:model-value="markDirty"
-      />
-
-      <DashboardFloatingInput
-        v-model="props.model.github"
-        label="GitHub"
-        icon="i-simple-icons-github"
-        autocomplete="url"
-        @update:model-value="markDirty"
-      />
-
-      <div class="sm:col-span-2">
-        <DashboardFloatingInput
-          v-model="props.model.instagram"
-          label="Instagram"
-          icon="i-simple-icons-instagram"
-          autocomplete="url"
+          :maxlength="180"
           @update:model-value="markDirty"
         />
       </div>
