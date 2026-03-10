@@ -71,6 +71,8 @@ export type PortfolioSettingsPayload = {
   publicationStatus: PortfolioPublicationStatus
 }
 
+export type PortfolioEditorSectionMode = 'base' | 'custom'
+
 export type PortfolioEditorHeroPayload = {
   publicName: string
   headline: string
@@ -89,6 +91,24 @@ export type PortfolioEditorContactPayload = {
   website: string
   linkedin: string
   github: string
+}
+
+export type PortfolioEditorHeroRecord = PortfolioEditorHeroPayload & {
+  __mode?: PortfolioEditorSectionMode
+}
+
+export type PortfolioEditorAboutRecord = PortfolioEditorAboutPayload & {
+  __mode?: PortfolioEditorSectionMode
+}
+
+export type PortfolioEditorContactRecord = PortfolioEditorContactPayload & {
+  __mode?: PortfolioEditorSectionMode
+}
+
+export type PortfolioEditorBaseContentPayload = {
+  hero: PortfolioEditorHeroPayload
+  about: PortfolioEditorAboutPayload
+  contact: PortfolioEditorContactPayload
 }
 
 export type PortfolioEditorPayload = {

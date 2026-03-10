@@ -1,26 +1,13 @@
+import { getEditorSectionMode } from '~/utils/editor-content'
 import { serverSupabaseClient } from '~/utils/supabase/server'
-
-function normalizeText(value: unknown) {
-  return String(value ?? '').trim()
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function hasMeaningfulValues(value: unknown) {
-  if (!isRecord(value)) {
-    return false
-  }
-
-  return Object.values(value).some((item) => normalizeText(item).length > 0)
-}
-
 function hasCustomEditorData(editor: {
-  template_id: string | null
   device: string
   active_section: string
-  active_project_id: string | null
   visibility: unknown
   hero: unknown
   about: unknown
@@ -35,14 +22,12 @@ function hasCustomEditorData(editor: {
   })
 
   return (
-    Boolean(editor.template_id) ||
     editor.device !== 'desktop' ||
     editor.active_section !== 'hero' ||
-    Boolean(editor.active_project_id) ||
     hasVisibilityChange ||
-    hasMeaningfulValues(editor.hero) ||
-    hasMeaningfulValues(editor.about) ||
-    hasMeaningfulValues(editor.contact)
+    getEditorSectionMode(editor.hero) === 'custom' ||
+    getEditorSectionMode(editor.about) === 'custom' ||
+    getEditorSectionMode(editor.contact) === 'custom'
   )
 }
 
@@ -105,17 +90,20 @@ export default defineEventHandler(async (event) => {
         headline: '',
         roleTitle: '',
         location: '',
-        skillsText: ''
+        skillsText: '',
+        __mode: 'base'
       },
       about: data.about ?? {
-        summary: ''
+        summary: '',
+        __mode: 'base'
       },
       contact: data.contact ?? {
         publicEmail: '',
         whatsapp: '',
         website: '',
         linkedin: '',
-        github: ''
+        github: '',
+        __mode: 'base'
       },
       projects: Array.isArray(data.projects) ? data.projects : []
     }

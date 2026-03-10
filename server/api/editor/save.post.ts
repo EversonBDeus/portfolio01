@@ -1,5 +1,13 @@
 import { readBody } from 'h3'
 import { PORTFOLIO_TEMPLATES } from '~/data/templates'
+import {
+  buildAboutRecord,
+  buildContactRecord,
+  buildEditorBaseContent,
+  buildHeroRecord,
+  normalizeOptionalUrl,
+  normalizeText
+} from '~/utils/editor-content'
 import { serverSupabaseClient } from '~/utils/supabase/server'
 
 type EditorSaveBody = {
@@ -38,20 +46,6 @@ type EditorSaveBody = {
     link: string
     featured: boolean
   }>
-}
-
-function normalizeText(value: unknown) {
-  return String(value ?? '').trim()
-}
-
-function normalizeOptionalUrl(value: unknown) {
-  const trimmed = normalizeText(value)
-
-  if (!trimmed) {
-    return ''
-  }
-
-  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
 }
 
 function normalizeDevice(value: unknown) {
@@ -141,6 +135,48 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const [
+    { data: profile, error: profileError },
+    { data: professional, error: professionalError }
+  ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('public_name, headline, bio, location, public_email, linkedin, github, website, whatsapp')
+      .eq('id', user.id)
+      .maybeSingle(),
+
+    supabase
+      .from('professional_data')
+      .select('role_title, professional_summary, main_skills')
+      .eq('id', user.id)
+      .maybeSingle()
+  ])
+
+  if (profileError || professionalError) {
+    throw createError({
+      statusCode: 500,
+      statusMessage:
+        profileError?.message ||
+        professionalError?.message ||
+        'Não foi possível carregar a base atual do editor.'
+    })
+  }
+
+  const baseContent = buildEditorBaseContent({
+    publicName: profile?.public_name,
+    headline: profile?.headline,
+    roleTitle: professional?.role_title,
+    professionalSummary: professional?.professional_summary,
+    bio: profile?.bio,
+    location: profile?.location,
+    publicEmail: profile?.public_email || user.email,
+    linkedin: profile?.linkedin,
+    github: profile?.github,
+    website: profile?.website,
+    whatsapp: profile?.whatsapp,
+    mainSkills: professional?.main_skills ?? null
+  })
+
   const normalizedProjects = normalizeProjects(body?.projects)
 
   const { error: saveError } = await supabase
@@ -157,23 +193,9 @@ export default defineEventHandler(async (event) => {
             ? body.activeProjectId
             : normalizedProjects[0]?.id ?? null,
         visibility: normalizeVisibility(body?.visibility),
-        hero: {
-          publicName: normalizeText(body?.hero?.publicName),
-          headline: normalizeText(body?.hero?.headline),
-          roleTitle: normalizeText(body?.hero?.roleTitle),
-          location: normalizeText(body?.hero?.location),
-          skillsText: normalizeText(body?.hero?.skillsText)
-        },
-        about: {
-          summary: normalizeText(body?.about?.summary)
-        },
-        contact: {
-          publicEmail: normalizeText(body?.contact?.publicEmail).toLowerCase(),
-          whatsapp: normalizeText(body?.contact?.whatsapp),
-          website: normalizeOptionalUrl(body?.contact?.website),
-          linkedin: normalizeOptionalUrl(body?.contact?.linkedin),
-          github: normalizeOptionalUrl(body?.contact?.github)
-        },
+        hero: buildHeroRecord(body?.hero, baseContent.hero),
+        about: buildAboutRecord(body?.about, baseContent.about),
+        contact: buildContactRecord(body?.contact, baseContent.contact),
         projects: normalizedProjects
       },
       { onConflict: 'id' }

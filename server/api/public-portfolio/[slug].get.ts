@@ -7,21 +7,15 @@ import type {
   PublicPortfolioProject,
   PublicPortfolioVisibility
 } from '~/types/public-portfolio'
+import {
+  buildEditorBaseContent,
+  normalizeOptionalUrl,
+  normalizeText,
+  resolveAboutRecord,
+  resolveContactRecord,
+  resolveHeroRecord
+} from '~/utils/editor-content'
 import { serverSupabaseAdmin } from '~/utils/supabase/admin'
-
-function normalizeText(value: unknown) {
-  return String(value ?? '').trim()
-}
-
-function normalizeOptionalUrl(value: unknown) {
-  const trimmed = normalizeText(value)
-
-  if (!trimmed) {
-    return ''
-  }
-
-  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
-}
 
 function sanitizePortfolioSlug(value: unknown) {
   return String(value ?? '')
@@ -114,23 +108,20 @@ function parseProjects(value: Json | null): PublicPortfolioProject[] {
   return mapped
 }
 
-function buildLinks(
-  contact: Record<string, unknown>,
-  profile: {
-    publicEmail: string
-    linkedin: string
-    github: string
-    website: string
-    whatsapp: string
-  }
-): PublicPortfolioLink[] {
+function buildLinks(contact: {
+  publicEmail: string
+  linkedin: string
+  github: string
+  website: string
+  whatsapp: string
+}): PublicPortfolioLink[] {
   const items: PublicPortfolioLink[] = []
 
-  const linkedin = normalizeOptionalUrl(contact.linkedin ?? profile.linkedin)
-  const github = normalizeOptionalUrl(contact.github ?? profile.github)
-  const website = normalizeOptionalUrl(contact.website ?? profile.website)
-  const publicEmail = normalizeText(contact.publicEmail ?? profile.publicEmail).toLowerCase()
-  const whatsapp = normalizeText(contact.whatsapp ?? profile.whatsapp)
+  const linkedin = normalizeOptionalUrl(contact.linkedin)
+  const github = normalizeOptionalUrl(contact.github)
+  const website = normalizeOptionalUrl(contact.website)
+  const publicEmail = normalizeText(contact.publicEmail).toLowerCase()
+  const whatsapp = normalizeText(contact.whatsapp)
 
   if (linkedin) {
     items.push({
@@ -256,43 +247,40 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const hero = isRecord(editor?.hero) ? editor.hero : {}
-  const about = isRecord(editor?.about) ? editor.about : {}
-  const contact = isRecord(editor?.contact) ? editor.contact : {}
+  const baseContent = buildEditorBaseContent({
+    publicName: profile?.public_name,
+    headline: profile?.headline,
+    roleTitle: professional?.role_title,
+    professionalSummary: professional?.professional_summary,
+    bio: profile?.bio,
+    location: profile?.location,
+    publicEmail: profile?.public_email,
+    linkedin: profile?.linkedin,
+    github: profile?.github,
+    website: profile?.website,
+    whatsapp: profile?.whatsapp,
+    mainSkills: professional?.main_skills ?? null
+  })
+
+  const hero = resolveHeroRecord(baseContent.hero, editor?.hero)
+  const about = resolveAboutRecord(baseContent.about, editor?.about)
+  const contact = resolveContactRecord(baseContent.contact, editor?.contact)
 
   const payload: PublicPortfolioPayload = {
     templateId: settings.template_id,
     publicSlug: settings.public_slug,
     publicationStatus: 'published',
     visibility: parseVisibility((editor?.visibility ?? null) as Json | null),
-    publicName:
-      normalizeText(hero.publicName) ||
-      normalizeText(profile?.public_name) ||
-      'Portfólio',
-    headline:
-      normalizeText(hero.headline) ||
-      normalizeText(profile?.headline),
-    roleTitle:
-      normalizeText(hero.roleTitle) ||
-      normalizeText(professional?.role_title),
-    summary:
-      normalizeText(about.summary) ||
-      normalizeText(professional?.professional_summary) ||
-      normalizeText(profile?.bio),
-    location:
-      normalizeText(hero.location) ||
-      normalizeText(profile?.location),
+    publicName: hero.publicName || 'Portfólio',
+    headline: hero.headline,
+    roleTitle: hero.roleTitle,
+    summary: about.summary,
+    location: hero.location,
     skills: mergeSkills(
       hero.skillsText,
       (professional?.main_skills ?? null) as Json | null
     ),
-    links: buildLinks(contact, {
-      publicEmail: normalizeText(contact.publicEmail) || normalizeText(profile?.public_email),
-      linkedin: normalizeText(contact.linkedin) || normalizeText(profile?.linkedin),
-      github: normalizeText(contact.github) || normalizeText(profile?.github),
-      website: normalizeText(contact.website) || normalizeText(profile?.website),
-      whatsapp: normalizeText(contact.whatsapp) || normalizeText(profile?.whatsapp)
-    }),
+    links: buildLinks(contact),
     projects: parseProjects((editor?.projects ?? null) as Json | null)
   }
 

@@ -22,6 +22,12 @@ import {
   editorContactSchema,
   type EditorContactForm
 } from '~/schemas/editor-contact'
+import {
+  buildEditorBaseContent,
+  resolveAboutRecord,
+  resolveContactRecord,
+  resolveHeroRecord
+} from '~/utils/editor-content'
 
 export type { EditorContactForm } from '~/schemas/editor-contact'
 
@@ -185,7 +191,7 @@ export function useEditorState() {
   //  ----------- Base do Preview --------------
 
   const { publicProfile, professional, projects } = useOnboardingState()
-    const {
+  const {
     loadOnboardingFromServer,
     loadingFromServer: loadingOnboardingFromServer
   } = useOnboardingPersistence()
@@ -195,6 +201,7 @@ export function useEditorState() {
     selectedTemplate,
     selectedTemplateId
   } = useTemplateSelection()
+
   const {
     clearDraft,
     loadDraft,
@@ -213,7 +220,7 @@ export function useEditorState() {
   } = useEditorPersistence()
 
   const hasSavedDraft = computed(() => hasSavedEditor.value)
-    const loadingBaseFromServer = computed(() => loadingOnboardingFromServer.value)
+  const loadingBaseFromServer = computed(() => loadingOnboardingFromServer.value)
 
   //  =========== Base Pública Segura ================
   //  ----------- Fallback do Onboarding --------------
@@ -248,6 +255,23 @@ export function useEditorState() {
     }
   })
 
+  const editorBaseContent = computed(() => {
+    return buildEditorBaseContent({
+      publicName: publicProfileBase.value.publicName,
+      headline: publicProfileBase.value.headline,
+      roleTitle: professionalBase.value.roleTitle,
+      professionalSummary: professionalBase.value.professionalSummary,
+      bio: publicProfileBase.value.bio,
+      location: publicProfileBase.value.location,
+      publicEmail: publicProfileBase.value.publicEmail,
+      linkedin: publicProfileBase.value.linkedin,
+      github: publicProfileBase.value.github,
+      website: publicProfileBase.value.website,
+      whatsapp: publicProfileBase.value.whatsapp,
+      mainSkills: professionalBase.value.mainSkills
+    })
+  })
+
   const onboardingProjects = computed<EditorPreviewProject[]>(() => {
     const items = Array.isArray(projects.value?.items) ? projects.value.items : []
 
@@ -266,18 +290,17 @@ export function useEditorState() {
 
   const basePreviewData = computed<EditorPreviewData>(() => {
     return {
-      publicName: publicProfileBase.value.publicName || 'Seu nome público',
+      publicName: editorBaseContent.value.hero.publicName || 'Seu nome público',
       headline:
-        publicProfileBase.value.headline ||
-        professionalBase.value.roleTitle ||
+        editorBaseContent.value.hero.headline ||
+        editorBaseContent.value.hero.roleTitle ||
         'Sua headline profissional',
-      roleTitle: professionalBase.value.roleTitle || 'Seu cargo principal',
+      roleTitle: editorBaseContent.value.hero.roleTitle || 'Seu cargo principal',
       summary:
-        professionalBase.value.professionalSummary.trim() ||
-        publicProfileBase.value.bio.trim() ||
+        editorBaseContent.value.about.summary ||
         'Adicione seu resumo profissional no onboarding ou no painel para alimentar esta seção do template.',
-      location: publicProfileBase.value.location || 'Sua localização',
-      skills: professionalBase.value.mainSkills.slice(0, 6),
+      location: editorBaseContent.value.hero.location || 'Sua localização',
+      skills: normalizeSkills(editorBaseContent.value.hero.skillsText),
       projects: onboardingProjects.value,
       links: []
     }
@@ -285,27 +308,19 @@ export function useEditorState() {
 
   function createBaseHeroForm(): EditorHeroForm {
     return {
-      publicName: basePreviewData.value.publicName,
-      headline: basePreviewData.value.headline,
-      roleTitle: basePreviewData.value.roleTitle,
-      location: basePreviewData.value.location,
-      skillsText: basePreviewData.value.skills.join(', ')
+      ...editorBaseContent.value.hero
     }
   }
 
   function createBaseAboutForm(): EditorAboutForm {
     return {
-      summary: basePreviewData.value.summary
+      ...editorBaseContent.value.about
     }
   }
 
   function createBaseContactForm(): EditorContactForm {
     return {
-      publicEmail: publicProfileBase.value.publicEmail,
-      whatsapp: publicProfileBase.value.whatsapp,
-      website: publicProfileBase.value.website,
-      linkedin: publicProfileBase.value.linkedin,
-      github: publicProfileBase.value.github
+      ...editorBaseContent.value.contact
     }
   }
 
@@ -337,8 +352,7 @@ export function useEditorState() {
 
   function createSnapshotFromRemote(
     templateId: string,
-    payload: EditorRemotePayload,
-    hasCustomEditor: boolean
+    payload: EditorRemotePayload
   ): EditorSnapshot {
     const baseSnapshot = createBaseSnapshot(templateId)
     const remoteProjects = normalizeRemoteProjects(payload.projects)
@@ -354,15 +368,6 @@ export function useEditorState() {
         ? payload.activeProjectId
         : normalizedProjects[0]?.id ?? null
 
-    if (!hasCustomEditor) {
-      return {
-        ...baseSnapshot,
-        templateId,
-        projects: normalizedProjects,
-        activeProjectId: normalizedActiveProjectId
-      }
-    }
-
     return {
       templateId,
       device: payload.device,
@@ -371,15 +376,9 @@ export function useEditorState() {
       visibility: {
         ...payload.visibility
       },
-      hero: {
-        ...payload.hero
-      },
-      about: {
-        ...payload.about
-      },
-      contact: {
-        ...payload.contact
-      },
+      hero: resolveHeroRecord(baseSnapshot.hero, payload.hero),
+      about: resolveAboutRecord(baseSnapshot.about, payload.about),
+      contact: resolveContactRecord(baseSnapshot.contact, payload.contact),
       projects: normalizedProjects
     }
   }
@@ -508,7 +507,7 @@ export function useEditorState() {
       roleTitle: heroForm.value.roleTitle.trim() || basePreviewData.value.roleTitle,
       summary: aboutForm.value.summary.trim() || basePreviewData.value.summary,
       location: heroForm.value.location.trim() || basePreviewData.value.location,
-      skills: normalizeSkills(heroForm.value.skillsText),
+      skills: normalizeSkills(heroForm.value.skillsText || editorBaseContent.value.hero.skillsText),
       projects: previewProjects.value,
       links: previewLinks.value
     }
@@ -628,8 +627,7 @@ export function useEditorState() {
     if (remoteResponse?.editor) {
       const remoteSnapshot = createSnapshotFromRemote(
         templateId,
-        remoteResponse.editor,
-        remoteResponse.hasCustomEditor
+        remoteResponse.editor
       )
 
       applySnapshot(remoteSnapshot)
@@ -868,8 +866,7 @@ export function useEditorState() {
     if (remoteResponse?.editor) {
       const remoteSnapshot = createSnapshotFromRemote(
         templateId,
-        remoteResponse.editor,
-        remoteResponse.hasCustomEditor
+        remoteResponse.editor
       )
 
       applySnapshot(remoteSnapshot)
@@ -1012,7 +1009,6 @@ export function useEditorState() {
     setHeroForm,
     toggleSection,
     updateProjectField,
-    visibility,
-
+    visibility
   }
 }

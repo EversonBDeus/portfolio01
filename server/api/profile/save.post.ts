@@ -1,5 +1,13 @@
 import { readBody } from 'h3'
 import type { Json } from '~/types/database.types'
+import {
+  buildAboutRecord,
+  buildContactRecord,
+  buildEditorBaseContent,
+  buildHeroRecord,
+  normalizeOptionalUrl,
+  normalizeText
+} from '~/utils/editor-content'
 import { serverSupabaseClient } from '~/utils/supabase/server'
 
 type ProfileSaveBody = {
@@ -19,20 +27,6 @@ type ProfileSaveBody = {
     experienceLevel?: string
     mainSkills?: string[]
   }
-}
-
-function normalizeText(value: unknown) {
-  return String(value ?? '').trim()
-}
-
-function normalizeOptionalUrl(value: unknown) {
-  const trimmed = normalizeText(value)
-
-  if (!trimmed) {
-    return ''
-  }
-
-  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
 }
 
 function parseMainSkills(value: Json | null) {
@@ -170,30 +164,27 @@ export default defineEventHandler(async (event) => {
   }
 
   if (existingEditor?.id) {
-    const syncedMainSkills = parseMainSkills(freshProfessional?.main_skills ?? null)
+    const baseContent = buildEditorBaseContent({
+      publicName: freshProfile?.public_name,
+      headline: freshProfile?.headline,
+      roleTitle: freshProfessional?.role_title,
+      professionalSummary: freshProfessional?.professional_summary,
+      bio: freshProfile?.bio,
+      location: freshProfile?.location,
+      publicEmail: freshProfile?.public_email || user.email,
+      linkedin: freshProfile?.linkedin,
+      github: freshProfile?.github,
+      website: freshProfile?.website,
+      whatsapp: freshProfile?.whatsapp,
+      mainSkills: freshProfessional?.main_skills ?? null
+    })
 
     const { error: editorSyncError } = await supabase
       .from('portfolio_editor')
       .update({
-        hero: {
-          publicName: normalizeText(freshProfile?.public_name),
-          headline: normalizeText(freshProfile?.headline),
-          roleTitle: normalizeText(freshProfessional?.role_title),
-          location: normalizeText(freshProfile?.location),
-          skillsText: syncedMainSkills.join(', ')
-        },
-        about: {
-          summary:
-            normalizeText(freshProfessional?.professional_summary) ||
-            normalizeText(freshProfile?.bio)
-        },
-        contact: {
-          publicEmail: normalizeText(freshProfile?.public_email || user.email).toLowerCase(),
-          whatsapp: normalizeText(freshProfile?.whatsapp),
-          website: normalizeOptionalUrl(freshProfile?.website),
-          linkedin: normalizeOptionalUrl(freshProfile?.linkedin),
-          github: normalizeOptionalUrl(freshProfile?.github)
-        }
+        hero: buildHeroRecord(baseContent.hero, baseContent.hero),
+        about: buildAboutRecord(baseContent.about, baseContent.about),
+        contact: buildContactRecord(baseContent.contact, baseContent.contact)
       })
       .eq('id', user.id)
 
