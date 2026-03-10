@@ -5,6 +5,10 @@ import {
   type EditorSectionId
 } from '~/data/editor-sections'
 import { useEditorDraft, type EditorDraftPayload } from '~/composables/useEditorDraft'
+import {
+  useEditorPersistence,
+  type EditorRemotePayload
+} from '~/composables/useEditorPersistence'
 import { useOnboardingState } from '~/composables/useOnboardingState'
 import { useTemplateSelection } from '~/composables/useTemplateSelection'
 import {
@@ -141,6 +145,40 @@ function serializeSnapshot(snapshot: EditorSnapshot) {
   return JSON.stringify(snapshot)
 }
 
+function normalizeRemoteProjects(projects: EditorProjectForm[]): EditorProjectForm[] {
+  const normalized: EditorProjectForm[] = projects
+    .slice(0, 3)
+    .map((project, index): EditorProjectForm => ({
+      id: project.id || `editor-project-${index + 1}`,
+      title: project.title,
+      category: project.category,
+      summary: project.summary,
+      link: project.link,
+      featured: project.featured
+    }))
+
+  const uniqueProjects: EditorProjectForm[] = normalized.filter((project, index, items) => {
+    return items.findIndex((item) => item.id === project.id) === index
+  })
+
+  if (uniqueProjects.length > 0 && !uniqueProjects.some((project) => project.featured)) {
+    const firstProject = uniqueProjects[0]
+
+    if (firstProject) {
+      uniqueProjects[0] = {
+        id: firstProject.id,
+        title: firstProject.title,
+        category: firstProject.category,
+        summary: firstProject.summary,
+        link: firstProject.link,
+        featured: true
+      }
+    }
+  }
+
+  return uniqueProjects
+}
+
 export function useEditorState() {
   //  =========== Dados do Onboarding ================
   //  ----------- Base do Preview --------------
@@ -151,15 +189,24 @@ export function useEditorState() {
     selectedTemplate,
     selectedTemplateId
   } = useTemplateSelection()
-
   const {
     clearDraft,
-    hasSavedDraft,
-    lastSavedAt,
     loadDraft,
     resetDraftMeta,
     saveDraft
   } = useEditorDraft()
+
+  const {
+    hasSavedEditor,
+    lastSavedAt,
+    loadEditorFromServer,
+    loadingFromServer,
+    resetRemoteMeta,
+    saveEditorToServer,
+    savingToServer
+  } = useEditorPersistence()
+
+  const hasSavedDraft = computed(() => hasSavedEditor.value)
 
   //  =========== Base Pública Segura ================
   //  ----------- Fallback do Onboarding --------------
@@ -276,6 +323,55 @@ export function useEditorState() {
       about: createBaseAboutForm(),
       contact: createBaseContactForm(),
       projects: baseProjectsState.projects
+    }
+  }
+
+  function createSnapshotFromRemote(
+    templateId: string,
+    payload: EditorRemotePayload,
+    hasCustomEditor: boolean
+  ): EditorSnapshot {
+    const baseSnapshot = createBaseSnapshot(templateId)
+    const remoteProjects = normalizeRemoteProjects(payload.projects)
+
+    const normalizedProjects =
+      remoteProjects.length > 0
+        ? remoteProjects
+        : baseSnapshot.projects
+
+    const normalizedActiveProjectId =
+      typeof payload.activeProjectId === 'string' &&
+      normalizedProjects.some((project) => project.id === payload.activeProjectId)
+        ? payload.activeProjectId
+        : normalizedProjects[0]?.id ?? null
+
+    if (!hasCustomEditor) {
+      return {
+        ...baseSnapshot,
+        templateId,
+        projects: normalizedProjects,
+        activeProjectId: normalizedActiveProjectId
+      }
+    }
+
+    return {
+      templateId,
+      device: payload.device,
+      activeSection: payload.activeSection,
+      activeProjectId: normalizedActiveProjectId,
+      visibility: {
+        ...payload.visibility
+      },
+      hero: {
+        ...payload.hero
+      },
+      about: {
+        ...payload.about
+      },
+      contact: {
+        ...payload.contact
+      },
+      projects: normalizedProjects
     }
   }
 
@@ -515,7 +611,24 @@ export function useEditorState() {
     savedSnapshotHash.value = serializeSnapshot(snapshot)
   }
 
-  function hydrateEditorForTemplate(templateId: string) {
+  async function hydrateEditorForTemplate(templateId: string, force = false) {
+    const remoteResponse = await loadEditorFromServer(force)
+
+    if (remoteResponse?.editor) {
+      const remoteSnapshot = createSnapshotFromRemote(
+        templateId,
+        remoteResponse.editor,
+        remoteResponse.hasCustomEditor
+      )
+
+      applySnapshot(remoteSnapshot)
+      updateSavedSnapshot(remoteSnapshot)
+      lastHydratedTemplateId.value = templateId
+      saveDraft(remoteSnapshot)
+
+      return
+    }
+
     const savedDraft = loadDraft(templateId)
 
     if (savedDraft) {
@@ -546,11 +659,12 @@ export function useEditorState() {
 
   function resetHydrationState() {
     resetDraftMeta()
+    resetRemoteMeta()
     savedSnapshotHash.value = null
     lastHydratedTemplateId.value = null
   }
 
-  function hydrateEditorState(force = false) {
+  async function hydrateEditorState(force = false) {
     const templateId = selectedTemplateId.value
 
     if (!templateId) {
@@ -562,13 +676,13 @@ export function useEditorState() {
       return
     }
 
-    hydrateEditorForTemplate(templateId)
+    await hydrateEditorForTemplate(templateId, force)
   }
 
   watch(
     selectedTemplateId,
     () => {
-      hydrateEditorState(true)
+      void hydrateEditorState(true)
     },
     {
       immediate: true
@@ -576,8 +690,9 @@ export function useEditorState() {
   )
 
   onMounted(() => {
-    hydrateEditorState(true)
+    void hydrateEditorState(true)
   })
+
   //  =========== Ações Gerais ================
   //  ----------- Hero, Sobre, Contato e Seção --------------
 
@@ -693,31 +808,64 @@ export function useEditorState() {
   //  =========== Ações do Rascunho ================
   //  ----------- Salvar, Descartar e Restaurar --------------
 
-function saveEditorDraft() {
-  const templateId = selectedTemplateId.value
+  async function saveEditorDraft() {
+    const templateId = selectedTemplateId.value
 
-  if (!templateId) {
-    return false
+    if (!templateId) {
+      return {
+        ok: false as const,
+        error: 'Selecione um template antes de salvar o editor.'
+      }
+    }
+
+    const currentSnapshot = createCurrentSnapshot(templateId)
+
+    const result = await saveEditorToServer({
+      templateId: currentSnapshot.templateId,
+      device: currentSnapshot.device,
+      activeSection: currentSnapshot.activeSection,
+      activeProjectId: currentSnapshot.activeProjectId,
+      visibility: currentSnapshot.visibility,
+      hero: currentSnapshot.hero,
+      about: currentSnapshot.about,
+      contact: currentSnapshot.contact,
+      projects: currentSnapshot.projects
+    })
+
+    if (!result.ok) {
+      return result
+    }
+
+    saveDraft(currentSnapshot)
+    updateSavedSnapshot(currentSnapshot)
+    lastHydratedTemplateId.value = templateId
+
+    return {
+      ok: true as const
+    }
   }
 
-  const currentSnapshot = createCurrentSnapshot(templateId)
-  const result = saveDraft(currentSnapshot)
-
-  if (!result) {
-    return false
-  }
-
-  updateSavedSnapshot(currentSnapshot)
-  lastHydratedTemplateId.value = templateId
-
-  return true
-}
-
-  function discardChanges() {
+  async function discardChanges() {
     const templateId = selectedTemplateId.value
 
     if (!templateId) {
       return 'unavailable' as const
+    }
+
+    const remoteResponse = await loadEditorFromServer(true)
+
+    if (remoteResponse?.editor) {
+      const remoteSnapshot = createSnapshotFromRemote(
+        templateId,
+        remoteResponse.editor,
+        remoteResponse.hasCustomEditor
+      )
+
+      applySnapshot(remoteSnapshot)
+      updateSavedSnapshot(remoteSnapshot)
+      saveDraft(remoteSnapshot)
+
+      return 'remote' as const
     }
 
     const savedDraft = loadDraft(templateId)
@@ -749,23 +897,44 @@ function saveEditorDraft() {
     return 'base' as const
   }
 
-function restoreBaseState() {
-  const templateId = selectedTemplateId.value
+  async function restoreBaseState() {
+    const templateId = selectedTemplateId.value
 
-  if (!templateId) {
-    return false
+    if (!templateId) {
+      return {
+        ok: false as const,
+        error: 'Selecione um template antes de restaurar a base.'
+      }
+    }
+
+    const baseSnapshot = createBaseSnapshot(templateId)
+
+    const result = await saveEditorToServer({
+      templateId: baseSnapshot.templateId,
+      device: baseSnapshot.device,
+      activeSection: baseSnapshot.activeSection,
+      activeProjectId: baseSnapshot.activeProjectId,
+      visibility: baseSnapshot.visibility,
+      hero: baseSnapshot.hero,
+      about: baseSnapshot.about,
+      contact: baseSnapshot.contact,
+      projects: baseSnapshot.projects
+    })
+
+    if (!result.ok) {
+      return result
+    }
+
+    clearDraft(templateId)
+    applySnapshot(baseSnapshot)
+    updateSavedSnapshot(baseSnapshot)
+    lastHydratedTemplateId.value = templateId
+
+    return {
+      ok: true as const
+    }
   }
 
-  clearDraft(templateId)
-
-  const baseSnapshot = createBaseSnapshot(templateId)
-
-  applySnapshot(baseSnapshot)
-  updateSavedSnapshot(baseSnapshot)
-  lastHydratedTemplateId.value = templateId
-
-  return true
-}
   //  =========== Reset das Seções ================
   //  ----------- Restaurar Base --------------
 
@@ -808,6 +977,7 @@ function restoreBaseState() {
     hasSelectedTemplate,
     heroForm,
     lastSavedAt,
+    loadingFromServer,
     previewData,
     projectErrors,
     projectsForm,
@@ -815,6 +985,7 @@ function restoreBaseState() {
     resetSection,
     restoreBaseState,
     saveEditorDraft,
+    savingToServer,
     sections,
     selectedTemplate,
     selectedTemplateId,

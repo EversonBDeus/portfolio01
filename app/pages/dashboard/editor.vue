@@ -38,6 +38,7 @@ const {
   hasSelectedTemplate,
   heroForm,
   lastSavedAt,
+  loadingFromServer,
   previewData,
   projectErrors,
   projectsForm,
@@ -45,6 +46,7 @@ const {
   resetSection,
   restoreBaseState,
   saveEditorDraft,
+  savingToServer,
   sections,
   selectedTemplate,
   setAboutForm,
@@ -58,7 +60,6 @@ const {
   updateProjectField,
   visibility
 } = useEditorState()
-
 const {
   loadSelectionFromServer,
   loadingFromServer: loadingTemplateSelectionFromServer
@@ -66,32 +67,43 @@ const {
 
 const isTemplateSelectionLoading = computed(() => loadingTemplateSelectionFromServer.value)
 
+const isEditorBusy = computed(() => loadingFromServer.value || savingToServer.value)
+
+
 onMounted(async () => {
   await loadSelectionFromServer()
 })
 
 const draftStatusTitle = computed(() => {
+  if (savingToServer.value) {
+    return 'Salvando alterações'
+  }
+
   if (hasPendingChanges.value) {
     return 'Alterações não salvas'
   }
 
   if (hasSavedDraft.value) {
-    return 'Rascunho salvo localmente'
+    return 'Editor salvo na conta'
   }
 
   return 'Usando base atual do onboarding'
 })
 
 const draftStatusDescription = computed(() => {
+  if (savingToServer.value) {
+    return 'Estamos sincronizando Hero, Sobre, Projetos e Contato com a sua conta.'
+  }
+
   if (hasPendingChanges.value) {
-    return 'As mudanças atuais só entram no próximo acesso depois que você salvar o rascunho deste template.'
+    return 'As mudanças atuais só entram nos próximos acessos depois que você salvar o editor da sua conta.'
   }
 
   if (hasSavedDraft.value && lastSavedAt.value) {
-    return `Último salvamento: ${formatSavedAt(lastSavedAt.value)}.`
+    return `Última sincronização: ${formatSavedAt(lastSavedAt.value)}.`
   }
 
-  return 'Sem rascunho salvo ainda. O editor está usando a base atual vinda do onboarding.'
+  return 'Sem editor salvo ainda. O preview está usando a base atual vinda do onboarding.'
 })
 
 function formatSavedAt(value: string) {
@@ -138,30 +150,30 @@ function handleSetFeaturedProject(projectId: string) {
   setFeaturedProject(projectId)
 }
 
-function handleSaveDraft() {
-  const saved = saveEditorDraft()
+async function handleSaveDraft() {
+  const result = await saveEditorDraft()
 
-  if (!saved) {
+  if (!result.ok) {
     toast.add({
-      title: 'Template não encontrado',
-      description: 'Selecione um template antes de salvar um rascunho do editor.',
-      color: 'warning',
-      icon: 'i-lucide-layout-template'
+      title: 'Não foi possível salvar o editor',
+      description: result.error,
+      color: 'error',
+      icon: 'i-lucide-alert-circle'
     })
 
     return
   }
 
   toast.add({
-    title: 'Rascunho salvo',
-    description: 'As alterações deste template foram salvas localmente no navegador atual.',
+    title: 'Editor salvo',
+    description: 'As alterações deste template foram sincronizadas com a sua conta.',
     color: 'success',
     icon: 'i-lucide-save'
   })
 }
 
-function handleDiscardChanges() {
-  const result = discardChanges()
+async function handleDiscardChanges() {
+ const result = await discardChanges()
 
   if (result === 'unavailable') {
     return
@@ -177,17 +189,23 @@ function handleDiscardChanges() {
     icon: 'i-lucide-rotate-ccw'
   })
 }
+async function handleRestoreBase() {
+  const result = await restoreBaseState()
 
-function handleRestoreBase() {
-  const restored = restoreBaseState()
+  if (!result.ok) {
+    toast.add({
+      title: 'Não foi possível restaurar a base',
+      description: result.error,
+      color: 'error',
+      icon: 'i-lucide-alert-circle'
+    })
 
-  if (!restored) {
     return
   }
 
   toast.add({
     title: 'Base restaurada',
-    description: 'O rascunho salvo foi removido e o editor voltou para a base atual do onboarding.',
+    description: 'A base atual do onboarding foi aplicada novamente e sincronizada com a sua conta.',
     color: 'success',
     icon: 'i-lucide-eraser'
   })
@@ -202,9 +220,9 @@ function handleRestoreBase() {
     <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
       <div class="space-y-1">
         <h1 class="text-2xl font-semibold">Editor</h1>
-        <p class="text-sm text-muted">
-          O editor agora salva rascunhos locais por template para manter Hero, Sobre, Projetos e Contato entre acessos.
-        </p>
+          <p class="text-sm text-muted">
+            O editor agora salva Hero, Sobre, Projetos e Contato na sua conta para manter o conteúdo entre acessos e dispositivos.
+          </p>
       </div>
 
       <div class="flex flex-wrap gap-2">
@@ -230,14 +248,14 @@ function handleRestoreBase() {
       </div>
     </div>
 
-    <UAlert
-      class="dashboard-note-alert"
-      icon="i-lucide-save"
-      title="Escopo desta etapa"
-      description="Hero, Sobre, Projetos e Contato agora podem ser editados, salvos localmente, descartados e restaurados para a base do onboarding sem backend real."
-      color="neutral"
-      variant="outline"
-    />
+        <UAlert
+          class="dashboard-note-alert"
+          icon="i-lucide-save"
+          title="Escopo desta etapa"
+          description="Hero, Sobre, Projetos e Contato agora podem ser editados, salvos na conta, descartados e restaurados para a base atual do onboarding com backend real."
+          color="neutral"
+          variant="outline"
+        />
 
 <div
   v-if="isTemplateSelectionLoading"
@@ -354,9 +372,9 @@ function handleRestoreBase() {
         >
           <div class="space-y-4">
             <div class="space-y-1">
-              <p class="font-medium">Rascunho local do editor</p>
+       <p class="font-medium">Persistência do editor</p>
               <p class="text-sm text-muted">
-                O rascunho fica salvo apenas neste navegador e separado da base atual do onboarding.
+                O editor fica salvo na sua conta e continua separado da base atual do onboarding.
               </p>
             </div>
 
@@ -372,7 +390,7 @@ function handleRestoreBase() {
                 :color="hasSavedDraft ? 'primary' : 'neutral'"
                 variant="soft"
               >
-                {{ hasSavedDraft ? 'Com rascunho salvo' : 'Sem rascunho salvo' }}
+                {{ hasSavedDraft ? 'Sincronizado com a conta' : 'Sem versão salva ainda' }}
               </UBadge>
             </div>
 
@@ -381,36 +399,38 @@ function handleRestoreBase() {
             </p>
 
             <div class="flex flex-wrap gap-2">
-              <UButton
-                size="sm"
-                color="primary"
-                icon="i-lucide-save"
-                @click="handleSaveDraft"
-              >
-                Salvar rascunho
-              </UButton>
+                <UButton
+                  size="sm"
+                  color="primary"
+                  icon="i-lucide-save"
+                  :loading="savingToServer"
+                  :disabled="isEditorBusy"
+                  @click="handleSaveDraft"
+                >
+                  Salvar editor
+                </UButton>
 
-              <UButton
-                size="sm"
-                color="neutral"
-                variant="outline"
-                icon="i-lucide-rotate-ccw"
-                :disabled="!hasPendingChanges"
-                @click="handleDiscardChanges"
-              >
-                Descartar alterações
-              </UButton>
+                <UButton
+                  size="sm"
+                  color="neutral"
+                  variant="outline"
+                  icon="i-lucide-rotate-ccw"
+                  :disabled="!hasPendingChanges || isEditorBusy"
+                  @click="handleDiscardChanges"
+                >
+                  Descartar alterações
+                </UButton>
 
-              <UButton
-                size="sm"
-                color="neutral"
-                variant="outline"
-                icon="i-lucide-eraser"
-                :disabled="!hasSavedDraft && !hasPendingChanges"
-                @click="handleRestoreBase"
-              >
-                Restaurar base
-              </UButton>
+                <UButton
+                  size="sm"
+                  color="neutral"
+                  variant="outline"
+                  icon="i-lucide-eraser"
+                  :disabled="isEditorBusy"
+                  @click="handleRestoreBase"
+                >
+                  Restaurar base
+                </UButton>
             </div>
           </div>
         </div>
