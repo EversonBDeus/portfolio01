@@ -128,7 +128,7 @@ async function handleNext() {
       icon: 'i-lucide-circle-check'
     })
 
-    await router.push('/dashboard/perfil')
+await router.push('/dashboard')
     return
   }
 
@@ -193,7 +193,7 @@ async function handleContinueLater() {
   })
 
   if (import.meta.client) {
-    window.location.assign('/dashboard/perfil')
+   window.location.assign('/dashboard')
   }
 }
 

@@ -53,7 +53,7 @@ export function useAuthState() {
 
   const isAuthenticated = computed(() => Boolean(session.value))
   const hasPendingVerification = computed(() => false)
-const postAuthRoute = computed(() => (onboardingCompleted.value ? '/dashboard/perfil' : '/onboarding'))
+  const postAuthRoute = computed(() => (onboardingCompleted.value ? '/dashboard' : '/onboarding'))
 
   //  =========== Helpers da Sessão ================
   //  ----------- Sync com Supabase --------------

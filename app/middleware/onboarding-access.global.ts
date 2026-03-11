@@ -46,7 +46,7 @@ export default defineNuxtRouteMiddleware((to) => {
     }
 
     if (onboardingCompleted.value) {
-      return redirect('/dashboard/perfil')
+ return redirect('/dashboard')
     }
 
     return
@@ -68,11 +68,12 @@ export default defineNuxtRouteMiddleware((to) => {
   }
 
   if (onboardingCompleted.value) {
-    return redirect('/dashboard/perfil')
+   return redirect('/dashboard')
   }
 
   if (onboardingStatus.value === 'in_progress') {
-    return redirect('/dashboard/perfil')
+  return redirect('/dashboard')
+  
   }
 
   return redirect('/onboarding')
