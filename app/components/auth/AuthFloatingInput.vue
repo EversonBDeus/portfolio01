@@ -31,17 +31,16 @@ defineSlots<{
 
 const model = defineModel<string>({ default: '' })
 
-const hasValue = computed(() => model.value.trim().length > 0)
 const hasIcon = computed(() => Boolean(props.icon))
 
 const surfaceClass = 'bg-slate-50 dark:bg-[rgba(15,23,42,0.68)]'
 const inputPaddingClass = computed(() => (hasIcon.value ? 'ps-11 pe-12' : 'px-4'))
-const labelOffsetClass = computed(() => (hasIcon.value ? 'left-11' : 'left-4'))
+const labelOffsetClass = computed(() => (hasIcon.value ? 'start-11' : 'start-4'))
 
 const inputUi = computed(() => ({
-  root: 'w-full',
+  root: 'relative w-full',
   base: [
-    'h-12 w-full rounded-2xl border text-slate-900 placeholder:text-transparent dark:text-white',
+    'peer h-12 w-full rounded-2xl border text-slate-900 placeholder:text-transparent dark:text-white',
     'border-slate-200/90 dark:border-emerald-400/38',
     surfaceClass,
     inputPaddingClass.value,
@@ -50,27 +49,26 @@ const inputUi = computed(() => ({
     'dark:focus-visible:border-emerald-400/70 dark:focus-visible:ring-emerald-400/18',
     'disabled:cursor-not-allowed disabled:opacity-60'
   ].join(' '),
-  leading: 'absolute inset-y-0 left-0 flex items-center pl-4',
-  trailing: 'absolute inset-y-0 right-0 flex items-center pr-3'
+  leading: 'absolute inset-y-0 start-0 flex items-center ps-4',
+  trailing: 'absolute inset-y-0 end-0 flex items-center pe-3'
 }))
 
-const labelClass = computed(() => {
-  return [
-    'pointer-events-none absolute z-[1] transition-all duration-200',
-    labelOffsetClass.value,
-    hasValue.value
-      ? '-top-2 translate-y-0 text-xs text-emerald-600 dark:text-emerald-300'
-      : 'top-1/2 -translate-y-1/2 text-[14px] text-slate-400 dark:text-slate-400',
-    'group-focus-within:-top-2 group-focus-within:translate-y-0 group-focus-within:text-xs',
-    'group-focus-within:text-emerald-600 dark:group-focus-within:text-emerald-300'
-  ]
-})
+const floatingLabelBaseClass = [
+  'pointer-events-none absolute z-[1] -top-2 text-xs font-medium text-emerald-600 dark:text-emerald-300',
+  'transition-all duration-200',
+  'peer-focus:-top-2 peer-focus:text-xs peer-focus:font-medium',
+  'peer-focus:text-emerald-600 dark:peer-focus:text-emerald-300',
+  'peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2',
+  'peer-placeholder-shown:text-[14px] peer-placeholder-shown:font-normal',
+  'peer-placeholder-shown:text-slate-400 dark:peer-placeholder-shown:text-slate-400',
+  'peer-focus:translate-y-0'
+].join(' ')
 
-const labelSurfaceClass = `${surfaceClass} inline-flex px-1.5 leading-none`
+const floatingLabelSurfaceClass = `${surfaceClass} inline-flex px-1.5 leading-none`
 </script>
 
 <template>
-  <div class="group relative">
+  <div class="w-full min-w-0">
     <UInput
       v-model="model"
       :type="props.type"
@@ -87,6 +85,14 @@ const labelSurfaceClass = `${surfaceClass} inline-flex px-1.5 leading-none`
       @focus="emit('focus')"
       @blur="emit('blur')"
     >
+      <template #default>
+        <label :class="[floatingLabelBaseClass, labelOffsetClass]">
+          <span :class="floatingLabelSurfaceClass">
+            {{ props.label }}
+          </span>
+        </label>
+      </template>
+
       <template v-if="props.icon" #leading>
         <UIcon :name="props.icon" class="size-5 text-slate-400 dark:text-slate-500" />
       </template>
@@ -95,11 +101,5 @@ const labelSurfaceClass = `${surfaceClass} inline-flex px-1.5 leading-none`
         <slot name="trailing" />
       </template>
     </UInput>
-
-    <label :class="labelClass">
-      <span :class="labelSurfaceClass">
-        {{ props.label }}
-      </span>
-    </label>
   </div>
 </template>

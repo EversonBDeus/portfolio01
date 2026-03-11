@@ -1,7 +1,10 @@
 import { computed, watch } from 'vue'
 import type { AuthLoginInput } from '~/schemas/auth-login'
 import type { AuthRegisterInput } from '~/schemas/auth-register'
-import { useOnboardingAccess } from '~/composables/useOnboardingAccess'
+import {
+  useOnboardingAccess,
+  type OnboardingAccessStatus
+} from '~/composables/useOnboardingAccess'
 import { useSupabaseAuth } from '~/composables/useSupabaseAuth'
 
 export const AUTH_MOCK_VERIFY_CODE = '123456'
@@ -20,8 +23,18 @@ export type PendingVerification = {
   expiresAt: string
 }
 
+type AuthOnboardingStatusResponse = {
+  account?: {
+    onboardingStatus?: OnboardingAccessStatus
+  }
+}
+
 function normalizeEmail(value: string) {
   return value.trim().toLowerCase()
+}
+
+function normalizeOnboardingStatus(value: unknown): OnboardingAccessStatus {
+  return value === 'completed' || value === 'in_progress' ? value : 'not_started'
 }
 
 export function useAuthState() {
@@ -45,7 +58,9 @@ export function useAuthState() {
   const {
     clearOnboardingAccess,
     keepOnboardingInProgress,
-    onboardingCompleted
+    onboardingCompleted,
+    onboardingStatus,
+    syncOnboardingAccess
   } = useOnboardingAccess()
 
   //  =========== Computeds da Auth ================
@@ -53,7 +68,9 @@ export function useAuthState() {
 
   const isAuthenticated = computed(() => Boolean(session.value))
   const hasPendingVerification = computed(() => false)
-  const postAuthRoute = computed(() => (onboardingCompleted.value ? '/dashboard' : '/onboarding'))
+  const postAuthRoute = computed(() =>
+    onboardingStatus.value === 'not_started' ? '/onboarding' : '/dashboard'
+  )
 
   //  =========== Helpers da Sessão ================
   //  ----------- Sync com Supabase --------------
@@ -80,6 +97,23 @@ export function useAuthState() {
     pendingVerification.value = null
 
     return nextSession
+  }
+
+  async function syncOnboardingStatusFromServer() {
+    if (!session.value) {
+      return onboardingStatus.value
+    }
+
+    try {
+      const payload = await $fetch<AuthOnboardingStatusResponse>('/api/onboarding')
+      const nextStatus = normalizeOnboardingStatus(payload?.account?.onboardingStatus)
+
+      syncOnboardingAccess(nextStatus)
+
+      return nextStatus
+    } catch {
+      return onboardingStatus.value
+    }
   }
 
   if (import.meta.client && !syncStarted.value) {
@@ -132,11 +166,14 @@ export function useAuthState() {
       throw new Error('Não foi possível iniciar a sessão. Confira se Confirm email está desligado no Supabase.')
     }
 
-    if (!onboardingCompleted.value) {
+    const remoteOnboardingStatus = await syncOnboardingStatusFromServer()
+
+    if (remoteOnboardingStatus === 'not_started') {
       keepOnboardingInProgress()
+      return '/onboarding'
     }
 
-    return postAuthRoute.value
+    return '/dashboard'
   }
 
   async function register(payload: AuthRegisterInput) {
@@ -180,6 +217,7 @@ export function useAuthState() {
 
     throw new Error('O reenvio de código não faz parte do fluxo atual.')
   }
+
   function clearAuthState() {
     session.value = null
     pendingVerification.value = null
