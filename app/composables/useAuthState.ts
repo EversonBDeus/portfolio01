@@ -7,20 +7,11 @@ import {
 } from '~/composables/useOnboardingAccess'
 import { useSupabaseAuth } from '~/composables/useSupabaseAuth'
 
-export const AUTH_MOCK_VERIFY_CODE = '123456'
-
 export type AuthSession = {
   email: string
   username: string
   verified: boolean
   authenticatedAt: string
-}
-
-export type PendingVerification = {
-  email: string
-  username: string
-  createdAt: string
-  expiresAt: string
 }
 
 type AuthOnboardingStatusResponse = {
@@ -39,14 +30,9 @@ function normalizeOnboardingStatus(value: unknown): OnboardingAccessStatus {
 
 export function useAuthState() {
   //  =========== Cookies da Auth ================
-  //  ----------- Sessão e Verificação --------------
+  //  ----------- Sessão --------------
 
   const session = useCookie<AuthSession | null>('portfolio-auth-session', {
-    sameSite: 'lax',
-    default: () => null
-  })
-
-  const pendingVerification = useCookie<PendingVerification | null>('portfolio-pending-verification', {
     sameSite: 'lax',
     default: () => null
   })
@@ -58,7 +44,6 @@ export function useAuthState() {
   const {
     clearOnboardingAccess,
     keepOnboardingInProgress,
-    onboardingCompleted,
     onboardingStatus,
     syncOnboardingAccess
   } = useOnboardingAccess()
@@ -67,7 +52,6 @@ export function useAuthState() {
   //  ----------- Estado Atual --------------
 
   const isAuthenticated = computed(() => Boolean(session.value))
-  const hasPendingVerification = computed(() => false)
   const postAuthRoute = computed(() =>
     onboardingStatus.value === 'not_started' ? '/onboarding' : '/dashboard'
   )
@@ -94,7 +78,6 @@ export function useAuthState() {
     const nextSession = buildSessionFromSupabase(authenticatedAt)
 
     session.value = nextSession
-    pendingVerification.value = null
 
     return nextSession
   }
@@ -126,7 +109,6 @@ export function useAuthState() {
 
         if (!current.isAuthenticated) {
           session.value = null
-          pendingVerification.value = null
           return
         }
 
@@ -163,7 +145,9 @@ export function useAuthState() {
     const nextSession = syncSessionFromSupabase()
 
     if (!nextSession) {
-      throw new Error('Não foi possível iniciar a sessão. Confira se Confirm email está desligado no Supabase.')
+      throw new Error(
+        'Não foi possível iniciar a sessão. No MVP atual, mantenha Confirm email desativado no Supabase.'
+      )
     }
 
     const remoteOnboardingStatus = await syncOnboardingStatusFromServer()
@@ -194,7 +178,9 @@ export function useAuthState() {
     const nextSession = syncSessionFromSupabase(new Date().toISOString())
 
     if (!nextSession) {
-      throw new Error('Cadastro criado, mas sem sessão ativa. Deixe Confirm email desligado no Supabase para seguir direto com senha.')
+      throw new Error(
+        'Cadastro criado, mas sem sessão ativa. No MVP atual, mantenha Confirm email desativado no Supabase para seguir direto ao onboarding.'
+      )
     }
 
     keepOnboardingInProgress()
@@ -202,25 +188,8 @@ export function useAuthState() {
     return '/onboarding'
   }
 
-  async function verifyEmail(_code?: string) {
-    if (session.value) {
-      return postAuthRoute.value
-    }
-
-    throw new Error('A verificação por código foi removida deste fluxo. Entre com e-mail e senha.')
-  }
-
-  async function resendVerificationCode() {
-    if (session.value) {
-      return session.value.email
-    }
-
-    throw new Error('O reenvio de código não faz parte do fluxo atual.')
-  }
-
   function clearAuthState() {
     session.value = null
-    pendingVerification.value = null
     clearOnboardingAccess()
 
     if (import.meta.client) {
@@ -230,14 +199,10 @@ export function useAuthState() {
 
   return {
     clearAuthState,
-    hasPendingVerification,
     isAuthenticated,
     login,
-    pendingVerification,
     postAuthRoute,
     register,
-    resendVerificationCode,
-    session,
-    verifyEmail
+    session
   }
 }

@@ -11,7 +11,7 @@ export default defineNuxtRouteMiddleware((to) => {
   const isDashboardRoute = to.path === '/dashboard' || to.path.startsWith('/dashboard/')
   const isPreviewMode = isOnboardingRoute && to.query.preview === '1'
 
-  const { isAuthenticated, hasPendingVerification } = useAuthState()
+  const { isAuthenticated } = useAuthState()
   const { onboardingStatus, onboardingCompleted } = useOnboardingAccess()
 
   function redirect(path: string) {
@@ -20,6 +20,21 @@ export default defineNuxtRouteMiddleware((to) => {
 
   if (isPreviewMode) {
     return
+  }
+
+  //  =========== Compatibilidade com rota antiga ================
+  //  ----------- Verify removido do fluxo --------------
+
+  if (isVerifyRoute) {
+    if (!isAuthenticated.value) {
+      return redirect('/auth/login')
+    }
+
+    if (onboardingCompleted.value || onboardingStatus.value === 'in_progress') {
+      return redirect('/dashboard')
+    }
+
+    return redirect('/onboarding')
   }
 
   //  =========== Regras do Dashboard ================
@@ -46,20 +61,16 @@ export default defineNuxtRouteMiddleware((to) => {
     }
 
     if (onboardingCompleted.value) {
- return redirect('/dashboard')
+      return redirect('/dashboard')
     }
 
     return
   }
 
   //  =========== Regras da Auth ================
-  //  ----------- Login, Cadastro e Verify --------------
+  //  ----------- Login e Cadastro --------------
 
   if (!isAuthRoute) {
-    return
-  }
-
-  if (isVerifyRoute && hasPendingVerification.value) {
     return
   }
 
@@ -68,12 +79,11 @@ export default defineNuxtRouteMiddleware((to) => {
   }
 
   if (onboardingCompleted.value) {
-   return redirect('/dashboard')
+    return redirect('/dashboard')
   }
 
   if (onboardingStatus.value === 'in_progress') {
-  return redirect('/dashboard')
-  
+    return redirect('/dashboard')
   }
 
   return redirect('/onboarding')

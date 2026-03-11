@@ -8,26 +8,12 @@ const scene = computed(() => {
     return {
       badge: 'Cadastro',
       title: 'Crie sua conta inicial',
-      body: 'Depois do cadastro e da verificação por e-mail, o fluxo segue para o onboarding antes do dashboard.',
+      body: 'Depois do cadastro, o fluxo segue direto para o onboarding antes do dashboard.',
       steps: [
         'Crie sua conta gratuitamente',
-        'Confirme seu e-mail',
-        'Complete seu onboarding',
-        'Publique seu portfólio'
-      ]
-    }
-  }
-
-  if (route.path === '/auth/verify') {
-    return {
-      badge: 'Verificação',
-      title: 'Confirme seu acesso',
-      body: 'Valide o código enviado por e-mail para seguir com segurança para a próxima etapa do fluxo.',
-      steps: [
-        'Código de 6 dígitos',
-        'Validação rápida',
-        'Entrada segura',
-        'Redirecionamento para onboarding'
+        'Inicie seu onboarding',
+        'Organize seu portfólio',
+        'Publique sua página'
       ]
     }
   }
@@ -168,4 +154,4 @@ const testimonial = {
       </div>
     </UMain>
   </div>
-</template>
+</template> 
