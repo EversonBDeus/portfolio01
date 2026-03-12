@@ -6,7 +6,10 @@ import {
   buildEditorBaseContent,
   buildHeroRecord,
   normalizeOptionalUrl,
-  normalizeText
+  normalizeText,
+  resolveAboutRecord,
+  resolveContactRecord,
+  resolveHeroRecord
 } from '~/utils/editor-content'
 import { serverSupabaseClient } from '~/utils/supabase/server'
 
@@ -143,11 +146,11 @@ export default defineEventHandler(async (event) => {
       .eq('id', user.id)
       .maybeSingle(),
 
-    supabase
-      .from('portfolio_editor')
-      .select('id')
-      .eq('id', user.id)
-      .maybeSingle()
+      supabase
+        .from('portfolio_editor')
+        .select('hero, about, contact')
+        .eq('id', user.id)
+        .maybeSingle()
   ])
 
   if (accountError || freshProfileError || freshProfessionalError || settingsError || existingEditorError) {
@@ -163,7 +166,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (existingEditor?.id) {
+  if (existingEditor) {
     const baseContent = buildEditorBaseContent({
       publicName: freshProfile?.public_name,
       headline: freshProfile?.headline,
@@ -179,12 +182,16 @@ export default defineEventHandler(async (event) => {
       mainSkills: freshProfessional?.main_skills ?? null
     })
 
+    const nextHero = resolveHeroRecord(baseContent.hero, existingEditor.hero)
+    const nextAbout = resolveAboutRecord(baseContent.about, existingEditor.about)
+    const nextContact = resolveContactRecord(baseContent.contact, existingEditor.contact)
+
     const { error: editorSyncError } = await supabase
       .from('portfolio_editor')
       .update({
-        hero: buildHeroRecord(baseContent.hero, baseContent.hero),
-        about: buildAboutRecord(baseContent.about, baseContent.about),
-        contact: buildContactRecord(baseContent.contact, baseContent.contact)
+        hero: buildHeroRecord(nextHero, baseContent.hero),
+        about: buildAboutRecord(nextAbout, baseContent.about),
+        contact: buildContactRecord(nextContact, baseContent.contact)
       })
       .eq('id', user.id)
 
