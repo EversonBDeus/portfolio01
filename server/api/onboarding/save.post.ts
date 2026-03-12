@@ -11,6 +11,8 @@ type OnboardingSaveBody = {
     bio: string
     linkedin: string
     github: string
+    website: string
+    whatsapp: string
   }
   professional: {
     roleTitle: string
@@ -87,18 +89,20 @@ export default defineEventHandler(async (event) => {
         onboarding_status: onboardingStatus
       }, { onConflict: 'id' }),
 
-    supabase
-      .from('profiles')
-      .upsert({
-        id: user.id,
-        public_name: normalizeText(publicProfile?.publicName),
-        headline: normalizeText(publicProfile?.headline),
-        location: normalizeText(publicProfile?.location),
-        public_email: normalizeText(publicProfile?.publicEmail || user.email).toLowerCase(),
-        bio: normalizeText(publicProfile?.bio),
-        linkedin: normalizeOptionalUrl(publicProfile?.linkedin),
-        github: normalizeOptionalUrl(publicProfile?.github)
-      }, { onConflict: 'id' }),
+supabase
+  .from('profiles')
+  .upsert({
+    id: user.id,
+    public_name: normalizeText(publicProfile?.publicName),
+    headline: normalizeText(publicProfile?.headline),
+    location: normalizeText(publicProfile?.location),
+    public_email: normalizeText(publicProfile?.publicEmail || user.email).toLowerCase(),
+    bio: normalizeText(publicProfile?.bio),
+    linkedin: normalizeOptionalUrl(publicProfile?.linkedin),
+    github: normalizeOptionalUrl(publicProfile?.github),
+    website: normalizeOptionalUrl(publicProfile?.website),
+    whatsapp: normalizeText(publicProfile?.whatsapp)
+  }, { onConflict: 'id' }),
 
     supabase
       .from('professional_data')

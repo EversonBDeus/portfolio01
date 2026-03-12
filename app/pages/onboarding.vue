@@ -37,7 +37,7 @@ const { startOnboarding, keepOnboardingInProgress } = useOnboardingAccess()
 onMounted(async () => {
   startOnboarding()
 
-  const loaded = await loadOnboardingFromServer()
+  const loaded = await loadOnboardingFromServer(true)
 
   if (!loaded) {
     toast.add({
@@ -116,6 +116,22 @@ async function handleNext() {
     return
   }
 
+  const nextStatus = isLastStep.value ? 'completed' : 'in_progress'
+  const saved = await saveOnboardingToServer(nextStatus)
+
+  if (!saved) {
+    toast.add({
+      title: 'Não foi possível salvar',
+      description: isLastStep.value
+        ? 'Tente novamente antes de concluir o onboarding.'
+        : 'Tente novamente antes de avançar para a próxima etapa.',
+      color: 'error',
+      icon: 'i-lucide-circle-alert'
+    })
+
+    return
+  }
+
   if (isLastStep.value) {
     const done = finishOnboarding()
 
@@ -123,15 +139,16 @@ async function handleNext() {
 
     toast.add({
       title: 'Onboarding concluído',
-      description: 'Base inicial pronta. Abrindo o dashboard.',
+      description: 'Base inicial salva na sua conta. Abrindo o dashboard.',
       color: 'success',
       icon: 'i-lucide-circle-check'
     })
 
-await router.push('/dashboard')
+    await router.push('/dashboard')
     return
   }
 
+  keepOnboardingInProgress()
   nextStep()
 }
 

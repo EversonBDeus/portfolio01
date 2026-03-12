@@ -168,6 +168,10 @@ function normalizeOptionalUrl(value: string) {
   return `https://${trimmed}`
 }
 
+function normalizeSessionScope(value: string | undefined | null) {
+  return String(value ?? '').trim().toLowerCase() || 'guest'
+}
+
 function createProjectItem(
   draft: OnboardingProjectsDraft,
   index: number
@@ -186,8 +190,10 @@ export function useOnboardingState() {
   //  =========== Estados Base ================
   //  ----------- Auth e Acesso --------------
 
-  const { session } = useAuthState()
 
+  const { session } = useAuthState()
+  const sessionScope = computed(() => normalizeSessionScope(session.value?.email))
+  const stateScope = useState<string>('onboarding-state-scope', () => sessionScope.value)
   const {
     keepOnboardingInProgress,
     markOnboardingCompleted,
@@ -234,6 +240,42 @@ export function useOnboardingState() {
     draft: createEmptyProjectsDraft(),
     items: []
   }))
+
+    function resetStateForCurrentSession() {
+    activeStep.value = 'profile'
+    completedSteps.value = []
+    finished.value = onboardingCompleted.value
+
+    publicProfile.value = {
+      publicName: session.value?.username ?? '',
+      headline: '',
+      location: '',
+      publicEmail: session.value?.email ?? '',
+      bio: '',
+      linkedin: '',
+      github: '',
+      website: '',
+      whatsapp: ''
+    }
+
+    professional.value = {
+      roleTitle: '',
+      professionalSummary: '',
+      workArea: '',
+      experienceLevel: '',
+      mainSkills: []
+    }
+
+    projects.value = {
+      draft: createEmptyProjectsDraft(),
+      items: []
+    }
+  }
+
+  if (stateScope.value !== sessionScope.value) {
+    stateScope.value = sessionScope.value
+    resetStateForCurrentSession()
+  }
 
   //  =========== Migração do Fluxo Antigo ================
   //  ----------- Limpeza da Etapa Conta --------------
