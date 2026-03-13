@@ -83,8 +83,8 @@ function normalizeWhatsapp(value: string) {
   return digits ? `https://wa.me/${digits}` : ''
 }
 
-const contactItems = computed<TemplateContactItem[]>(() => {
-  return [
+const contactItems = computed(() => {
+  const items: TemplateContactItem[] = [
     {
       key: 'whatsapp',
       label: 'WhatsApp',
@@ -127,7 +127,9 @@ const contactItems = computed<TemplateContactItem[]>(() => {
       icon: 'i-lucide-globe',
       external: true
     }
-  ].filter((item) => item.value && item.href)
+  ]
+
+  return items.filter((item) => Boolean(item.value && item.href))
 })
 
 const whatsappItem = computed(() => {
