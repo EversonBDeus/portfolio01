@@ -2,8 +2,12 @@
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "eslint.useFlatConfig": true,
+    "tailwindCSS.lint.suggestCanonicalClasses": "ignore",
 
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
+    
+    
   }
+  
 }
