@@ -1,47 +1,38 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
-import { profile } from '~/data/profile'
 
 const year = new Date().getFullYear()
 
-const items = computed<NavigationMenuItem[]>(() => {
-  const socials = profile.socials
-    .filter((s) => !!s.url)
-    .map((s) => ({
-      label: s.label,
-      to: s.url,
-      target: '_blank'
-    }))
-
-  return [{ label: 'Início', to: '/' }, ...socials]
-})
+const items = computed<NavigationMenuItem[]>(() => [
+  { label: 'Início', to: '/' },
+  { label: 'Entrar', to: '/auth/login' },
+  { label: 'Criar conta', to: '/auth/register' }
+])
 </script>
 
 <template>
   <div v-reveal>
     <UFooter>
       <template #left>
-        <p class="text-muted text-sm">
-          © {{ year }} {{ profile.name }}
-        </p>
+        <div class="flex items-center gap-3">
+          <img
+            src="/brand/lumio-logo.png"
+            alt="Lumio"
+            class="h-7 w-auto"
+          >
+
+          <p class="text-muted text-sm">
+            © {{ year }} Lumio
+          </p>
+        </div>
       </template>
 
-      <UNavigationMenu v-if="items.length" :items="items" variant="link" />
+      <UNavigationMenu :items="items" variant="link" />
 
       <template #right>
-        <div class="flex items-center gap-1.5">
-          <UButton
-            v-for="s in profile.socials.filter((x) => !!x.url)"
-            :key="s.label"
-            :icon="s.icon"
-            color="neutral"
-            variant="ghost"
-            :to="s.url"
-            target="_blank"
-            :aria-label="s.label"
-            :ui="{ leadingIcon: s.brandClass }"
-          />
-        </div>
+        <p class="text-muted text-xs sm:text-sm">
+          Publique seu portfólio com identidade profissional.
+        </p>
       </template>
     </UFooter>
   </div>

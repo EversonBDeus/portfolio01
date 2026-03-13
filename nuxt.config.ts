@@ -74,6 +74,6 @@
 
   site: {
     url: process.env.NUXT_SITE_URL || 'https://example.com',
-    name: 'Portfolio'
+    name: 'Lumio'
   }
 })

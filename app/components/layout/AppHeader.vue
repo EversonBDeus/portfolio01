@@ -19,8 +19,12 @@ const icon = computed(() => {
     }"
   >
     <template #left>
-      <NuxtLink to="/" class="font-semibold text-sm sm:text-base text-toned">
-        Everson Deus
+      <NuxtLink to="/" class="flex items-center gap-3">
+        <img
+          src="/brand/lumio-logo.png"
+          alt="Lumio"
+          class="h-8 w-auto sm:h-9"
+        >
       </NuxtLink>
     </template>
 

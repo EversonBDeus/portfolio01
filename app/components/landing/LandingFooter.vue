@@ -3,7 +3,7 @@ const footerLinks = [
   { label: 'Recursos', to: '#recursos' },
   { label: 'Como funciona', to: '#como-funciona' },
   { label: 'Templates', to: '#templates' },
-  { label: 'Ver portfólio', to: '/portfolio' }
+  { label: 'Entrar', to: '/auth/login' }
 ]
 </script>
 
@@ -13,12 +13,15 @@ const footerLinks = [
       <!--  =========== Identidade ================ -->
       <!--  ----------- Texto institucional -------------- -->
 
-      <div class="space-y-1">
-        <p class="font-semibold text-slate-950 dark:text-white">
-          Portfolio SaaS
-        </p>
-        <p class="text-sm text-slate-600 dark:text-slate-400">
-          Entrada pública da plataforma antes de login, onboarding e dashboard.
+      <div class="space-y-3">
+        <img
+          src="/brand/lumio-logo.png"
+          alt="Lumio"
+          class="h-8 w-auto"
+        >
+
+        <p class="max-w-xl text-sm text-slate-600 dark:text-slate-400">
+          Crie, edite e publique seu portfólio profissional com uma experiência moderna, guiada e pronta para evoluir.
         </p>
       </div>
 

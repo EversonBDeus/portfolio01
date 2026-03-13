@@ -13,18 +13,11 @@ const navigationItems = [
       <!--  ----------- Identidade pública -------------- -->
 
       <NuxtLink to="/" class="flex min-w-0 items-center gap-3">
-        <span class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
-          <UIcon name="i-lucide-panels-top-left" class="size-5" />
-        </span>
-
-        <div class="min-w-0">
-          <p class="truncate font-semibold text-slate-950 dark:text-white">
-            Portfolio SaaS
-          </p>
-          <p class="truncate text-xs text-slate-500 dark:text-slate-400">
-            Landing pública
-          </p>
-        </div>
+        <img
+          src="/brand/lumio-logo.png"
+          alt="Lumio"
+          class="h-9 w-auto sm:h-10"
+        >
       </NuxtLink>
 
       <!--  =========== Navegação ================ -->
@@ -45,28 +38,29 @@ const navigationItems = [
       </nav>
 
       <!--  =========== Ações ================ -->
-      <!--  ----------- Portfólio, tema e templates -------------- -->
-            <div class="flex items-center gap-2">
-              <UButton
-                to="/auth/login"
-                color="neutral"
-                variant="ghost"
-                size="sm"
-                class="hidden sm:inline-flex text-slate-600 dark:text-slate-300"
-              >
-                Entrar
-              </UButton>
+      <!--  ----------- Entrada e tema -------------- -->
 
-              <UColorModeButton />
+      <div class="flex items-center gap-2">
+        <UButton
+          to="/auth/login"
+          color="neutral"
+          variant="ghost"
+          size="sm"
+          class="hidden sm:inline-flex text-slate-600 dark:text-slate-300"
+        >
+          Entrar
+        </UButton>
 
-              <UButton
-                to="/auth/register"
-                size="sm"
-                icon="i-lucide-user-plus"
-              >
-                Criar conta
-              </UButton>
-            </div>
+        <UColorModeButton />
+
+        <UButton
+          to="/auth/register"
+          size="sm"
+          icon="i-lucide-user-plus"
+        >
+          Criar conta
+        </UButton>
+      </div>
     </div>
   </header>
 </template>
