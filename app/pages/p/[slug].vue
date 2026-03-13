@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import PublicPortfolioTemplate from '~/components/portfolio/PublicPortfolioTemplate.vue'
-import { PORTFOLIO_TEMPLATES } from '~/data/templates'
 import type { PublicPortfolioPayload } from '~/types/public-portfolio'
 
 const route = useRoute()
@@ -13,16 +12,6 @@ const {
   error
 } = await useFetch<PublicPortfolioPayload>(() => `/api/public-portfolio/${slug.value}`, {
   key: () => `public-portfolio-${slug.value}`
-})
-
-const template = computed(() => {
-  const currentPortfolio = portfolio.value
-
-  if (!currentPortfolio) {
-    return null
-  }
-
-  return PORTFOLIO_TEMPLATES.find((item) => item.id === currentPortfolio.templateId) ?? null
 })
 
 const errorMessage = computed(() => {
@@ -47,9 +36,8 @@ useSeoMeta({
 
 <template>
   <PublicPortfolioTemplate
-    v-if="portfolio && template"
+    v-if="portfolio"
     :portfolio="portfolio"
-    :template="template"
   />
 
   <div v-else class="mx-auto max-w-3xl px-4 py-16">
