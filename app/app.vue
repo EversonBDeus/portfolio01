@@ -4,8 +4,9 @@ const siteDescription = 'Crie, edite e publique seu portfólio profissional com 
 
 useHead({
   link: [
-    { rel: 'icon', type: 'image/png', href: '/favicon.png' },
-    { rel: 'apple-touch-icon', href: '/favicon.png' }
+    { rel: 'icon', type: 'image/png', href: '/favicon.png?v=2' },
+    { rel: 'shortcut icon', href: '/favicon.png?v=2' },
+    { rel: 'apple-touch-icon', href: '/favicon.png?v=2' }
   ]
 })
 

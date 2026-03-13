@@ -1,3 +1,5 @@
+import { watch } from 'vue'
+import { useAuthState } from '~/composables/useAuthState'
 import type { EditorSectionId } from '~/data/editor-sections'
 import type { EditorContactForm } from '~/schemas/editor-contact'
 import type { EditorProjectForm } from '~/schemas/editor-project'
@@ -40,18 +42,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isEditorSectionId(value: unknown): value is EditorSectionId {
-  return (
-    typeof value === 'string' &&
-    (EDITOR_SECTION_IDS as readonly string[]).includes(value)
-  )
+  return typeof value === 'string' && (EDITOR_SECTION_IDS as readonly string[]).includes(value)
 }
 
 function isEditorDevice(value: unknown): value is EditorDraftDevice {
   return value === 'desktop' || value === 'mobile'
 }
 
-function getEditorDraftStorageKey(templateId: string) {
-  return `portfolio-editor-draft:${templateId}`
+function normalizeText(value: unknown) {
+  return String(value ?? '').trim()
+}
+
+function getCurrentAccountKey(email: string | null | undefined) {
+  return normalizeText(email).toLowerCase() || null
+}
+
+function getEditorDraftStorageKey(accountKey: string, templateId: string) {
+  return `portfolio-editor-draft:${accountKey}:${templateId}`
 }
 
 function getString(value: unknown, fallback = '') {
@@ -166,22 +173,19 @@ function parseProjects(value: unknown): EditorProjectForm[] {
     return items.findIndex((item) => item.id === project.id) === index
   })
 
-const firstProject = uniqueProjects[0]
+  const firstProject = uniqueProjects[0]
 
-if (firstProject && !uniqueProjects.some((project) => project.featured)) {
-  uniqueProjects[0] = {
-    ...firstProject,
-    featured: true
+  if (firstProject && !uniqueProjects.some((project) => project.featured)) {
+    uniqueProjects[0] = {
+      ...firstProject,
+      featured: true
+    }
   }
-}
 
   return uniqueProjects
 }
 
-function sanitizeDraftPayload(
-  value: unknown,
-  templateId: string
-): EditorDraftPayload | null {
+function sanitizeDraftPayload(value: unknown, templateId: string): EditorDraftPayload | null {
   if (!isRecord(value)) {
     return null
   }
@@ -230,6 +234,8 @@ function sanitizeDraftPayload(
 }
 
 export function useEditorDraft() {
+  const { session } = useAuthState()
+
   //  =========== Metadados do Rascunho ================
   //  ----------- Estado Compartilhado --------------
 
@@ -241,12 +247,35 @@ export function useEditorDraft() {
     lastSavedAt.value = null
   }
 
+  watch(
+    () => getCurrentAccountKey(session.value?.email),
+    (accountKey, previousAccountKey) => {
+      if (accountKey !== previousAccountKey) {
+        resetDraftMeta()
+      }
+
+      if (!accountKey) {
+        resetDraftMeta()
+      }
+    },
+    {
+      immediate: true
+    }
+  )
+
   function loadDraft(templateId: string) {
     if (!import.meta.client) {
       return null
     }
 
-    const storageKey = getEditorDraftStorageKey(templateId)
+    const accountKey = getCurrentAccountKey(session.value?.email)
+
+    if (!accountKey) {
+      resetDraftMeta()
+      return null
+    }
+
+    const storageKey = getEditorDraftStorageKey(accountKey, templateId)
     const rawDraft = window.localStorage.getItem(storageKey)
 
     if (!rawDraft) {
@@ -281,6 +310,13 @@ export function useEditorDraft() {
       return null
     }
 
+    const accountKey = getCurrentAccountKey(session.value?.email)
+
+    if (!accountKey) {
+      resetDraftMeta()
+      return null
+    }
+
     const nextDraft: EditorDraftPayload = {
       ...payload,
       version: EDITOR_DRAFT_VERSION,
@@ -288,7 +324,7 @@ export function useEditorDraft() {
     }
 
     window.localStorage.setItem(
-      getEditorDraftStorageKey(payload.templateId),
+      getEditorDraftStorageKey(accountKey, payload.templateId),
       JSON.stringify(nextDraft)
     )
 
@@ -303,7 +339,14 @@ export function useEditorDraft() {
       return
     }
 
-    window.localStorage.removeItem(getEditorDraftStorageKey(templateId))
+    const accountKey = getCurrentAccountKey(session.value?.email)
+
+    if (!accountKey) {
+      resetDraftMeta()
+      return
+    }
+
+    window.localStorage.removeItem(getEditorDraftStorageKey(accountKey, templateId))
     resetDraftMeta()
   }
 

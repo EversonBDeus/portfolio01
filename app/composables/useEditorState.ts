@@ -1,4 +1,5 @@
 import { computed, onMounted, watch } from 'vue'
+import { useAuthState } from '~/composables/useAuthState'
 import {
   EDITOR_SECTIONS,
   type EditorSectionDefinition,
@@ -151,6 +152,9 @@ function normalizeWhatsAppHref(value: string) {
 function serializeSnapshot(snapshot: EditorSnapshot) {
   return JSON.stringify(snapshot)
 }
+function normalizeAccountKey(value: string | null | undefined) {
+  return String(value ?? '').trim().toLowerCase() || null
+}
 
 function normalizeRemoteProjects(projects: EditorProjectForm[]): EditorProjectForm[] {
   const normalized: EditorProjectForm[] = projects
@@ -187,6 +191,7 @@ function normalizeRemoteProjects(projects: EditorProjectForm[]): EditorProjectFo
 }
 
 export function useEditorState() {
+    const { session } = useAuthState()
   //  =========== Dados do Onboarding ================
   //  ----------- Base do Preview --------------
 
@@ -220,6 +225,7 @@ export function useEditorState() {
   } = useEditorPersistence()
 
   const hasSavedDraft = computed(() => hasSavedEditor.value)
+    const accountKey = computed(() => normalizeAccountKey(session.value?.email))
   const loadingBaseFromServer = computed(() => loadingOnboardingFromServer.value)
 
   //  =========== Base Pública Segura ================
@@ -673,6 +679,37 @@ export function useEditorState() {
     lastHydratedTemplateId.value = null
   }
 
+    function resetLocalEditorState() {
+    device.value = 'desktop'
+    activeSection.value = 'hero'
+    visibility.value = createInitialVisibility()
+
+    heroForm.value = createBaseHeroForm()
+    aboutForm.value = createBaseAboutForm()
+    contactForm.value = createBaseContactForm()
+
+    const baseProjectsState = createBaseProjectsState()
+
+    projectsForm.value = baseProjectsState.projects
+    activeProjectId.value = baseProjectsState.activeProjectId
+    projectErrors.value = baseProjectsState.projectErrors
+  }
+
+  watch(
+    accountKey,
+    (currentAccountKey, previousAccountKey) => {
+      if (currentAccountKey === previousAccountKey) {
+        return
+      }
+
+      resetHydrationState()
+      resetLocalEditorState()
+    },
+    {
+      immediate: true
+    }
+  )
+  
   async function hydrateEditorState(force = false) {
     const templateId = selectedTemplateId.value
 

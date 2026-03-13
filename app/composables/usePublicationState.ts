@@ -1,4 +1,5 @@
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
+import { useAuthState } from '~/composables/useAuthState'
 import type { PortfolioPublicationStatus } from '~/types/portfolio'
 
 type PublicationResponse = {
@@ -15,6 +16,10 @@ type PublicationSaveResult =
       error: string
     }
 
+function normalizeText(value: unknown) {
+  return String(value ?? '').trim()
+}
+
 function sanitizePortfolioSlug(value: unknown) {
   return String(value ?? '')
     .normalize('NFD')
@@ -27,7 +32,13 @@ function sanitizePortfolioSlug(value: unknown) {
     .replace(/^-|-$/g, '')
 }
 
+function getCurrentAccountKey(email: string | null | undefined) {
+  return normalizeText(email).toLowerCase() || null
+}
+
 export function usePublicationState() {
+  const { session } = useAuthState()
+
   //  =========== Estado da Publicação ================
   //  ----------- Slug, Status e Template --------------
 
@@ -40,7 +51,10 @@ export function usePublicationState() {
 
   const loadingFromServer = useState<boolean>('portfolio-publication-loading', () => false)
   const savingToServer = useState<boolean>('portfolio-publication-saving', () => false)
-  const hydrated = useState<boolean>('portfolio-publication-hydrated', () => false)
+  const hydratedForAccount = useState<string | null>(
+    'portfolio-publication-hydrated-for-account',
+    () => null
+  )
 
   const normalizedPublicSlug = computed(() => sanitizePortfolioSlug(publicSlug.value))
   const publicUrl = computed(() => {
@@ -55,8 +69,39 @@ export function usePublicationState() {
     publicationStatus.value = payload.publicationStatus
   }
 
+  function resetRemoteState() {
+    publicSlug.value = ''
+    templateId.value = null
+    publicationStatus.value = 'draft'
+    hydratedForAccount.value = null
+  }
+
+  watch(
+    () => getCurrentAccountKey(session.value?.email),
+    (accountKey, previousAccountKey) => {
+      if (!accountKey) {
+        resetRemoteState()
+        return
+      }
+
+      if (accountKey !== previousAccountKey) {
+        resetRemoteState()
+      }
+    },
+    {
+      immediate: true
+    }
+  )
+
   async function loadPublication(force = false) {
-    if (!force && hydrated.value) {
+    const accountKey = getCurrentAccountKey(session.value?.email)
+
+    if (!session.value || !accountKey) {
+      resetRemoteState()
+      return false
+    }
+
+    if (!force && hydratedForAccount.value === accountKey) {
       return true
     }
 
@@ -66,7 +111,7 @@ export function usePublicationState() {
       const response = await $fetch<PublicationResponse>('/api/publication')
 
       applyState(response)
-      hydrated.value = true
+      hydratedForAccount.value = accountKey
 
       return true
     } catch {
@@ -77,6 +122,15 @@ export function usePublicationState() {
   }
 
   async function savePublication(): Promise<PublicationSaveResult> {
+    const accountKey = getCurrentAccountKey(session.value?.email)
+
+    if (!session.value || !accountKey) {
+      return {
+        ok: false,
+        error: 'Sua sessão expirou. Faça login novamente para salvar a publicação.'
+      }
+    }
+
     if (!normalizedPublicSlug.value) {
       return {
         ok: false,
@@ -96,13 +150,17 @@ export function usePublicationState() {
       })
 
       applyState(response)
-      hydrated.value = true
+      hydratedForAccount.value = accountKey
 
       return response
-    } catch (error) {
+    } catch (error: any) {
       return {
         ok: false,
-        error: error instanceof Error ? error.message : 'Não foi possível salvar a publicação agora.'
+        error:
+          error?.data?.statusMessage ||
+          error?.statusMessage ||
+          error?.message ||
+          'Não foi possível salvar a publicação agora.'
       }
     } finally {
       savingToServer.value = false
@@ -115,15 +173,16 @@ export function usePublicationState() {
 
   return {
     isPublished,
+    loadPublication,
     loadingFromServer,
     normalizedPublicSlug,
     publicationStatus,
     publicSlug,
     publicUrl,
+    resetRemoteState,
     savePublication,
     savingToServer,
     setPublicationStatus,
-    templateId,
-    loadPublication
+    templateId
   }
 }
