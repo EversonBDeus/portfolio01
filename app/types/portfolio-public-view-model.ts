@@ -1,28 +1,11 @@
+import type { PortfolioPublicationStatus } from '~/types/portfolio'
 import type { PortfolioTemplatePresetId } from '~/types/template-preset'
 
-export type PortfolioPublicationStatus = 'draft' | 'published'
 export type PortfolioTemplateMode = 'light' | 'dark'
 
-export type PortfolioPublicSettings = {
-  templateId: string | null
-  templatePresetId?: PortfolioTemplatePresetId | null
-  publicSlug: string
-  publicationStatus: PortfolioPublicationStatus
-}
+export type PortfolioPublicPublicationStatus = PortfolioPublicationStatus
 
-export type PortfolioHeroBlock = {
-  publicName: string
-  headline: string
-  roleTitle: string
-  location: string
-  skills: string[]
-}
-
-export type PortfolioAboutBlock = {
-  summary: string
-}
-
-export type PortfolioProjectItem = {
+export type PortfolioPublicProjectViewModel = {
   id: string
   title: string
   category: string
@@ -31,7 +14,7 @@ export type PortfolioProjectItem = {
   featured: boolean
 }
 
-export type PortfolioContactBlock = {
+export type PortfolioPublicContactViewModel = {
   publicEmail: string
   linkedin: string
   github: string
@@ -40,9 +23,22 @@ export type PortfolioContactBlock = {
 }
 
 export type PortfolioPublicViewModel = {
-  settings: PortfolioPublicSettings
-  hero: PortfolioHeroBlock
-  about: PortfolioAboutBlock
-  projects: PortfolioProjectItem[]
-  contact: PortfolioContactBlock
+  settings: {
+    templateId: string | null
+    templatePresetId?: PortfolioTemplatePresetId | null
+    publicSlug: string
+    publicationStatus: PortfolioPublicPublicationStatus
+  }
+  hero: {
+    publicName: string
+    headline: string
+    roleTitle: string
+    location: string
+    skills: string[]
+  }
+  about: {
+    summary: string
+  }
+  projects: PortfolioPublicProjectViewModel[]
+  contact: PortfolioPublicContactViewModel
 }
