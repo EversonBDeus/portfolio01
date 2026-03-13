@@ -466,10 +466,10 @@ function handleStepClick(stepId: string | number | undefined) {
                 <div class="dashboard-card-shell rounded-2xl p-4 sm:p-5">
                   <div class="space-y-4">
                     <div class="space-y-1">
-                      <h2 class="text-base font-semibold">Resumo do fluxo</h2>
-                      <p class="text-sm text-muted">
-                        Estrutura inicial das etapas complementares antes de conectar persistência, autenticação real e os dados finais do portfólio.
-                      </p>
+                        <h2 class="text-base font-semibold">Resumo do onboarding</h2>
+                          <p class="text-sm text-muted">
+                            Revise o que falta concluir para deixar sua conta pronta e seguir para o painel.
+                          </p>
                     </div>
 
                     <div class="space-y-3">
@@ -545,11 +545,11 @@ function handleStepClick(stepId: string | number | undefined) {
 
                         <UAlert
                           class="dashboard-note-alert"
-                          :icon="publicProfileIsValid ? 'i-lucide-circle-check' : 'i-lucide-info'"
-                          :title="publicProfileIsValid ? 'Perfil público pronto' : 'Perfil público pendente'"
-                          :description="publicProfileIsValid ? 'Os dados públicos mínimos já permitem seguir para a próxima etapa.' : 'Faltam dados públicos obrigatórios para liberar o próximo passo.'"
-                          :color="publicProfileIsValid ? 'success' : 'warning'"
-                          variant="outline"
+                            icon="i-lucide-info"
+                            title="Continue no seu ritmo"
+                            description="Preencha o básico agora e ajuste os detalhes restantes depois, no painel."
+                            color="neutral"
+                            variant="outline"
                         />
                       </template>
 
@@ -718,8 +718,8 @@ function handleStepClick(stepId: string | number | undefined) {
                 <UAlert
                   class="dashboard-note-alert"
                   icon="i-lucide-info"
-                  title="Completar depois"
-                  description="O onboarding guia a primeira configuração sem impedir que o usuário termine partes restantes depois no dashboard."
+                  title="Continuar depois"
+                  description="Você pode concluir esta configuração aos poucos e continuar os ajustes depois no painel."
                   color="neutral"
                   variant="outline"
                 />

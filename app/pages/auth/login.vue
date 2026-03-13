@@ -6,7 +6,6 @@ import { authLoginSchema } from '~/schemas/auth-login'
 import { useAuthState } from '~/composables/useAuthState'
 import AuthFloatingInput from '~/components/auth/AuthFloatingInput.vue'
 import AuthFloatingPasswordInput from '~/components/auth/AuthFloatingPasswordInput.vue'
-import AuthSocialButton from '~/components/auth/AuthSocialButton.vue'
 
 definePageMeta({
   layout: 'auth'
@@ -50,15 +49,6 @@ const fieldErrors = computed(() => {
   }
 })
 
-function handleSocial(provider: 'google' | 'facebook') {
-  toast.add({
-    title: `${provider === 'google' ? 'Google' : 'Facebook'} em breve`,
-    description: 'Nesta etapa o fluxo social ainda é mock visual.',
-    color: 'info',
-    icon: 'i-lucide-sparkles'
-  })
-}
-
 async function handleSubmit() {
   submitted.value = true
 
@@ -81,7 +71,7 @@ async function handleSubmit() {
 
     toast.add({
       title: 'Login realizado',
-      description: 'Redirecionando para a próxima etapa do fluxo.',
+      description: 'Redirecionando',
       color: 'success',
       icon: 'i-lucide-circle-check'
     })
@@ -112,29 +102,9 @@ async function handleSubmit() {
           Entre na sua conta
         </h2>
 
-        <p class="text-sm leading-6 text-slate-600 dark:text-slate-300">
-          Retome seu onboarding, revise seus dados e siga para o dashboard.
-        </p>
-      </div>
-
-      <div class="flex items-center justify-center gap-4">
-        <AuthSocialButton
-          provider="google"
-          tooltip="Continuar com Google"
-          @click="handleSocial('google')"
-        />
-
-        <AuthSocialButton
-          provider="facebook"
-          tooltip="Continuar com Facebook"
-          @click="handleSocial('facebook')"
-        />
-      </div>
-
-      <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-        <span class="h-px flex-1 bg-slate-200 dark:bg-white/10" />
-        <span>ou entre com e-mail</span>
-        <span class="h-px flex-1 bg-slate-200 dark:bg-white/10" />
+          <p class="text-sm leading-6 text-slate-600 dark:text-slate-300">
+            Entre na sua conta para continuar de onde parou.
+          </p>
       </div>
 
       <form class="space-y-4" @submit.prevent="handleSubmit">

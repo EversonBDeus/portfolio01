@@ -118,8 +118,8 @@ onMounted(async () => {
     <UAlert
       class="dashboard-note-alert"
       icon="i-lucide-database"
-      title="Tela alinhada ao backend MVP"
-      description="O plano atual agora é carregado do backend real. Checkout, assinatura, cupom e downgrade continuam fora desta etapa para não abrir billing cedo demais."
+      title="Plano atual"
+      description="Consulte aqui as informações do seu plano atual."
       color="neutral"
       variant="outline"
     />
@@ -229,7 +229,7 @@ onMounted(async () => {
 
         <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4 space-y-3">
           <div class="flex items-center justify-between gap-3">
-            <p class="text-sm text-muted">Status do billing</p>
+            <p class="text-sm text-muted">Status do Plano</p>
 
             <UBadge
               color="neutral"
@@ -247,11 +247,11 @@ onMounted(async () => {
           </div>
 
           <div class="space-y-1">
-            <p class="text-sm text-muted">Escopo desta fase</p>
-            <p class="text-sm text-muted">
-              A leitura do plano já usa o backend. Upgrade, downgrade, assinatura, cupom e pagamento entram depois.
-            </p>
-          </div>
+          <p class="text-sm text-muted">Plano atual</p>
+          <p class="text-sm text-muted">
+            Consulte aqui as informações disponíveis do seu plano. Recursos de assinatura e alteração de plano serão disponibilizados em breve.
+          </p>
+        </div>
         </div>
 
         <div class="space-y-2">
@@ -411,8 +411,8 @@ onMounted(async () => {
       <UAlert
         class="dashboard-note-alert"
         icon="i-lucide-bar-chart-3"
-        title="Sem liberar analytics por billing ainda"
-        description="A tela já comunica a progressão entre planos, mas a liberação real de recursos por assinatura continua para a etapa futura de billing."
+        title="Sem liberar analytics por Plano  ainda"
+        description="A tela já comunica a progressão entre planos, mas a liberação real de recursos por assinatura continua para a etapa futura de Plano."
         color="neutral"
         variant="outline"
       />
@@ -421,7 +421,7 @@ onMounted(async () => {
         class="dashboard-note-alert"
         icon="i-lucide-credit-card"
         title="Cobrança ainda fora do escopo"
-        description="Pagamento, checkout, cupom, cancelamento e reembolso continuam fora desta fase. Aqui o foco é remover o mock e refletir o plano real da conta."
+        description="Pagamento, cupom, cancelamento e reembolso continuam fora desta fase. Aqui o foco é remover o mock e refletir o plano real da conta."
         color="neutral"
         variant="outline"
       />

@@ -33,19 +33,10 @@ function markDirty() {
   <div class="space-y-8">
     <div class="space-y-1">
       <h2 class="text-base font-semibold">Dados públicos e profissionais</h2>
-      <p class="text-sm text-muted">
-        Estes campos alimentam o portfólio público, a base profissional e o fallback do editor.
-      </p>
+        <p class="text-sm text-muted">
+          Atualize os dados principais exibidos no seu perfil e usados no editor.
+        </p>
     </div>
-
-    <UAlert
-      class="dashboard-note-alert"
-      icon="i-lucide-database-zap"
-      title="Conectado ao backend"
-      description="Esta aba agora salva em profiles e professional_data. Aqui ficam os dados-base do seu portfólio."
-      color="neutral"
-      variant="outline"
-    />
 
     <div class="space-y-4">
       <div class="space-y-1">
@@ -122,9 +113,9 @@ function markDirty() {
     <div class="space-y-4">
       <div class="space-y-1">
         <p class="font-medium">Base profissional</p>
-        <p class="text-sm text-muted">
-          Dados profissionais centrais usados pelo onboarding, editor e rota pública.
-        </p>
+          <p class="text-sm text-muted">
+            Informações principais para apresentar sua atuação profissional.
+          </p>
       </div>
 
       <div class="grid gap-4 sm:grid-cols-2">

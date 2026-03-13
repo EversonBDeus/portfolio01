@@ -21,7 +21,7 @@ const footerLinks = [
         >
 
         <p class="max-w-xl text-sm text-slate-600 dark:text-slate-400">
-          Crie, edite e publique seu portfólio profissional com uma experiência moderna, guiada e pronta para evoluir.
+          Crie, personalize e publique seu portfólio profissional com uma experiência mais clara, moderna e fácil de atualizar.
         </p>
       </div>
 

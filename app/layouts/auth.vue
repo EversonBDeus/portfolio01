@@ -6,35 +6,35 @@ const route = useRoute()
 const scene = computed(() => {
   if (route.path === '/auth/register') {
     return {
-      badge: 'Cadastro',
-      title: 'Crie sua conta inicial',
-      body: 'Depois do cadastro, o fluxo segue direto para o onboarding antes do dashboard.',
-      steps: [
-        'Crie sua conta gratuitamente',
-        'Inicie seu onboarding',
-        'Organize seu portfólio',
-        'Publique sua página'
+ badge: 'Cadastro',
+  title: 'Crie sua conta',
+  body: 'Comece sua presença profissional com uma página clara, moderna e fácil de atualizar.',
+  steps: [
+    'Crie sua conta',
+    'Preencha suas informações',
+    'Escolha sua base visual',
+    'Publique sua página'
       ]
     }
   }
 
   return {
-    badge: 'Login',
-    title: 'Entre e continue seu portfólio',
-    body: 'Acesse sua conta para retomar o onboarding, revisar seus dados e seguir para o dashboard.',
-    steps: [
-      'Acesse sua conta',
-      'Retome seu progresso',
-      'Edite seu conteúdo',
-      'Publique sua página'
+  badge: 'Login',
+  title: 'Entre na Lumio',
+  body: 'Acesse sua conta para editar seu conteúdo e publicar sua página profissional.',
+  steps: [
+    'Entre na sua conta',
+    'Revise seu conteúdo',
+    'Ajuste sua página',
+    'Publique quando estiver pronto'
     ]
   }
 })
 
 const testimonial = {
-  quote: '“Em 15 minutos eu já tinha uma base pronta para organizar meu portfólio com muito mais clareza.”',
-  name: 'Ana Costa',
-  role: 'UX Designer'
+  quote: '“Em poucos minutos eu já tinha uma base pronta para organizar meu portfólio com mais clareza e presença profissional.”',
+  name: 'Cliente demo',
+  role: 'Profissional criativo'
 }
 </script>
 
@@ -43,16 +43,18 @@ const testimonial = {
     <header class="border-b border-slate-200/80 bg-white/70 backdrop-blur-xl dark:border-white/10 dark:bg-black/30">
       <div class="mx-auto flex min-h-16 max-w-[1400px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <NuxtLink to="/" class="flex min-w-0 items-center gap-3">
-          <span class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-600 ring-1 ring-emerald-500/20 dark:bg-emerald-500/15 dark:text-emerald-400 dark:ring-emerald-400/30">
-            <UIcon name="i-lucide-panels-top-left" class="size-5" />
-          </span>
+          <img
+            src="/brand/lumio-logo.png"
+            alt="Lumio"
+            class="h-8 w-auto sm:h-9"
+          >
 
           <div class="min-w-0">
             <p class="truncate font-semibold text-slate-950 dark:text-white">
-              Portfolio SaaS
+              Lumio
             </p>
             <p class="truncate text-xs text-slate-500 dark:text-slate-400">
-              Auth pública
+              Acesso à plataforma
             </p>
           </div>
         </NuxtLink>
@@ -131,7 +133,7 @@ const testimonial = {
 
                 <div class="mt-4 flex items-center gap-3">
                   <span class="flex size-10 items-center justify-center rounded-full bg-emerald-500/12 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-400/20">
-                    AC
+                    CD
                   </span>
 
                   <div>
@@ -154,4 +156,4 @@ const testimonial = {
       </div>
     </UMain>
   </div>
-</template> 
+</template>

@@ -431,13 +431,13 @@ function handleClearDraft() {
       </div>
     </div>
 
-    <UAlert
-      class="dashboard-note-alert"
-      :icon="projectCount ? 'i-lucide-circle-check' : 'i-lucide-info'"
-      :title="projectCount ? 'Projetos iniciais prontos' : 'Você ainda pode seguir sem projetos'"
-      :description="projectCount ? 'A vitrine inicial já tem itens cadastrados e isso ajuda o portfólio a não começar vazio.' : 'Esta etapa é opcional. O usuário pode entrar no painel e completar a vitrine depois.'"
-      :color="projectCount ? 'success' : 'neutral'"
-      variant="outline"
-    />
+      <UAlert
+        class="dashboard-note-alert"
+        :icon="projectCount ? 'i-lucide-circle-check' : 'i-lucide-info'"
+        :title="projectCount ? 'Projetos iniciais prontos' : 'Projetos podem ser adicionados depois'"
+        :description="projectCount ? 'Sua vitrine já começa com itens cadastrados.' : 'Essa etapa é opcional. Você pode entrar no painel agora e cadastrar seus projetos quando quiser.'"
+        :color="projectCount ? 'success' : 'neutral'"
+        variant="outline"
+      />
   </div>
 </template>

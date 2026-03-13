@@ -556,12 +556,12 @@ function removeSkill(skillToRemove: string) {
         </p>
       </div>
 
-      <div class="dashboard-form-surface-2 rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
-        <p class="text-sm font-medium">Pode evoluir depois</p>
-        <p class="mt-1 text-sm text-muted">
-          Essa é a base inicial. Depois o usuário poderá refinar experiência, projetos e outras seções no painel.
-        </p>
-      </div>
+          <div class="dashboard-form-surface-2 rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
+            <p class="text-sm font-medium">Você pode ajustar depois</p>
+            <p class="mt-1 text-sm text-muted">
+              Comece com o essencial agora. Depois você pode revisar experiência, projetos e outros detalhes no painel.
+            </p>
+          </div>
     </div>
 
     <UAlert

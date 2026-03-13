@@ -5,7 +5,6 @@ import { authRegisterSchema } from '~/schemas/auth-register'
 import { useAuthState } from '~/composables/useAuthState'
 import AuthFloatingInput from '~/components/auth/AuthFloatingInput.vue'
 import AuthFloatingPasswordInput from '~/components/auth/AuthFloatingPasswordInput.vue'
-import AuthSocialButton from '~/components/auth/AuthSocialButton.vue'
 
 definePageMeta({
   layout: 'auth'
@@ -91,13 +90,20 @@ const fieldErrors = computed(() => {
   }
 })
 
-function handleSocial(provider: 'google' | 'facebook') {
-  toast.add({
-    title: `${provider === 'google' ? 'Google' : 'Facebook'} em breve`,
-    description: 'Nesta etapa o fluxo social ainda é mock visual.',
-    color: 'info',
-    icon: 'i-lucide-sparkles'
-  })
+function normalizeRegisterError(error: unknown) {
+  const message = error instanceof Error ? error.message : 'Tente novamente.'
+  const normalized = message.toLowerCase()
+
+  if (
+    normalized.includes('already registered') ||
+    normalized.includes('already exists') ||
+    normalized.includes('already been registered') ||
+    normalized.includes('já existe')
+  ) {
+    return 'Não foi possível concluir o cadastro. Se você já tiver conta, tente entrar.'
+  }
+
+  return message
 }
 
 async function handleSubmit() {
@@ -123,7 +129,7 @@ async function handleSubmit() {
 
     toast.add({
       title: 'Conta criada',
-      description: 'Sua conta já está pronta. Vamos seguir para o onboarding.',
+      description: 'Sua conta já está pronta. Vamos continuar.',
       color: 'success',
       icon: 'i-lucide-circle-check'
     })
@@ -132,7 +138,7 @@ async function handleSubmit() {
   } catch (error) {
     toast.add({
       title: 'Não foi possível criar a conta',
-      description: error instanceof Error ? error.message : 'Tente novamente.',
+      description: normalizeRegisterError(error),
       color: 'error',
       icon: 'i-lucide-circle-alert'
     })
@@ -168,31 +174,10 @@ async function handleSubmit() {
           <h2 class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">
             Crie sua conta inicial
           </h2>
-
           <p class="text-sm leading-6 text-slate-600 dark:text-slate-300">
-            Depois do cadastro, o fluxo segue direto para o onboarding antes do dashboard.
+            Crie sua conta para começar a montar e publicar seu portfólio.
           </p>
         </div>
-      </div>
-
-      <div class="flex items-center justify-center gap-4">
-        <AuthSocialButton
-          provider="google"
-          tooltip="Continuar com Google"
-          @click="handleSocial('google')"
-        />
-
-        <AuthSocialButton
-          provider="facebook"
-          tooltip="Continuar com Facebook"
-          @click="handleSocial('facebook')"
-        />
-      </div>
-
-      <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-        <span class="h-px flex-1 bg-slate-200 dark:bg-white/10" />
-        <span>ou cadastre com e-mail</span>
-        <span class="h-px flex-1 bg-slate-200 dark:bg-white/10" />
       </div>
 
       <form class="space-y-4" @submit.prevent="handleSubmit">

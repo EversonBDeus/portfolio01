@@ -148,7 +148,7 @@ const nextAction = computed(() => {
 
   return {
     title: 'Revisar rota pública',
-    description: 'Seu fluxo principal já está pronto. Agora valide a experiência pública do portfólio.',
+    description: 'Sua configuração principal já está pronta. Agora revise sua página pública.',
     to: overview.value.publication.publicUrl || '/dashboard/domain',
     icon: 'i-lucide-external-link'
   }
@@ -186,7 +186,7 @@ const journeyItems = computed(() => [
   {
     id: 'publication',
     label: 'Portfólio publicado',
-    description: 'Slug e status já liberam a rota pública do MVP.',
+    description: 'Seu endereço público já está disponível para acesso.',
     complete: overview.value.summary.hasPublishedPortfolio,
     to: '/dashboard/domain'
   }
@@ -250,19 +250,12 @@ onMounted(async () => {
   <div class="space-y-6">
     <div class="space-y-1">
       <h1 class="text-2xl font-semibold">Início</h1>
-      <p class="text-sm text-muted">
-        Acompanhe o estado real da sua conta, do portfólio e do fluxo principal do backend MVP.
-      </p>
+        <p class="text-sm text-muted">
+          Acompanhe o status da sua conta, do conteúdo e da publicação em um só lugar.
+        </p>
     </div>
 
-    <UAlert
-      class="dashboard-note-alert"
-      icon="i-lucide-layout-dashboard"
-      title="Home conectada ao backend real"
-      description="Esta tela agora resume conta, perfil, template, editor e publicação usando leitura real do backend, sem abrir billing ou analytics avançado nesta fase."
-      color="neutral"
-      variant="outline"
-    />
+
 
     <UAlert
       class="dashboard-note-alert"
@@ -288,10 +281,10 @@ onMounted(async () => {
         class="dashboard-form-surface-2 space-y-5 rounded-2xl border border-(--dashboard-border-strong) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs) sm:p-5"
       >
         <div class="space-y-1">
-          <h2 class="text-base font-semibold">Progresso do fluxo principal</h2>
-          <p class="text-sm text-muted">
-            Visão rápida do que já está consolidado na sua conta dentro do MVP atual.
-          </p>
+            <h2 class="text-base font-semibold">Progresso da configuração</h2>
+            <p class="text-sm text-muted">
+              Veja o que já foi concluído e o que ainda falta ajustar.
+            </p>
         </div>
 
         <div class="space-y-3 rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4">
@@ -310,7 +303,7 @@ onMounted(async () => {
           </div>
 
           <p class="text-xs text-muted">
-            {{ completionPercent }}% do fluxo principal da conta já está consistente com o backend.
+            {{ completionPercent }}% da sua configuração já foi concluída.
           </p>
         </div>
 
@@ -353,10 +346,10 @@ onMounted(async () => {
         class="dashboard-form-surface-2 space-y-4 rounded-2xl border border-(--dashboard-border-strong) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs) sm:p-5"
       >
         <div class="space-y-1">
-          <h2 class="text-base font-semibold">Próxima ação recomendada</h2>
-          <p class="text-sm text-muted">
-            Próximo passo mais coerente para esta conta dentro do fluxo atual.
-          </p>
+            <h2 class="text-base font-semibold">Próximo passo</h2>
+            <p class="text-sm text-muted">
+              Continue de onde faz mais sentido para concluir sua configuração.
+            </p>
         </div>
 
         <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4 space-y-4">
@@ -580,24 +573,6 @@ onMounted(async () => {
             </article>
           </div>
         </section>
-
-        <UAlert
-          class="dashboard-note-alert"
-          icon="i-lucide-credit-card"
-          title="Billing real continua fora desta etapa"
-          description="O plano já aparece com leitura real, mas checkout, assinatura, upgrade e downgrade seguem para a etapa própria de billing."
-          color="neutral"
-          variant="outline"
-        />
-
-        <UAlert
-          class="dashboard-note-alert"
-          icon="i-lucide-bar-chart-3"
-          title="Analytics avançado continua desacoplado"
-          description="A home agora é operacional e real, mas métricas avançadas continuam fora do escopo imediato do backend MVP."
-          color="neutral"
-          variant="outline"
-        />
       </div>
     </div>
   </div>

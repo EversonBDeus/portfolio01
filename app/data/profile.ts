@@ -12,9 +12,9 @@ export type AboutItem = {
 }
 
 export const profile = {
-  name: 'Everson Deus',
-  headline: 'Desenvolvedor Web',
-  avatarSrc: '/img/profile/avatar.jpeg',
+  name: 'Perfil de demonstração',
+  headline: 'Exemplo neutro para apresentação da Lumio',
+  avatarSrc: '/favicon.png',
 
   cv: {
     url: '/files/cv.pdf',
@@ -32,22 +32,21 @@ export const profile = {
     telegramUrl: ''
   },
 
-  // ✅ voltou (era isso que alimentava o Accordion do "Sobre mim")
   about: [
     {
-      label: 'Sobre mim',
+      label: 'Sobre esta demo',
       icon: 'i-lucide-user',
-      content: 'Escreva aqui um resumo curto sobre você.'
+      content: 'Esta rota legado foi mantida apenas como demonstração neutra enquanto a experiência principal da Lumio evolui na publicação por slug.'
     },
     {
-      label: 'Stack e foco',
+      label: 'Foco do produto',
       icon: 'i-lucide-code',
-      content: 'Liste as tecnologias que você domina e o que você gosta de construir.'
+      content: 'A plataforma está sendo preparada para oferecer criação, edição e publicação de portfólios com uma experiência simples e profissional.'
     },
     {
-      label: 'Próximo passo (SaaS)',
+      label: 'Próximo passo',
       icon: 'i-lucide-rocket',
-      content: 'Explique em 2–3 linhas sua visão do portfólio virar um SaaS com templates.'
+      content: 'A evolução natural da plataforma é consolidar publicação pública, autenticação estável e limpeza visual antes da abertura para uso real.'
     }
   ] satisfies AboutItem[]
 }

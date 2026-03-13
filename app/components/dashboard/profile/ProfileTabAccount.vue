@@ -55,18 +55,9 @@ function formatPublicationStatus(value: AccountData['publicationStatus']) {
     <div class="space-y-1">
       <h2 class="text-base font-semibold">Dados internos da conta</h2>
       <p class="text-sm text-muted">
-        Esta aba mostra o estado real da conta, do onboarding e da publicação mínima já integrada ao backend.
+       Consulte os dados principais da sua conta e da sua página publicada.
       </p>
     </div>
-
-    <UAlert
-      class="dashboard-note-alert"
-      icon="i-lucide-lock-keyhole"
-      title="Leitura real da conta"
-      description="E-mail, plano, onboarding, slug e template vêm do backend. Alteração de segurança e billing entram em fluxos próprios."
-      color="neutral"
-      variant="outline"
-    />
 
     <div class="grid gap-4 sm:grid-cols-2">
       <DashboardFloatingInput

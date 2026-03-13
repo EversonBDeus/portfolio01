@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
 import type { TabsItem } from '@nuxt/ui'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useDashboardThemeUi } from '~/composables/useDashboardThemeUi'
 import {
-  initialUser,
   initialAccount,
+  initialUser,
   type AccountData,
   type UserProfile
 } from '~/composables/usePerfilState'
@@ -11,10 +12,9 @@ import {
   useProfilePersistence,
   type ProfileRemotePayload
 } from '~/composables/useProfilePersistence'
-import { useDashboardThemeUi } from '~/composables/useDashboardThemeUi'
 
-import ProfileTabProfile from '~/components/dashboard/profile/ProfileTabProfile.vue'
 import ProfileTabAccount from '~/components/dashboard/profile/ProfileTabAccount.vue'
+import ProfileTabProfile from '~/components/dashboard/profile/ProfileTabProfile.vue'
 
 definePageMeta({ layout: 'dashboard' })
 useSeoMeta({ title: 'Perfil' })
@@ -43,17 +43,14 @@ const account = reactive<AccountData>({
 
 const tabs: TabsItem[] = [
   { label: 'Portfólio', value: 'portfolio', icon: 'i-lucide-briefcase-business' },
-  { label: 'Conta', value: 'conta', icon: 'i-lucide-settings' },
-  { label: 'Segurança', value: 'seguranca', icon: 'i-lucide-shield-check' },
-  { label: 'Notificações', value: 'notificacoes', icon: 'i-lucide-bell' },
-  { label: 'Plano', value: 'plano', icon: 'i-lucide-credit-card' }
+  { label: 'Conta', value: 'conta', icon: 'i-lucide-settings' }
 ]
 
 const isRemoteBusy = computed(() => loadingFromServer.value || savingToServer.value)
 
 const syncDescription = computed(() => {
   if (!lastSavedAt.value) {
-    return 'Esta tela já está conectada ao backend real do MVP.'
+   return 'Gerencie aqui as informações principais da sua conta e do seu perfil.' 
   }
 
   return `Última sincronização do perfil: ${formatSavedAt(lastSavedAt.value)}.`
@@ -154,14 +151,14 @@ async function save() {
       </UButton>
     </div>
 
-    <UAlert
-      class="dashboard-note-alert"
-      icon="i-lucide-database"
-      title="Tela alinhada ao backend MVP"
-      description="Portfólio e Conta agora usam dados reais. Segurança, Notificações e Plano continuam como próximas etapas para não abrir escopo cedo demais."
-      color="neutral"
-      variant="outline"
-    />
+      <UAlert
+        class="dashboard-note-alert"
+        icon="i-lucide-user-round"
+        title="Perfil e conta"
+        description="Gerencie aqui suas informações principais de perfil e acesso."
+        color="neutral"
+        variant="outline"
+      />
 
     <UAlert
       class="dashboard-note-alert"
@@ -202,68 +199,6 @@ async function save() {
         :model="account"
       />
 
-      <div
-        v-show="activeTab === 'seguranca'"
-        class="space-y-4"
-      >
-        <div class="space-y-1">
-          <h2 class="text-base font-semibold">Segurança</h2>
-          <p class="text-sm text-muted">
-            Esta área entra na próxima fase, junto com fluxo real de senha e autenticação avançada.
-          </p>
-        </div>
-
-        <UAlert
-          class="dashboard-note-alert"
-          icon="i-lucide-shield-check"
-          title="Etapa posterior do produto"
-          description="Nesta fase do backend MVP, priorizamos persistência real de perfil, editor, template e publicação. Segurança avançada fica desacoplada desta tela por enquanto."
-          color="neutral"
-          variant="outline"
-        />
-      </div>
-
-      <div
-        v-show="activeTab === 'notificacoes'"
-        class="space-y-4"
-      >
-        <div class="space-y-1">
-          <h2 class="text-base font-semibold">Notificações</h2>
-          <p class="text-sm text-muted">
-            Notificações reais ainda não fazem parte do backend MVP mínimo desta fase.
-          </p>
-        </div>
-
-        <UAlert
-          class="dashboard-note-alert"
-          icon="i-lucide-bell"
-          title="Fora do escopo imediato"
-          description="O MVP atual precisa consolidar dados, editor e publicação. Preferências reais de notificação entram depois, sem misturar prioridades."
-          color="neutral"
-          variant="outline"
-        />
-      </div>
-
-      <div
-        v-show="activeTab === 'plano'"
-        class="space-y-4"
-      >
-        <div class="space-y-1">
-          <h2 class="text-base font-semibold">Plano</h2>
-          <p class="text-sm text-muted">
-            O plano atual já é mostrado na aba Conta. Billing e upgrade real entram em etapa própria.
-          </p>
-        </div>
-
-        <UAlert
-          class="dashboard-note-alert"
-          icon="i-lucide-credit-card"
-          title="Billing real fica para depois"
-          description="Nesta fase mantemos apenas a leitura do plano salvo. Checkout, cobrança e limites comerciais ficam fora do backend MVP imediato."
-          color="neutral"
-          variant="outline"
-        />
-      </div>
     </UCard>
   </div>
 </template>

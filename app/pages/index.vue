@@ -4,109 +4,109 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Portfolio SaaS',
+  title: 'Lumio',
   description:
-    'Crie um portfólio profissional com onboarding, templates e editor visual em uma base pronta para evoluir para SaaS.',
-  ogTitle: 'Portfolio SaaS',
+    'Crie, personalize e publique seu portfólio profissional com a Lumio.',
+  ogTitle: 'Lumio',
   ogDescription:
-    'Landing pública da plataforma com foco em templates, editor visual e fluxo de entrada do produto.'
+    'Organize seu conteúdo, escolha sua base visual e publique uma página profissional com mais clareza e presença.'
 })
 
 const heroStats = [
   {
     label: 'Entrada guiada',
-    value: 'Onboarding',
-    description: 'Fluxo pensado para evitar painel vazio e estruturar os dados públicos.'
+    value: 'Configuração inicial',
+    description: 'Comece com o essencial e avance com mais clareza desde o primeiro acesso.'
   },
   {
     label: 'Personalização',
     value: 'Templates',
-    description: 'Base preparada para múltiplos modelos visuais com evolução futura por plano.'
+    description: 'Escolha uma base visual pronta para destacar seu trabalho com mais consistência.'
   },
   {
-    label: 'Edição',
-    value: 'Editor visual',
-    description: 'Preview e edição já começaram a ser construídos para o fluxo do produto.'
+    label: 'Publicação',
+    value: 'Página profissional',
+    description: 'Organize seu conteúdo e deixe sua apresentação pronta para compartilhar.'
   }
 ]
 
 const featureCards = [
   {
     icon: 'i-lucide-layout-template',
-    title: 'Templates prontos para escalar',
+    title: 'Templates prontos para começar',
     description:
-      'A plataforma já está sendo organizada para suportar templates diferentes sem misturar dados no layout.'
+      'Escolha uma base visual clara e profissional para apresentar seu conteúdo com mais presença.'
   },
   {
     icon: 'i-lucide-file-pen-line',
-    title: 'Onboarding antes do dashboard',
+    title: 'Configuração guiada',
     description:
-      'O usuário entra pelo fluxo guiado e preenche o conteúdo essencial antes de cair no painel.'
+      'Preencha suas informações principais em poucos passos e monte sua base inicial com mais agilidade.'
   },
   {
     icon: 'i-lucide-monitor-smartphone',
-    title: 'Editor visual em evolução',
+    title: 'Edição visual',
     description:
-      'A base do editor já foi iniciada para permitir preview e edição do conteúdo público.'
+      'Ajuste seus textos, links e seções em uma experiência pensada para revisão rápida.'
   },
   {
-    icon: 'i-lucide-chart-column-big',
-    title: 'Pronto para analytics',
+    icon: 'i-lucide-folders',
+    title: 'Projetos organizados',
     description:
-      'A arquitetura já considera dashboards, planos e evolução para métricas do portfólio.'
+      'Apresente seus trabalhos, organize seus destaques e mantenha tudo fácil de atualizar.'
   },
   {
     icon: 'i-lucide-globe',
-    title: 'Pensado para publicação',
+    title: 'Página pronta para compartilhar',
     description:
-      'O produto foi estruturado para evoluir para publicação pública, domínio e fluxo de ativação.'
+      'Transforme seu conteúdo em uma página pública com aparência profissional e leitura objetiva.'
   },
   {
-    icon: 'i-lucide-badge-dollar-sign',
-    title: 'Base para SaaS',
+    icon: 'i-lucide-refresh-cw',
+    title: 'Atualizações simples',
     description:
-      'O projeto deixou de ser só um portfólio pessoal e está sendo organizado como produto.'
+      'Edite sua apresentação sempre que precisar, sem complicar seu fluxo de trabalho.'
   }
 ]
 
 const flowSteps = [
   {
     step: '01',
-    title: 'Landing pública',
-    description: 'A página inicial apresenta o produto e separa claramente a camada pública do sistema interno.'
+    title: 'Crie sua conta',
+    description: 'Comece sua presença profissional com uma base clara e pronta para evoluir.'
   },
   {
     step: '02',
-    title: 'Login e cadastro',
-    description: 'Depois da landing, a próxima camada natural é autenticação.'
+    title: 'Preencha suas informações',
+    description: 'Adicione os dados principais do seu perfil e organize sua apresentação.'
   },
   {
     step: '03',
-    title: 'Onboarding',
-    description: 'O usuário preenche dados da conta e dados públicos do portfólio antes do painel.'
+    title: 'Ajuste sua página',
+    description: 'Escolha sua base visual e refine os conteúdos que vão aparecer para o público.'
   },
   {
     step: '04',
-    title: 'Dashboard e templates',
-    description: 'A partir daí entra no painel, escolhe template, edita e publica.'
+    title: 'Publique quando estiver pronto',
+    description: 'Deixe sua página pronta para compartilhar com recrutadores, clientes e contatos.'
   }
 ]
 
 const templatePreviewCards = [
   {
     title: 'Portfólio profissional',
-    text: 'Estrutura para projetos, bio, links públicos e apresentação pessoal.',
-    badge: 'Free'
+    text: 'Estrutura ideal para apresentar projetos, trajetória, links e presença profissional.',
+    badge: 'Essencial'
   },
   {
-    title: 'Template com foco em serviços',
-    text: 'Base preparada para evolução futura com posicionamento mais comercial.',
-    badge: 'Plus'
+    title: 'Página com foco em serviços',
+    text: 'Base visual pensada para quem quer apresentar atuação, proposta e posicionamento.',
+    badge: 'Business'
   },
   {
-    title: 'Template premium',
-    text: 'Visuais mais fortes para planos mais altos e experiências mais completas.',
-    badge: 'Pro'
+    title: 'Apresentação premium',
+    text: 'Composições mais marcantes para destacar percepção de valor e identidade visual.',
+    badge: 'Premium'
   }
 ]
 </script>
@@ -121,25 +121,25 @@ const templatePreviewCards = [
         <div v-reveal class="space-y-6">
           <div class="flex flex-wrap gap-2">
             <UBadge color="primary" variant="subtle">
-              Landing pública
+              Portfólios profissionais
             </UBadge>
 
             <UBadge color="neutral" variant="soft">
-              Nuxt UI 4
+              Design claro
             </UBadge>
 
             <UBadge color="neutral" variant="soft">
-              ScrollReveal
+              Publicação simples
             </UBadge>
           </div>
 
           <div class="space-y-4">
             <h1 class="max-w-[11ch] text-5xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-6xl xl:text-[4.6rem] xl:leading-[0.92]">
-              Monte seu portfólio com templates, onboarding e editor visual.
+              Crie, personalize e publique seu portfólio com a Lumio.
             </h1>
 
             <p class="max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg">
-              Esta landing inaugura a camada pública do produto sem misturar o visual do dashboard nem o template do portfólio.
+              Organize seu conteúdo, escolha sua base visual e publique uma página profissional com mais clareza e presença.
             </p>
           </div>
 
@@ -149,7 +149,7 @@ const templatePreviewCards = [
               size="xl"
               icon="i-lucide-eye"
             >
-              Ver portfólio atual
+              Ver demonstração
             </UButton>
 
             <UButton
@@ -190,15 +190,15 @@ const templatePreviewCards = [
           <div class="flex items-center justify-between gap-3 border-b border-slate-200/80 pb-4 dark:border-white/10">
             <div class="space-y-1">
               <p class="text-sm font-semibold text-slate-900 dark:text-white">
-                Visão do produto
+                Tudo em um só lugar
               </p>
               <p class="text-sm text-slate-500 dark:text-slate-400">
-                Entrada pública + fluxo interno
+                Conta, conteúdo e página pública
               </p>
             </div>
 
             <UBadge color="primary" variant="subtle">
-              MVP
+              Lumio
             </UBadge>
           </div>
 
@@ -207,10 +207,10 @@ const templatePreviewCards = [
               <div class="flex items-center justify-between gap-3">
                 <div>
                   <p class="text-sm font-medium text-slate-900 dark:text-white">
-                    Camada pública
+                    Página pública
                   </p>
                   <p class="text-xs text-slate-500 dark:text-slate-400">
-                    Landing, vitrine e descoberta
+                    Sua apresentação online
                   </p>
                 </div>
 
@@ -235,10 +235,10 @@ const templatePreviewCards = [
 
                   <div>
                     <p class="text-sm font-medium text-slate-900 dark:text-white">
-                      Onboarding
+                      Configuração inicial
                     </p>
                     <p class="text-xs text-slate-500 dark:text-slate-400">
-                      Conta e dados públicos
+                      Dados principais da sua conta
                     </p>
                   </div>
                 </div>
@@ -255,7 +255,7 @@ const templatePreviewCards = [
                       Editor
                     </p>
                     <p class="text-xs text-slate-500 dark:text-slate-400">
-                      Preview e personalização
+                      Conteúdo e apresentação
                     </p>
                   </div>
                 </div>
@@ -268,10 +268,10 @@ const templatePreviewCards = [
                   Templates
                 </UBadge>
                 <UBadge color="neutral" variant="soft">
-                  Dashboard
+                  Perfil
                 </UBadge>
                 <UBadge color="neutral" variant="soft">
-                  Analytics
+                  Editor
                 </UBadge>
                 <UBadge color="neutral" variant="soft">
                   Publicação
@@ -293,10 +293,10 @@ const templatePreviewCards = [
 
           <div class="space-y-2">
             <h2 class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-              A landing organiza a entrada do produto sem misturar portfólio, editor e painel.
+              Uma base clara para montar sua presença profissional.
             </h2>
             <p class="max-w-3xl text-base leading-7 text-slate-600 dark:text-slate-300">
-              Nesta etapa, a página pública apresenta o produto e prepara o terreno para login, cadastro e testes reais com templates.
+              A Lumio reúne o essencial para organizar seu conteúdo, ajustar sua apresentação e publicar sua página com mais segurança.
             </p>
           </div>
         </div>
@@ -337,10 +337,10 @@ const templatePreviewCards = [
 
           <div class="space-y-2">
             <h2 class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-              O fluxo público do projeto já está bem definido.
+              Monte sua página em poucos passos.
             </h2>
             <p class="max-w-3xl text-base leading-7 text-slate-600 dark:text-slate-300">
-              A landing vem antes de login, cadastro, onboarding e dashboard.
+              Crie sua conta, organize seu conteúdo, ajuste sua apresentação e publique quando estiver pronto.
             </p>
           </div>
         </div>
@@ -382,10 +382,10 @@ const templatePreviewCards = [
 
             <div class="space-y-2">
               <h2 class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-                A vitrine pública prepara o próximo passo sem hardcode no template.
+                Bases visuais para diferentes estilos de apresentação.
               </h2>
               <p class="max-w-3xl text-base leading-7 text-slate-600 dark:text-slate-300">
-                O template público deve apenas renderizar dados, sem misturar regras do sistema ou conteúdo fixo nele.
+                Escolha a direção visual que combina com seu perfil e ajuste sua página com mais personalidade.
               </p>
             </div>
           </div>
@@ -427,10 +427,10 @@ const templatePreviewCards = [
 
               <div class="rounded-2xl border border-slate-200/80 bg-slate-50/90 p-4 dark:border-white/10 dark:bg-white/5">
                 <p class="text-sm font-medium text-slate-900 dark:text-white">
-                  Estrutura visual separada dos dados
+                  Visual pronto para receber seu conteúdo
                 </p>
                 <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                  A próxima etapa vai plugar dados reais do portfólio sem transformar o template em conteúdo hardcoded.
+                  Escolha a base que faz mais sentido para sua apresentação e refine sua página com tranquilidade.
                 </p>
               </div>
             </div>
@@ -446,15 +446,15 @@ const templatePreviewCards = [
           <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
             <div class="space-y-3">
               <UBadge color="primary" variant="subtle">
-                Próximo passo
+                Comece agora
               </UBadge>
 
               <h2 class="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-                Depois da landing, o próximo bloco natural é login e cadastro.
+                Deixe sua apresentação pronta para mostrar seu trabalho com mais força.
               </h2>
 
               <p class="max-w-3xl text-base leading-7 text-slate-600 dark:text-slate-300">
-                O fluxo já foi consolidado nessa ordem: landing pública, autenticação, onboarding e dashboard.
+                Crie sua conta, organize seu conteúdo e avance para uma página profissional com mais clareza, consistência e presença.
               </p>
             </div>
 
@@ -464,7 +464,7 @@ const templatePreviewCards = [
                 size="lg"
                 icon="i-lucide-eye"
               >
-                Ver demo atual
+                Ver demonstração
               </UButton>
 
               <UButton
