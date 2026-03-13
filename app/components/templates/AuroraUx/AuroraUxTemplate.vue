@@ -1,27 +1,62 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { PortfolioPublicViewModel } from '~/types/portfolio-public-view-model'
 import { usePortfolioTemplateTheme } from '~/composables/usePortfolioTemplateTheme'
+import type { PortfolioPublicViewModel } from '~/types/portfolio-public-view-model'
 
-const props = defineProps<{
+type TemplateMode = 'light' | 'dark'
+
+type TemplateContactItem = {
+  key: 'publicEmail' | 'linkedin' | 'github' | 'website' | 'whatsapp'
+  label: string
+  value: string
+  href: string
+  icon: string
+  external: boolean
+}
+
+const props = withDefaults(defineProps<{
   portfolio: PortfolioPublicViewModel
   themeName?: string
   templatePresetId?: string | null
-}>()
-const { themeVars } = usePortfolioTemplateTheme(props.templatePresetId)
-const summary = computed(() => props.portfolio.about.summary.trim())
+  templateMode?: TemplateMode
+}>(), {
+  themeName: 'Aurora UX',
+  templatePresetId: null,
+  templateMode: 'light'
+})
 
-const publicationLabel = computed(() => {
-  return props.portfolio.settings.publicationStatus === 'published' ? 'Publicado' : 'Rascunho'
+const { themeVars } = usePortfolioTemplateTheme(() => props.templatePresetId)
+
+const templateName = computed(() => props.themeName.trim())
+const isPublished = computed(() => props.portfolio.settings.publicationStatus === 'published')
+
+const summary = computed(() => {
+  return props.portfolio.about.summary.trim() || 'O resumo profissional ainda não foi preenchido.'
 })
 
 const skills = computed(() => {
-  return props.portfolio.hero.skills.filter(Boolean).slice(0, 6)
+  return [...new Set(
+    props.portfolio.hero.skills
+      .map((skill) => skill.trim())
+      .filter(Boolean)
+  )].slice(0, 8)
 })
 
-const projectsToRender = computed(() => {
-  const featuredProjects = props.portfolio.projects.filter((project) => project.featured)
-  return featuredProjects.length ? featuredProjects : props.portfolio.projects
+const featuredProjects = computed(() => {
+  const featured = props.portfolio.projects.filter((project) => project.featured)
+  return featured.length ? featured : props.portfolio.projects
+})
+
+const leadProject = computed(() => featuredProjects.value[0] ?? null)
+const secondaryProjects = computed(() => featuredProjects.value.slice(1, 4))
+const featuredCount = computed(() => props.portfolio.projects.filter((project) => project.featured).length)
+
+const stats = computed(() => {
+  return [
+    { label: 'Projetos', value: String(props.portfolio.projects.length) },
+    { label: 'Destaques', value: String(featuredCount.value) },
+    { label: 'Skills', value: String(skills.value.length) }
+  ]
 })
 
 function normalizeWebsite(value: string) {
@@ -50,634 +85,626 @@ function normalizeWhatsapp(value: string) {
 }
 
 const contactItems = computed(() => {
-  return [
+  const items: TemplateContactItem[] = [
     {
       key: 'publicEmail',
       label: 'Email',
-      value: props.portfolio.contact.publicEmail,
-      href: props.portfolio.contact.publicEmail ? `mailto:${props.portfolio.contact.publicEmail}` : '',
+      value: props.portfolio.contact.publicEmail.trim(),
+      href: props.portfolio.contact.publicEmail.trim()
+        ? `mailto:${props.portfolio.contact.publicEmail.trim()}`
+        : '',
+      icon: 'i-lucide-mail',
       external: false
     },
     {
       key: 'linkedin',
       label: 'LinkedIn',
-      value: props.portfolio.contact.linkedin,
+      value: props.portfolio.contact.linkedin.trim(),
       href: normalizeWebsite(props.portfolio.contact.linkedin),
+      icon: 'i-lucide-linkedin',
       external: true
     },
     {
       key: 'github',
       label: 'GitHub',
-      value: props.portfolio.contact.github,
+      value: props.portfolio.contact.github.trim(),
       href: normalizeWebsite(props.portfolio.contact.github),
+      icon: 'i-lucide-github',
       external: true
     },
     {
       key: 'website',
       label: 'Website',
-      value: props.portfolio.contact.website,
+      value: props.portfolio.contact.website.trim(),
       href: normalizeWebsite(props.portfolio.contact.website),
+      icon: 'i-lucide-globe',
       external: true
     },
     {
       key: 'whatsapp',
       label: 'WhatsApp',
-      value: props.portfolio.contact.whatsapp,
+      value: props.portfolio.contact.whatsapp.trim(),
       href: normalizeWhatsapp(props.portfolio.contact.whatsapp),
+      icon: 'i-lucide-message-circle',
       external: true
     }
-  ].filter((item) => item.value && item.href)
+  ]
+
+  return items.filter((item) => Boolean(item.value && item.href))
 })
+
+const primaryContacts = computed(() => contactItems.value.slice(0, 3))
+const extraContacts = computed(() => contactItems.value.slice(3))
 </script>
 
 <template>
-  <article class="aurora-template">
-    <section class="aurora-template__hero">
-      <div class="aurora-template__hero-backdrop" />
+  <article
+    class="lumio-template lumio-template--aurora"
+    :class="`lumio-template--mode-${props.templateMode}`"
+    :style="themeVars"
+  >
+    <section class="lumio-template__hero">
+      <div class="lumio-template__hero-grid">
+        <div
+          class="lumio-template__hero-main"
+          v-reveal="{ distance: '14px', duration: 500 }"
+        >
+          <div class="lumio-template__pill-row">
+            <span class="lumio-template__pill lumio-template__pill--primary">
+              {{ templateName }}
+            </span>
 
-      <div
-        class="aurora-template__hero-content"
-        v-reveal="{ distance: '18px', duration: 650 }"
-      >
-        <div class="aurora-template__eyebrow">
-          <span class="aurora-template__pill aurora-template__pill--ghost">
-            {{ themeName || 'Aurora UX' }}
-          </span>
+            <span
+              class="lumio-template__pill"
+              :class="isPublished ? 'lumio-template__pill--success' : 'lumio-template__pill--warning'"
+            >
+              {{ isPublished ? 'Publicado' : 'Rascunho' }}
+            </span>
+          </div>
 
-          <span class="aurora-template__pill aurora-template__pill--accent">
-            {{ publicationLabel }}
-          </span>
-        </div>
-
-        <div class="aurora-template__heading">
-          <p class="aurora-template__kicker">
+          <p class="lumio-template__slug">
             /{{ portfolio.settings.publicSlug }}
           </p>
 
-          <h1 class="aurora-template__title">
+          <h1 class="lumio-template__name">
             {{ portfolio.hero.publicName }}
           </h1>
 
-          <p v-if="portfolio.hero.headline" class="aurora-template__headline">
+          <p class="lumio-template__headline">
             {{ portfolio.hero.headline }}
           </p>
-        </div>
 
-        <div class="aurora-template__meta">
-          <span v-if="portfolio.hero.roleTitle" class="aurora-template__meta-item">
-            {{ portfolio.hero.roleTitle }}
-          </span>
+          <div class="lumio-template__meta">
+            <span
+              v-if="portfolio.hero.roleTitle"
+              class="lumio-template__meta-pill"
+            >
+              <UIcon name="i-lucide-briefcase-business" />
+              {{ portfolio.hero.roleTitle }}
+            </span>
 
-          <span v-if="portfolio.hero.location" class="aurora-template__meta-item">
-            {{ portfolio.hero.location }}
-          </span>
-        </div>
+            <span
+              v-if="portfolio.hero.location"
+              class="lumio-template__meta-pill"
+            >
+              <UIcon name="i-lucide-map-pin" />
+              {{ portfolio.hero.location }}
+            </span>
+          </div>
 
-        <ul v-if="skills.length" class="aurora-template__skills" aria-label="Principais habilidades">
-          <li
-            v-for="skill in skills"
-            :key="skill"
-            class="aurora-template__skill"
+          <ul
+            v-if="skills.length"
+            class="lumio-template__skills"
+            aria-label="Skills principais"
           >
-            {{ skill }}
-          </li>
-        </ul>
+            <li
+              v-for="skill in skills"
+              :key="skill"
+              class="lumio-template__skill"
+            >
+              {{ skill }}
+            </li>
+          </ul>
+        </div>
+
+        <aside
+          class="lumio-template__hero-side"
+          v-reveal="{ delay: 70, distance: '14px', duration: 500 }"
+        >
+          <div class="lumio-template__stat-grid">
+            <article
+              v-for="stat in stats"
+              :key="stat.label"
+              class="lumio-template__stat-card"
+            >
+              <p class="lumio-template__stat-label">{{ stat.label }}</p>
+              <strong class="lumio-template__stat-value">{{ stat.value }}</strong>
+            </article>
+          </div>
+
+          <div class="lumio-template__card">
+            <p class="lumio-template__section-kicker">Resumo</p>
+            <p class="lumio-template__copy lumio-template__copy--compact">
+              {{ summary }}
+            </p>
+          </div>
+        </aside>
       </div>
     </section>
 
-    <div class="aurora-template__body">
-      <section
-        class="aurora-template__section aurora-template__section--about"
-        v-reveal="{ delay: 80, distance: '16px', duration: 600 }"
-      >
-        <div class="aurora-template__section-heading">
-          <p class="aurora-template__section-label">
-            Sobre
-          </p>
+    <div class="lumio-template__body">
+      <section class="lumio-template__grid lumio-template__grid--intro">
+        <article
+          class="lumio-template__card"
+          v-reveal="{ distance: '14px', duration: 500 }"
+        >
+          <p class="lumio-template__section-kicker">Direção</p>
 
-          <h2 class="aurora-template__section-title">
-            Resumo profissional
+          <h2 class="lumio-template__section-title">
+            Preview isolado com hero amplo, leitura limpa e preset local.
           </h2>
-        </div>
 
-        <p v-if="summary" class="aurora-template__copy">
-          {{ summary }}
-        </p>
+          <p class="lumio-template__copy">
+            Aurora UX fica como template-base mais claro do Lumio: direto, comercial e preparado
+            para o fluxo público real sem contaminar o tema global do sistema.
+          </p>
+        </article>
 
-        <p v-else class="aurora-template__empty">
-          O resumo profissional ainda não foi preenchido.
-        </p>
+        <article
+          class="lumio-template__card"
+          v-reveal="{ delay: 60, distance: '14px', duration: 500 }"
+        >
+          <p class="lumio-template__section-kicker">Contato principal</p>
+
+          <div
+            v-if="primaryContacts.length"
+            class="lumio-template__contact-stack"
+          >
+            <a
+              v-for="item in primaryContacts"
+              :key="item.key"
+              :href="item.href"
+              :target="item.external ? '_blank' : undefined"
+              :rel="item.external ? 'noreferrer noopener' : undefined"
+              class="lumio-template__contact-card"
+            >
+              <span class="lumio-template__contact-icon">
+                <UIcon :name="item.icon" />
+              </span>
+
+              <span class="lumio-template__contact-copy">
+                <span class="lumio-template__contact-label">{{ item.label }}</span>
+                <span class="lumio-template__contact-value">{{ item.value }}</span>
+              </span>
+            </a>
+          </div>
+
+          <p
+            v-else
+            class="lumio-template__copy lumio-template__copy--compact"
+          >
+            Nenhum canal público foi informado ainda.
+          </p>
+        </article>
       </section>
 
       <section
-        class="aurora-template__section aurora-template__section--projects"
-        v-reveal="{ delay: 120, distance: '16px', duration: 600 }"
+        class="lumio-template__feature-shell"
+        v-reveal="{ distance: '14px', duration: 500 }"
       >
-        <div class="aurora-template__section-heading">
-          <p class="aurora-template__section-label">
-            Projetos
-          </p>
+        <div class="lumio-template__feature-header">
+          <div>
+            <p class="lumio-template__section-kicker">Projeto principal</p>
+            <h2 class="lumio-template__section-title">Peça central da vitrine pública</h2>
+          </div>
 
-          <h2 class="aurora-template__section-title">
-            Trabalhos em destaque
-          </h2>
+          <span
+            v-if="secondaryProjects.length"
+            class="lumio-template__support-count"
+          >
+            +{{ secondaryProjects.length }} projetos auxiliares
+          </span>
         </div>
 
-        <div class="aurora-template__projects">
+        <div class="lumio-template__feature-grid">
           <article
-            v-for="(project, index) in projectsToRender"
-            :key="project.id"
-            class="aurora-template__project-card"
-            v-reveal="{ delay: 140 + (index * 90), distance: '16px', duration: 600 }"
+            v-if="leadProject"
+            class="lumio-template__feature-card"
           >
-            <div class="aurora-template__project-top">
-              <span class="aurora-template__project-category">
-                {{ project.category }}
+            <div class="lumio-template__tag-row">
+              <span class="lumio-template__tag">
+                {{ leadProject.category }}
               </span>
 
               <span
-                v-if="project.featured"
-                class="aurora-template__project-badge"
+                v-if="leadProject.featured"
+                class="lumio-template__tag lumio-template__tag--highlight"
               >
                 Destaque
               </span>
             </div>
 
-            <h3 class="aurora-template__project-title">
-              {{ project.title }}
+            <h3 class="lumio-template__project-title">
+              {{ leadProject.title }}
             </h3>
 
-            <p class="aurora-template__project-summary">
-              {{ project.summary }}
+            <p class="lumio-template__copy">
+              {{ leadProject.summary }}
             </p>
 
             <a
-              v-if="project.link"
-              :href="project.link"
+              v-if="leadProject.link"
+              :href="leadProject.link"
               target="_blank"
               rel="noreferrer noopener"
-              class="aurora-template__project-link"
+              class="lumio-template__action"
             >
-              Ver projeto
+              <UIcon name="i-lucide-arrow-up-right" />
+              Abrir projeto
             </a>
           </article>
+
+          <div
+            v-if="secondaryProjects.length"
+            class="lumio-template__project-list"
+          >
+            <article
+              v-for="project in secondaryProjects"
+              :key="project.id"
+              class="lumio-template__project-card"
+            >
+              <div class="lumio-template__tag-row">
+                <span class="lumio-template__tag">
+                  {{ project.category }}
+                </span>
+
+                <span
+                  v-if="project.featured"
+                  class="lumio-template__tag lumio-template__tag--highlight"
+                >
+                  Destaque
+                </span>
+              </div>
+
+              <h3 class="lumio-template__project-card-title">
+                {{ project.title }}
+              </h3>
+
+              <p class="lumio-template__copy lumio-template__copy--compact">
+                {{ project.summary }}
+              </p>
+            </article>
+          </div>
         </div>
       </section>
 
       <section
-        class="aurora-template__section aurora-template__section--contact"
-        v-reveal="{ delay: 180, distance: '16px', duration: 600 }"
+        class="lumio-template__card"
+        v-reveal="{ distance: '14px', duration: 500 }"
       >
-        <div class="aurora-template__section-heading">
-          <p class="aurora-template__section-label">
-            Contato
-          </p>
-
-          <h2 class="aurora-template__section-title">
-            Canais públicos
-          </h2>
+        <div class="lumio-template__feature-header">
+          <div>
+            <p class="lumio-template__section-kicker">Canais públicos</p>
+            <h2 class="lumio-template__section-title">Grade pronta para integração futura</h2>
+          </div>
         </div>
 
-        <div class="aurora-template__contacts">
+        <div
+          v-if="contactItems.length"
+          class="lumio-template__contact-grid"
+        >
           <a
             v-for="item in contactItems"
-            :key="item.key"
+            :key="`contact-${item.key}`"
             :href="item.href"
             :target="item.external ? '_blank' : undefined"
             :rel="item.external ? 'noreferrer noopener' : undefined"
-            class="aurora-template__contact-card"
+            class="lumio-template__contact-card"
           >
-            <span class="aurora-template__contact-label">
-              {{ item.label }}
+            <span class="lumio-template__contact-icon">
+              <UIcon :name="item.icon" />
             </span>
 
-            <span class="aurora-template__contact-value">
-              {{ item.value }}
+            <span class="lumio-template__contact-copy">
+              <span class="lumio-template__contact-label">{{ item.label }}</span>
+              <span class="lumio-template__contact-value">{{ item.value }}</span>
             </span>
           </a>
         </div>
+
+        <p
+          v-if="extraContacts.length"
+          class="lumio-template__footnote"
+        >
+          {{ extraContacts.length }} canal(is) adicional(is) seguem disponíveis no conjunto completo.
+        </p>
       </section>
     </div>
   </article>
 </template>
 
 <style scoped>
-.aurora-template {
-  --aurora-font-family: 'Manrope', system-ui, sans-serif;
-  --aurora-display-family: 'Manrope', system-ui, sans-serif;
-  --aurora-bg: rgba(255, 255, 255, 0.82);
-  --aurora-bg-elevated: rgba(255, 255, 255, 0.72);
-  --aurora-border: rgba(15, 23, 42, 0.1);
-  --aurora-border-strong: rgba(15, 23, 42, 0.16);
-  --aurora-shadow: 0 24px 80px -48px rgba(15, 23, 42, 0.45);
-  --aurora-shadow-soft: 0 14px 40px -32px rgba(15, 23, 42, 0.32);
-  --aurora-text: var(--ui-text, #0f172a);
-  --aurora-text-muted: rgba(15, 23, 42, 0.7);
-  --aurora-hero-text: #ffffff;
-  --aurora-primary: var(--ui-color-primary-500, #7c3aed);
-  --aurora-secondary: var(--ui-color-secondary-500, #06b6d4);
-  --aurora-tertiary: var(--ui-color-tertiary-500, #38bdf8);
-  --aurora-ring: rgba(255, 255, 255, 0.18);
-
-  display: block;
-  overflow: hidden;
-  border: 1px solid var(--aurora-border);
-  border-radius: 32px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.56) 100%);
-  box-shadow: var(--aurora-shadow);
-  color: var(--aurora-text);
-  font-family: var(--aurora-font-family);
-  backdrop-filter: blur(18px);
+.lumio-template {
+  font-family: var(--template-font-body);
+  color: var(--template-text);
 }
 
-.aurora-template__hero {
-  position: relative;
+.lumio-template :is(h1, h2, h3) {
+  font-family: var(--template-font-heading);
+}
+
+.lumio-template--aurora {
+  --aurora-surface: #ffffff;
+  --aurora-surface-soft: rgba(255, 255, 255, 0.76);
+  --aurora-surface-muted: rgba(15, 23, 42, 0.04);
+  --aurora-border: rgba(15, 23, 42, 0.08);
+  --aurora-copy: rgba(15, 23, 42, 0.72);
+  --aurora-copy-soft: rgba(15, 23, 42, 0.52);
+  border: 1px solid var(--aurora-border);
+  border-radius: 2rem;
   overflow: hidden;
-  padding: 1.25rem;
+  background: var(--aurora-surface);
+  box-shadow: 0 28px 90px -48px rgba(15, 23, 42, 0.18);
+}
+
+.lumio-template--aurora.lumio-template--mode-dark {
+  --aurora-surface: #08111b;
+  --aurora-surface-soft: rgba(8, 17, 27, 0.88);
+  --aurora-surface-muted: rgba(255, 255, 255, 0.04);
+  --aurora-border: rgba(255, 255, 255, 0.1);
+  --aurora-copy: rgba(255, 255, 255, 0.74);
+  --aurora-copy-soft: rgba(255, 255, 255, 0.52);
+  box-shadow: 0 28px 90px -48px rgba(15, 23, 42, 0.42);
+}
+
+.lumio-template__hero {
+  padding: 1.35rem;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--template-color-primary) 16%, transparent), transparent 45%),
+    linear-gradient(180deg, var(--aurora-surface-soft), transparent);
   border-bottom: 1px solid var(--aurora-border);
 }
 
-.aurora-template__hero-backdrop {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.24) 0%, transparent 38%),
-    radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.12) 0%, transparent 32%),
-    linear-gradient(135deg, var(--aurora-primary) 0%, var(--aurora-secondary) 55%, var(--aurora-tertiary) 100%);
-}
-
-.aurora-template__hero-content {
-  position: relative;
-  z-index: 1;
+.lumio-template__body {
   display: grid;
   gap: 1rem;
-  color: var(--aurora-hero-text);
+  padding: 1rem;
+  background: var(--aurora-surface);
 }
 
-.aurora-template__eyebrow {
+.lumio-template__hero-grid,
+.lumio-template__grid,
+.lumio-template__feature-grid,
+.lumio-template__project-list,
+.lumio-template__contact-grid,
+.lumio-template__stat-grid,
+.lumio-template__contact-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.lumio-template__hero-main,
+.lumio-template__hero-side,
+.lumio-template__card,
+.lumio-template__feature-card,
+.lumio-template__project-card,
+.lumio-template__contact-card {
+  min-width: 0;
+}
+
+.lumio-template__pill-row,
+.lumio-template__meta,
+.lumio-template__skills,
+.lumio-template__tag-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.625rem;
+  gap: 0.65rem;
 }
 
-.aurora-template__pill {
+.lumio-template__pill,
+.lumio-template__meta-pill,
+.lumio-template__skill,
+.lumio-template__tag {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 2rem;
-  padding: 0 0.875rem;
+  gap: 0.45rem;
+  padding: 0.64rem 0.88rem;
   border-radius: 999px;
-  border: 1px solid transparent;
+  border: 1px solid var(--aurora-border);
+  background: var(--aurora-surface-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.lumio-template__pill--primary,
+.lumio-template__tag--highlight {
+  color: color-mix(in srgb, var(--template-color-primary) 70%, var(--template-text));
+  border-color: color-mix(in srgb, var(--template-color-primary) 30%, transparent);
+  background: color-mix(in srgb, var(--template-color-primary) 12%, transparent);
+}
+
+.lumio-template__pill--success {
+  color: #166534;
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.18);
+}
+
+.lumio-template__pill--warning {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.18);
+}
+
+.lumio-template__slug,
+.lumio-template__section-kicker,
+.lumio-template__contact-label,
+.lumio-template__stat-label {
+  margin: 0;
   font-size: 0.74rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
-.aurora-template__pill--ghost {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: var(--aurora-ring);
+.lumio-template__slug {
+  margin-top: 1rem;
+  color: var(--aurora-copy-soft);
 }
 
-.aurora-template__pill--accent {
-  background: rgba(15, 23, 42, 0.22);
-  border-color: rgba(255, 255, 255, 0.14);
+.lumio-template__section-kicker {
+  color: var(--template-color-secondary);
 }
 
-.aurora-template__heading {
+.lumio-template__name {
+  margin: 0.9rem 0 0;
+  font-size: clamp(2.25rem, 5vw, 4.75rem);
+  line-height: 0.96;
+  letter-spacing: -0.05em;
+}
+
+.lumio-template__headline,
+.lumio-template__copy,
+.lumio-template__footnote {
+  margin: 0.95rem 0 0;
+  color: var(--aurora-copy);
+  font-size: 0.97rem;
+  line-height: 1.8;
+}
+
+.lumio-template__copy--compact {
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+.lumio-template__stat-card,
+.lumio-template__card,
+.lumio-template__feature-card,
+.lumio-template__project-card,
+.lumio-template__contact-card,
+.lumio-template__feature-shell {
+  padding: 1.05rem;
+  border-radius: 1.6rem;
+  border: 1px solid var(--aurora-border);
+  background: var(--aurora-surface-muted);
+}
+
+.lumio-template__stat-value {
+  display: block;
+  margin-top: 0.55rem;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.lumio-template__feature-shell {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--template-color-primary) 6%, transparent), transparent),
+    var(--aurora-surface-muted);
+}
+
+.lumio-template__feature-header {
   display: grid;
-  gap: 0.625rem;
+  gap: 0.8rem;
 }
 
-.aurora-template__kicker {
-  margin: 0;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  opacity: 0.82;
+.lumio-template__support-count {
+  color: var(--aurora-copy-soft);
+  font-size: 0.9rem;
 }
 
-.aurora-template__title {
-  margin: 0;
-  font-family: var(--aurora-display-family);
-  font-size: clamp(2rem, 7vw, 4.4rem);
-  line-height: 0.95;
+.lumio-template__section-title {
+  margin: 0.55rem 0 0;
+  font-size: clamp(1.45rem, 3vw, 2.25rem);
+  line-height: 1.08;
   letter-spacing: -0.04em;
 }
 
-.aurora-template__headline {
-  max-width: 56rem;
-  margin: 0;
-  font-size: 1rem;
-  line-height: 1.7;
-  opacity: 0.94;
+.lumio-template__project-title,
+.lumio-template__project-card-title {
+  margin: 0.85rem 0 0;
+  font-size: 1.25rem;
+  line-height: 1.18;
 }
 
-.aurora-template__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.625rem;
+.lumio-template__project-card-title {
+  font-size: 1.02rem;
 }
 
-.aurora-template__meta-item {
+.lumio-template__action {
   display: inline-flex;
   align-items: center;
-  min-height: 2.25rem;
-  padding: 0 0.875rem;
+  gap: 0.55rem;
+  margin-top: 1rem;
+  padding: 0.88rem 1rem;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.aurora-template__skills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.625rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.aurora-template__skill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2rem;
-  padding: 0 0.875rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.aurora-template__body {
-  display: grid;
-  gap: 1rem;
-  padding: 1rem;
-}
-
-.aurora-template__section {
-  display: grid;
-  gap: 1rem;
-  padding: 1.125rem;
-  border: 1px solid var(--aurora-border);
-  border-radius: 24px;
-  background: var(--aurora-bg);
-  box-shadow: var(--aurora-shadow-soft);
-  backdrop-filter: blur(16px);
-}
-
-.aurora-template__section-heading {
-  display: grid;
-  gap: 0.25rem;
-}
-
-.aurora-template__section-label {
-  margin: 0;
-  color: var(--aurora-text-muted);
-  font-size: 0.76rem;
+  background: var(--template-color-primary);
+  color: #07111b;
+  text-decoration: none;
   font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
 }
 
-.aurora-template__section-title {
-  margin: 0;
-  font-family: var(--aurora-display-family);
-  font-size: 1.35rem;
-  letter-spacing: -0.02em;
-}
-
-.aurora-template__copy,
-.aurora-template__empty,
-.aurora-template__project-summary,
-.aurora-template__contact-value {
-  margin: 0;
-  line-height: 1.75;
-  font-size: 0.97rem;
-  color: var(--aurora-text-muted);
-  word-break: break-word;
-}
-
-.aurora-template__projects {
-  display: grid;
-  gap: 0.875rem;
-}
-
-.aurora-template__project-card {
-  display: grid;
-  gap: 0.875rem;
-  padding: 1rem;
-  border-radius: 22px;
-  background: var(--aurora-bg-elevated);
-  border: 1px solid var(--aurora-border);
-}
-
-.aurora-template__project-top {
+.lumio-template__contact-card {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.625rem;
+  align-items: flex-start;
+  gap: 0.85rem;
+  text-decoration: none;
 }
 
-.aurora-template__project-category,
-.aurora-template__project-badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 1.9rem;
-  padding: 0 0.75rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.aurora-template__project-category {
-  background: rgba(15, 23, 42, 0.06);
-  color: var(--aurora-text);
-}
-
-.aurora-template__project-badge {
-  background: rgba(16, 185, 129, 0.14);
-  color: rgb(5, 150, 105);
-}
-
-.aurora-template__project-title {
-  margin: 0;
-  font-family: var(--aurora-display-family);
-  font-size: 1.15rem;
-  letter-spacing: -0.02em;
-}
-
-.aurora-template__project-link {
+.lumio-template__contact-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: fit-content;
-  min-height: 2.75rem;
-  padding: 0 1rem;
-  border-radius: 999px;
-  background: var(--aurora-text);
-  color: #ffffff;
-  text-decoration: none;
-  font-size: 0.92rem;
-  font-weight: 700;
-  transition: transform 180ms ease, opacity 180ms ease, box-shadow 180ms ease;
+  width: 2.7rem;
+  height: 2.7rem;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--template-color-primary) 14%, transparent);
+  color: var(--template-color-primary);
+  flex-shrink: 0;
 }
 
-.aurora-template__project-link:hover {
-  opacity: 0.94;
-  transform: translateY(-1px);
-}
-
-.aurora-template__contacts {
+.lumio-template__contact-copy {
   display: grid;
-  gap: 0.875rem;
+  gap: 0.18rem;
+  min-width: 0;
 }
 
-.aurora-template__contact-card {
-  display: grid;
-  gap: 0.35rem;
-  padding: 1rem;
-  border-radius: 20px;
-  background: var(--aurora-bg-elevated);
-  border: 1px solid var(--aurora-border);
-  color: inherit;
-  text-decoration: none;
-  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+.lumio-template__contact-label {
+  color: var(--aurora-copy-soft);
 }
 
-.aurora-template__contact-card:hover {
-  transform: translateY(-1px);
-  border-color: var(--aurora-border-strong);
+.lumio-template__contact-value {
+  color: var(--template-text);
+  font-size: 0.94rem;
+  line-height: 1.6;
+  word-break: break-word;
 }
 
-.aurora-template__contact-label {
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--aurora-text);
-}
-
-:global(.dark) .aurora-template {
-  --aurora-bg: rgba(15, 23, 42, 0.62);
-  --aurora-bg-elevated: rgba(15, 23, 42, 0.5);
-  --aurora-border: rgba(255, 255, 255, 0.1);
-  --aurora-border-strong: rgba(255, 255, 255, 0.18);
-  --aurora-shadow: 0 28px 100px -56px rgba(0, 0, 0, 0.82);
-  --aurora-shadow-soft: 0 20px 44px -32px rgba(0, 0, 0, 0.7);
-  --aurora-text: rgba(255, 255, 255, 0.96);
-  --aurora-text-muted: rgba(255, 255, 255, 0.72);
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.84) 0%, rgba(2, 6, 23, 0.76) 100%);
-}
-
-:global(.dark) .aurora-template__project-category {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--aurora-text);
-}
-
-:global(.dark) .aurora-template__project-badge {
-  background: rgba(16, 185, 129, 0.16);
-  color: rgb(110, 231, 183);
-}
-
-:global(html[data-preset='ux-mastery']) .aurora-template {
-  --aurora-font-family: 'Manrope', system-ui, sans-serif;
-  --aurora-display-family: 'Manrope', system-ui, sans-serif;
-}
-
-:global(html[data-preset='neon-spectrum']) .aurora-template,
-:global(html[data-preset='cyber-lime']) .aurora-template {
-  --aurora-font-family: 'Space Grotesk', system-ui, sans-serif;
-  --aurora-display-family: 'Space Grotesk', system-ui, sans-serif;
-}
-
-:global(html[data-preset='pastel-pop']) .aurora-template,
-:global(html[data-preset='rose-wine']) .aurora-template {
-  --aurora-font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --aurora-display-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-}
-
-:global(html[data-preset='aquatech-minimal']) .aurora-template,
-:global(html[data-preset='minty-dark']) .aurora-template {
-  --aurora-font-family: 'Inter', system-ui, sans-serif;
-  --aurora-display-family: 'Inter', system-ui, sans-serif;
-}
-
-:global(html[data-preset='lava-sunset']) .aurora-template,
-:global(html[data-preset='sunset-lava']) .aurora-template,
-:global(html[data-preset='ux-elite']) .aurora-template {
-  --aurora-font-family: 'Sora', system-ui, sans-serif;
-  --aurora-display-family: 'Sora', system-ui, sans-serif;
-}
-
-@media (min-width: 768px) {
-  .aurora-template__hero {
-    padding: 2rem;
-  }
-
-  .aurora-template__hero-content {
-    gap: 1.25rem;
-  }
-
-  .aurora-template__headline {
-    font-size: 1.08rem;
-  }
-
-  .aurora-template__body {
-    gap: 1.25rem;
-    padding: 1.25rem;
-  }
-
-  .aurora-template__section {
-    padding: 1.4rem;
-  }
-
-  .aurora-template__projects,
-  .aurora-template__contacts {
+@media (min-width: 48rem) {
+  .lumio-template__stat-grid,
+  .lumio-template__contact-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (min-width: 1024px) {
-  .aurora-template__hero {
-    padding: 2.25rem;
+@media (min-width: 64rem) {
+  .lumio-template__hero-grid {
+    grid-template-columns: minmax(0, 1.08fr) 21rem;
+    gap: 1.25rem;
   }
 
-  .aurora-template__body {
-    padding: 1.5rem;
+  .lumio-template__grid--intro {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .aurora-template__section--about {
-    padding-right: 2rem;
+  .lumio-template__feature-grid {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
   }
 
-  .aurora-template__projects {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@supports (color: color-mix(in srgb, white 10%, black)) {
-  .aurora-template {
-    --aurora-bg: color-mix(in srgb, white 80%, transparent);
-    --aurora-bg-elevated: color-mix(in srgb, white 68%, transparent);
-    --aurora-border: color-mix(in srgb, var(--ui-color-neutral-900, #0f172a) 10%, transparent);
-    --aurora-border-strong: color-mix(in srgb, var(--ui-color-neutral-900, #0f172a) 16%, transparent);
+  .lumio-template__contact-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  :global(.dark) .aurora-template {
-    --aurora-bg: color-mix(in srgb, var(--ui-color-neutral-900, #0f172a) 68%, transparent);
-    --aurora-bg-elevated: color-mix(in srgb, var(--ui-color-neutral-900, #0f172a) 56%, transparent);
-    --aurora-border: color-mix(in srgb, white 10%, transparent);
-    --aurora-border-strong: color-mix(in srgb, white 18%, transparent);
+  .lumio-template__stat-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
