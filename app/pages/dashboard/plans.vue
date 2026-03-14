@@ -33,7 +33,7 @@ const currentPlanDescription = computed(() => {
 
 const syncDescription = computed(() => {
   if (!lastLoadedAt.value) {
-    return 'Esta tela agora lê o plano real da conta diretamente do backend.'
+    return 'Consulte aqui as informações disponíveis do seu plano.'
   }
 
   return `Última sincronização do plano: ${formatDateTime(lastLoadedAt.value)}.`
@@ -221,9 +221,9 @@ onMounted(async () => {
         class="dashboard-form-surface-2 space-y-4 rounded-2xl border border-(--dashboard-border-strong) bg-(--dashboard-surface-2) p-4 shadow-(--dashboard-shadow-xs) sm:p-5"
       >
         <div class="space-y-1">
-          <h2 class="text-base font-semibold">Billing do MVP</h2>
+          <h2 class="text-base font-semibold">Plano atual</h2>
           <p class="text-sm text-muted">
-            A comparação já está pronta, mas a cobrança real continua desacoplada desta etapa.
+            Consulte aqui as informações disponíveis do seu plano.
           </p>
         </div>
 
@@ -325,7 +325,7 @@ onMounted(async () => {
         <div class="mt-5 space-y-1">
           <p class="text-2xl font-semibold">{{ getDisplayPrice(plan) }}</p>
           <p class="text-xs text-muted">
-            Comparativo visual desta etapa. O plano atual da conta já é real, mas a cobrança ainda não foi integrada.
+            Compare os recursos disponíveis em cada plano.
           </p>
         </div>
 
@@ -411,8 +411,8 @@ onMounted(async () => {
       <UAlert
         class="dashboard-note-alert"
         icon="i-lucide-bar-chart-3"
-        title="Sem liberar analytics por Plano  ainda"
-        description="A tela já comunica a progressão entre planos, mas a liberação real de recursos por assinatura continua para a etapa futura de Plano."
+        title="Recursos disponíveis por plano"
+        description="Alguns recursos variam de acordo com o plano disponível na conta."
         color="neutral"
         variant="outline"
       />
@@ -421,7 +421,7 @@ onMounted(async () => {
         class="dashboard-note-alert"
         icon="i-lucide-credit-card"
         title="Cobrança ainda fora do escopo"
-        description="Pagamento, cupom, cancelamento e reembolso continuam fora desta fase. Aqui o foco é remover o mock e refletir o plano real da conta."
+        description="Mais opções de assinatura serão disponibilizadas em breve."
         color="neutral"
         variant="outline"
       />

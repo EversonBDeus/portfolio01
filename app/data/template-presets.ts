@@ -45,14 +45,14 @@ export const TEMPLATE_PRESETS: Record<PortfolioTemplatePresetId, PortfolioTempla
     id: 'ux-elite',
     name: 'UX Elite',
     colors: {
-      primary: '#22c55e',
-      secondary: '#14b8a6',
-      tertiary: '#99f6e4',
-      surface: 'rgba(8, 20, 18, 0.78)',
-      surfaceElevated: 'rgba(10, 28, 24, 0.9)',
-      border: 'rgba(45, 212, 191, 0.18)',
-      text: '#ecfdf5',
-      textMuted: 'rgba(236, 253, 245, 0.72)',
+      primary: '#3b82f6',
+      secondary: '#22d3ee',
+      tertiary: '#bfdbfe',
+      surface: 'rgba(7, 16, 30, 0.82)',
+      surfaceElevated: 'rgba(10, 21, 39, 0.92)',
+      border: 'rgba(96, 165, 250, 0.18)',
+      text: '#eff6ff',
+      textMuted: 'rgba(239, 246, 255, 0.72)',
       heroText: '#ffffff'
     },
     fonts: {

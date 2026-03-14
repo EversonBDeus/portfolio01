@@ -53,8 +53,8 @@ const counters = computed(() => ({
     <UAlert
       class="dashboard-note-alert"
       icon="i-lucide-id-card"
-      title="Dados desta etapa"
-      description="Aqui entram apenas os dados públicos que depois alimentam o portfólio e os templates."
+      title="Informações principais"
+      description="Esses dados ajudam a montar a apresentação inicial da sua página."
       color="neutral"
       variant="outline"
     />
@@ -81,7 +81,7 @@ const counters = computed(() => ({
       <div class="min-w-0 space-y-2">
         <DashboardFloatingInput
           v-model="model.headline"
-          label="Headline"
+          label="Frase de destaque"
           icon="i-lucide-briefcase-business"
           autocomplete="organization-title"
           :maxlength="HEADLINE_MAX"
@@ -192,7 +192,7 @@ const counters = computed(() => ({
       <div class="dashboard-form-surface-2 rounded-2xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
         <p class="text-sm font-medium">Vai para o portfólio</p>
         <p class="mt-1 text-sm text-muted">
-          Nome público, headline, bio, localização, links públicos e e-mail público.
+          Nome público, frase de destaque, bio, localização, links públicos e e-mail público.
         </p>
       </div>
 
@@ -207,7 +207,7 @@ const counters = computed(() => ({
     <UAlert
       :icon="isValid ? 'i-lucide-circle-check' : 'i-lucide-info'"
       :title="isValid ? 'Perfil público pronto para avançar' : 'Preencha os dados públicos obrigatórios'"
-      :description="isValid ? 'A apresentação pública mínima já está consistente para seguir no onboarding.' : 'Conclua nome público, headline e bio para liberar a próxima etapa.'"
+      :description="isValid ? 'As informações principais da sua apresentação já estão prontas para seguir.' : 'Preencha nome, frase de destaque e bio para continuar.'"
       :color="isValid ? 'success' : 'warning'"
       variant="outline"
       class="dashboard-note-alert"

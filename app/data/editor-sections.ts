@@ -11,7 +11,7 @@ export const EDITOR_SECTIONS: EditorSectionDefinition[] = [
   {
     id: 'hero',
     label: 'Hero',
-    description: 'Nome, headline, cargo e destaque principal do template.',
+    description: 'Nome, frase de destaque, cargo e destaque principal do template.',
     icon: 'i-lucide-panels-top-left'
   },
   {

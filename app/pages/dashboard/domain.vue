@@ -116,8 +116,8 @@ async function handleCopyLink() {
     <UAlert
       class="dashboard-note-alert"
       icon="i-lucide-rocket"
-      title="Escopo desta etapa"
-      description="Agora a conta passa a ter slug público real, status draft/published e rota pública lendo diretamente do backend."
+      title="Editor"
+      description="Defina o endereço da sua página e controle quando ela ficará disponível para acesso."
       color="neutral"
       variant="outline"
     />
@@ -139,7 +139,7 @@ async function handleCopyLink() {
         <div class="space-y-1">
           <h2 class="text-base font-semibold">Slug público</h2>
           <p class="text-sm text-muted">
-            Este slug será usado na rota pública do MVP.
+            Este endereço será usado para acessar sua página pública.
           </p>
         </div>
 

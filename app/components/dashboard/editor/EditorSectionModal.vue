@@ -42,7 +42,7 @@ const sectionMeta = computed(() => {
   if (props.activeSection === 'hero') {
     return {
       title: 'Editar Hero',
-      description: 'Ajuste nome público, headline, cargo, localização e competências em destaque.',
+      description: 'Ajuste nome público, frase de destaque, cargo, localização e competências em destaque.',
       icon: 'i-lucide-panels-top-left',
       badge: 'Hero ativa'
     }

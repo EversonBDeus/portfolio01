@@ -140,7 +140,7 @@ const nextAction = computed(() => {
   if (!overview.value.summary.hasPublishedPortfolio) {
     return {
       title: 'Publicar portfólio',
-      description: 'Defina slug e status para liberar a rota pública do MVP.',
+      description: 'Defina o endereço e o status da sua página pública.',
       to: '/dashboard/domain',
       icon: 'i-lucide-globe'
     }
@@ -477,7 +477,7 @@ onMounted(async () => {
         <div class="space-y-1">
           <h2 class="text-lg font-semibold">Resumo operacional da conta</h2>
           <p class="text-sm text-muted">
-            Estado atual dos pontos mais importantes para manter o produto coerente no MVP.
+            Acompanhe aqui os pontos mais importantes da sua configuração atual.
           </p>
         </div>
 
@@ -504,7 +504,7 @@ onMounted(async () => {
           </div>
 
           <div class="rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-3) p-4 space-y-1">
-            <p class="text-sm text-muted">Headline</p>
+            <p class="text-sm text-muted">Frase de destaque</p>
             <p class="font-medium break-words">
               {{ overview.profile.headline || 'Ainda não preenchida' }}
             </p>

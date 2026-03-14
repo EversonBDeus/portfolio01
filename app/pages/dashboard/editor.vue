@@ -268,8 +268,8 @@ async function handleRestoreBase() {
         <UAlert
           class="dashboard-note-alert"
           icon="i-lucide-save"
-          title="Escopo desta etapa"
-          description="Hero, Sobre, Projetos e Contato agora podem ser editados, salvos na conta, descartados e restaurados para a base atual do onboarding com backend real."
+          title="Editor"
+          description="Edite os conteúdos principais da sua página e salve suas alterações quando quiser."
           color="neutral"
           variant="outline"
         />

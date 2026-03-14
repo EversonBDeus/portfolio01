@@ -82,7 +82,7 @@ const planOptions: Array<{ label: string; value: PlanTier }> = [
         <div class="space-y-1">
           <p class="font-medium">Cenário de plano</p>
           <p class="text-sm text-muted">
-            Controle visual temporário para testar o bloqueio de analytics.
+            Prévia da área de analytics.
           </p>
         </div>
 
@@ -105,8 +105,8 @@ const planOptions: Array<{ label: string; value: PlanTier }> = [
       v-if="!hasAnalyticsAccess"
       class="dashboard-note-alert"
       icon="i-lucide-lock"
-      title="Analytics bloqueado no plano atual"
-      description="No modo visual desta etapa, analytics fica liberado apenas nos planos pagos. Use os botões acima para testar os estados do painel."
+      title="Analytics indisponível no momento"
+      description="Esta área será disponibilizada em uma próxima atualização."
       color="warning"
       variant="outline"
     />
@@ -235,8 +235,8 @@ const planOptions: Array<{ label: string; value: PlanTier }> = [
         <UAlert
           class="dashboard-note-alert"
           icon="i-lucide-info"
-          title="Dados desta etapa"
-          description="As métricas desta tela são mockadas para fechar o front-end do painel. A integração real com eventos, tráfego e cliques entra depois."
+          title="Informações principais"
+          description="As métricas desta área ainda não estão disponíveis."
           color="neutral"
           variant="outline"
         />

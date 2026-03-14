@@ -19,7 +19,7 @@ const main = computed<NavigationMenuItem[]>(() => [
 const billing = computed<NavigationMenuItem[]>(() => [
   { label: 'Plans', to: '/dashboard/plans', icon: 'i-lucide-credit-card', onSelect: onNavigate },
   { label: 'Domain', to: '/dashboard/domain', icon: 'i-lucide-globe', onSelect: onNavigate },
-  { label: 'Analytics', to: '/dashboard/analytics', icon: 'i-lucide-bar-chart-3', onSelect: onNavigate }
+  
 ])
 </script>
 

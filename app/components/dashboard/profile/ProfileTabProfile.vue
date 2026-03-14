@@ -42,7 +42,7 @@ function markDirty() {
       <div class="space-y-1">
         <p class="font-medium">Base pública</p>
         <p class="text-sm text-muted">
-          Nome, headline, bio e contatos públicos exibidos no portfólio.
+          Nome, frase de destaque, bio e contatos públicos exibidos na sua página.
         </p>
       </div>
 
@@ -68,7 +68,7 @@ function markDirty() {
         <div class="sm:col-span-2">
           <DashboardFloatingInput
             v-model="props.model.headline"
-            label="Headline"
+            label="Frase de destaque"
             icon="i-lucide-briefcase-business"
             autocomplete="organization-title"
             :maxlength="180"

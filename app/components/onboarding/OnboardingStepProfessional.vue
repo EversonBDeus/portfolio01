@@ -185,7 +185,7 @@ function removeSkill(skillToRemove: string) {
     <UAlert
       class="dashboard-note-alert"
       icon="i-lucide-briefcase-business"
-      title="Dados desta etapa"
+      title="Informações principais"
       description="Aqui entram os dados profissionais base que depois alimentam o template, o editor e outras áreas do painel."
       color="neutral"
       variant="outline"
@@ -567,7 +567,7 @@ function removeSkill(skillToRemove: string) {
     <UAlert
       :icon="isValid ? 'i-lucide-circle-check' : 'i-lucide-info'"
       :title="isValid ? 'Etapa profissional pronta para avançar' : 'Preencha os dados profissionais obrigatórios'"
-      :description="isValid ? 'A base profissional mínima já está consistente para seguir no onboarding.' : 'Conclua cargo, resumo, área, nível de experiência e pelo menos 2 competências para liberar a próxima etapa.'"
+      :description="isValid ? 'As informações principais já estão prontas para seguir.' : 'Preencha as informações obrigatórias para continuar.'"
       :color="isValid ? 'success' : 'warning'"
       variant="outline"
       class="dashboard-note-alert"

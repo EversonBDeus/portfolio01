@@ -8,6 +8,10 @@ import type { PortfolioTemplatePresetId } from '~/types/template-preset'
 type TemplateMode = 'light' | 'dark'
 type PreviewDevice = 'desktop' | 'mobile'
 
+definePageMeta({
+  layout: 'default'
+})
+
 const route = useRoute()
 
 function isTemplatePresetId(value: string): value is PortfolioTemplatePresetId {
@@ -46,7 +50,7 @@ const previewPortfolio = computed(() => {
 
 useSeoMeta({
   title: 'Designer Preview Velvet Stage',
-  description: 'Preview isolado do template landing premium Velvet Stage'
+  description: 'Preview isolado do template Velvet Stage no Lumio'
 })
 </script>
 
@@ -61,7 +65,7 @@ useSeoMeta({
           <div class="designer-preview__copy">
             <div class="designer-preview__badges">
               <span class="designer-preview__badge designer-preview__badge--primary">
-                Template principal
+                Velvet Stage
               </span>
 
               <span class="designer-preview__badge">
@@ -70,12 +74,11 @@ useSeoMeta({
             </div>
 
             <h1 class="designer-preview__title">
-              Velvet Stage
+              Preview isolado do template
             </h1>
 
             <p class="designer-preview__description">
-              Preview isolado do template premium principal do Lumio, agora com preset local
-              aplicado no wrapper do componente e sem mexer no tema global do app.
+              Hero dominante, palco premium e leitura editorial com preset local.
             </p>
           </div>
 
@@ -91,17 +94,19 @@ useSeoMeta({
         </div>
       </header>
 
-      <div
-        class="designer-preview__frame"
-        :class="device === 'mobile' ? 'designer-preview__frame--mobile' : 'designer-preview__frame--desktop'"
-      >
-        <VelvetStageTemplate
-          :portfolio="previewPortfolio"
-          :theme-name="activeThemeName"
-          :template-preset-id="activePresetId"
-          :template-mode="templateMode"
-        />
-      </div>
+      <section class="designer-preview__frame-shell">
+        <div
+          class="designer-preview__frame"
+          :class="device === 'mobile' ? 'designer-preview__frame--mobile' : 'designer-preview__frame--desktop'"
+        >
+          <VelvetStageTemplate
+            :portfolio="previewPortfolio"
+            :theme-name="activeThemeName"
+            :template-preset-id="activePresetId"
+            :template-mode="templateMode"
+          />
+        </div>
+      </section>
 
       <footer class="designer-preview__surface designer-preview__surface--footer">
         <p class="designer-preview__footer-title">
@@ -111,8 +116,10 @@ useSeoMeta({
         <div class="designer-preview__codes">
           <code class="designer-preview__code">/designer-preview-velvet-stage</code>
           <code class="designer-preview__code">/designer-preview-velvet-stage?preset=rose-wine</code>
-          <code class="designer-preview__code">/designer-preview-velvet-stage?preset=ux-elite&amp;device=mobile</code>
-          <code class="designer-preview__code">/designer-preview-velvet-stage?preset=cyber-lime&amp;mode=light</code>
+          <code class="designer-preview__code">/designer-preview-velvet-stage?preset=ux-elite</code>
+          <code class="designer-preview__code">/designer-preview-velvet-stage?preset=pastel-pop</code>
+          <code class="designer-preview__code">/designer-preview-velvet-stage?preset=minty-dark&amp;mode=dark</code>
+          <code class="designer-preview__code">/designer-preview-velvet-stage?device=mobile</code>
         </div>
       </footer>
     </div>
@@ -121,44 +128,52 @@ useSeoMeta({
 
 <style scoped>
 .designer-preview {
-  min-height: 100vh;
-  padding: 1.25rem 1rem;
+  min-height: 100%;
+  padding: 1rem 0.9rem 1.35rem;
 }
 
 .designer-preview--dark {
   background:
-    radial-gradient(circle at top left, rgba(34, 197, 94, 0.16), transparent 30%),
+    radial-gradient(circle at top left, rgba(236, 72, 153, 0.12), transparent 30%),
+    radial-gradient(circle at top right, rgba(168, 85, 247, 0.12), transparent 26%),
     #020817;
   color: #f8fafc;
 }
 
 .designer-preview--light {
   background:
-    radial-gradient(circle at top left, rgba(34, 197, 94, 0.08), transparent 30%),
-    #f4f7fb;
-  color: #0f172a;
+    radial-gradient(circle at top left, rgba(236, 72, 153, 0.08), transparent 30%),
+    radial-gradient(circle at top right, rgba(168, 85, 247, 0.08), transparent 26%),
+    #f6f2f6;
+  color: #20171f;
 }
 
 .designer-preview__shell {
   display: grid;
   gap: 1rem;
-  max-width: 88rem;
+  max-width: 94rem;
   margin: 0 auto;
 }
 
-.designer-preview__surface {
-  border-radius: 1.5rem;
-  padding: 1rem;
+.designer-preview__surface,
+.designer-preview__frame-shell {
+  border-radius: 1.6rem;
   border: 1px solid rgba(148, 163, 184, 0.16);
   backdrop-filter: blur(18px);
 }
 
-.designer-preview--dark .designer-preview__surface {
+.designer-preview--dark .designer-preview__surface,
+.designer-preview--dark .designer-preview__frame-shell {
   background: rgba(15, 23, 42, 0.62);
 }
 
-.designer-preview--light .designer-preview__surface {
+.designer-preview--light .designer-preview__surface,
+.designer-preview--light .designer-preview__frame-shell {
   background: rgba(255, 255, 255, 0.88);
+}
+
+.designer-preview__surface {
+  padding: 1rem;
 }
 
 .designer-preview__header {
@@ -181,6 +196,7 @@ useSeoMeta({
 .designer-preview__badge {
   display: inline-flex;
   align-items: center;
+  min-height: 2.35rem;
   padding: 0.62rem 0.88rem;
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.2);
@@ -189,7 +205,7 @@ useSeoMeta({
 }
 
 .designer-preview__badge--primary {
-  background: rgba(34, 197, 94, 0.16);
+  background: rgba(236, 72, 153, 0.14);
 }
 
 .designer-preview__title {
@@ -205,17 +221,21 @@ useSeoMeta({
   line-height: 1.75;
 }
 
+.designer-preview__frame-shell {
+  padding: 0.75rem;
+}
+
 .designer-preview__frame {
   width: 100%;
   margin: 0 auto;
 }
 
 .designer-preview__frame--mobile {
-  max-width: 28rem;
+  max-width: 24rem;
 }
 
 .designer-preview__frame--desktop {
-  max-width: 72rem;
+  max-width: 88rem;
 }
 
 .designer-preview__surface--footer {
@@ -235,6 +255,50 @@ useSeoMeta({
 
 .designer-preview--light .designer-preview__code {
   background: rgba(15, 23, 42, 0.05);
+}
+
+@media (max-width: 767px) {
+  .designer-preview {
+    padding: 0.8rem 0.7rem 1rem;
+  }
+
+  .designer-preview__shell {
+    gap: 0.8rem;
+  }
+
+  .designer-preview__surface,
+  .designer-preview__frame-shell {
+    border-radius: 1.25rem;
+  }
+
+  .designer-preview__surface {
+    padding: 0.82rem;
+  }
+
+  .designer-preview__frame-shell {
+    padding: 0.52rem;
+  }
+
+  .designer-preview__badge {
+    min-height: 2.1rem;
+    padding: 0.52rem 0.72rem;
+    font-size: 0.74rem;
+  }
+
+  .designer-preview__title {
+    font-size: clamp(1.4rem, 7.5vw, 1.85rem);
+  }
+
+  .designer-preview__description,
+  .designer-preview__footer-title {
+    font-size: 0.92rem;
+    line-height: 1.65;
+  }
+
+  .designer-preview__code {
+    white-space: normal;
+    word-break: break-word;
+  }
 }
 
 @media (min-width: 64rem) {

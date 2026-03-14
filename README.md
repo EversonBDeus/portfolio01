@@ -1,102 +1,17 @@
-# Portfólio — Nuxt 4 + Nuxt UI
+# AI_DOCS_REORGANIZADOS_V2
 
-Portfólio pessoal construído com **Nuxt 4** e **Nuxt UI**, já organizado para evoluir para um **SaaS de portfólios** (login + templates) no futuro.
+Este pacote contém a reorganização recomendada da documentação do projeto para uso com IA, já incluindo a direção estratégica para chegar ao backend MVP mais rápido.
 
-## Stack
-- Nuxt 4 (Vue 3 + SSR)
-- Nuxt UI (componentes + tokens/tema)
-- Tailwind CSS v4
-- Pinia + VueUse
-- Nuxt Image / Icon / Scripts
-- nuxt-security + @nuxtjs/seo
-- TypeScript (typecheck no build)
+Arquivos principais:
+- `docs/ai/01_PROMPT_BASE_DO_PROJETO.md`
+- `docs/ai/03_DIRECAO_ESTRATEGICA_BACKEND_MVP.md`
+- `docs/ai/04_ESTADO_ATUAL_DO_PROJETO.md`
+- `docs/ai/05_REGRAS_TECNICAS.md`
+- `docs/ai/06_BUGS_HISTORICOS_E_SOLUCOES.md`
+- `docs/ai/07_CHECKLIST_DE_AUDITORIA.md`
+- `.agents/rules/MASTER_RULES.md`
 
----
 
-## Rodando localmente
+## Instalação no projeto real
 
-```bash
-npm install
-npm run dev
-
----
-
-## Rodando localmente
-
-```bash
-npm install
-npm run dev
-
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
-
-## Setup
-
-Make sure to install dependencies:
-
-```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+Use o arquivo `docs/ai/09_COMANDOS_POWERSHELL_PARA_INSTALACAO.md` ou execute diretamente o script `scripts/migrar_ai_docs_para_projeto.ps1`.

@@ -146,7 +146,7 @@ export function useAuthState() {
 
     if (!nextSession) {
       throw new Error(
-        'Não foi possível iniciar a sessão. No MVP atual, mantenha Confirm email desativado no Supabase.'
+        'Não foi possível iniciar a sessão. Tente novamente em instantes.'
       )
     }
 
@@ -179,7 +179,7 @@ export function useAuthState() {
 
     if (!nextSession) {
       throw new Error(
-        'Cadastro criado, mas sem sessão ativa. No MVP atual, mantenha Confirm email desativado no Supabase para seguir direto ao onboarding.'
+        'Sua conta foi criada, mas a sessão não foi iniciada automaticamente. Tente entrar novamente.'
       )
     }
 

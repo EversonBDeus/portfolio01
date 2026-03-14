@@ -2,17 +2,24 @@
 import { computed } from 'vue'
 import PublicPortfolioRenderer from '~/components/portfolio/PublicPortfolioRenderer.vue'
 import type { PublicPortfolioPayload } from '~/types/public-portfolio'
-import type { PortfolioTemplateMode } from '~/types/portfolio-public-view-model'
+import type {
+  PortfolioPublicViewModel,
+  PortfolioTemplateMode
+} from '~/types/portfolio-public-view-model'
 import { buildPortfolioPublicViewModel } from '~/utils/public-portfolio-view-model'
 
 const props = withDefaults(defineProps<{
   portfolio: PublicPortfolioPayload
-  templateMode?: PortfolioTemplateMode
+  templateId?: string | null
+  templatePresetId?: string | null
+  templateMode?: PortfolioTemplateMode | null
 }>(), {
-  templateMode: 'dark'
+  templateId: null,
+  templatePresetId: null,
+  templateMode: null
 })
 
-const portfolioViewModel = computed(() => {
+const portfolioViewModel = computed<PortfolioPublicViewModel>(() => {
   return buildPortfolioPublicViewModel(props.portfolio)
 })
 </script>
@@ -20,6 +27,8 @@ const portfolioViewModel = computed(() => {
 <template>
   <PublicPortfolioRenderer
     :portfolio="portfolioViewModel"
+    :template-id="templateId"
+    :template-preset-id="templatePresetId"
     :template-mode="templateMode"
   />
 </template>

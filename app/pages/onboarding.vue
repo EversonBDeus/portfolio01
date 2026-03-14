@@ -203,7 +203,7 @@ async function handleContinueLater() {
   }
 
   toast.add({
-    title: 'Você pode continuar depois',
+    title: 'Você pode ajustar depois',
     description: 'Abrindo o dashboard para concluir o restante no painel.',
     color: 'neutral',
     icon: 'i-lucide-layout-dashboard'
@@ -251,7 +251,7 @@ function handleStepClick(stepId: string | number | undefined) {
                 :disabled="isRemoteBusy"
                 @click="handleContinueLater"
               >
-                Continuar depois
+                Finalizar depois
               </UButton>
 
           <UColorModeButton />
@@ -442,7 +442,7 @@ function handleStepClick(stepId: string | number | undefined) {
                           :disabled="isRemoteBusy"
                           @click="handleContinueLater"
                         >
-                          Continuar depois
+                          Finalizar depois
                         </UButton>
 
                       <UButton
@@ -466,7 +466,7 @@ function handleStepClick(stepId: string | number | undefined) {
                 <div class="dashboard-card-shell rounded-2xl p-4 sm:p-5">
                   <div class="space-y-4">
                     <div class="space-y-1">
-                        <h2 class="text-base font-semibold">Resumo do onboarding</h2>
+                        <h2 class="text-base font-semibold">Visão geral da configuração</h2>
                           <p class="text-sm text-muted">
                             Revise o que falta concluir para deixar sua conta pronta e seguir para o painel.
                           </p>
@@ -530,7 +530,7 @@ function handleStepClick(stepId: string | number | undefined) {
                         </div>
 
                         <div class="min-w-0 rounded-xl border border-(--dashboard-border-soft) bg-(--dashboard-surface-2) p-4">
-                          <p class="text-xs uppercase tracking-wide text-muted">Headline</p>
+                          <p class="text-xs uppercase tracking-wide text-muted">Frase de destaque</p>
                           <p :class="previewValueClass">
                             {{ publicProfile.headline || 'Não informada' }}
                           </p>
@@ -546,7 +546,7 @@ function handleStepClick(stepId: string | number | undefined) {
                         <UAlert
                           class="dashboard-note-alert"
                             icon="i-lucide-info"
-                            title="Continue no seu ritmo"
+                            title="Você pode ajustar depois"
                             description="Preencha o básico agora e ajuste os detalhes restantes depois, no painel."
                             color="neutral"
                             variant="outline"
@@ -718,8 +718,8 @@ function handleStepClick(stepId: string | number | undefined) {
                 <UAlert
                   class="dashboard-note-alert"
                   icon="i-lucide-info"
-                  title="Continuar depois"
-                  description="Você pode concluir esta configuração aos poucos e continuar os ajustes depois no painel."
+                  title="Finalizar depois"
+                  description="Preencha o essencial agora e ajuste o restante depois no painel."
                   color="neutral"
                   variant="outline"
                 />
@@ -731,7 +731,7 @@ function handleStepClick(stepId: string | number | undefined) {
                     variant="outline"
                     @click="handleReset"
                   >
-                    Reiniciar shell
+                    Começar novamente
                   </UButton>
                 </div>
               </div>

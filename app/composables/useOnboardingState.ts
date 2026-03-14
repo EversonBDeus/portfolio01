@@ -342,9 +342,9 @@ export function useOnboardingState() {
             : '',
       headline:
         !value.headline.trim()
-          ? 'Informe sua headline.'
+          ? 'Informe sua frase de destaque.'
           : value.headline.trim().length < 4
-            ? 'A headline está muito curta.'
+            ? 'A frase de destaque está muito curta.'
             : '',
       publicEmail:
         value.publicEmail.trim() && !isValidEmail(value.publicEmail.trim())

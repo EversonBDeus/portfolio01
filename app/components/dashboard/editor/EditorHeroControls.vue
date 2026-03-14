@@ -71,14 +71,14 @@ function updateField(field: keyof EditorHeroForm, value: string | number | undef
         />
       </UFormField>
 
-      <UFormField class="w-full" size="xl" label="Headline">
+      <UFormField class="w-full" size="xl" label="Frase de destaque">
         <UInput
           :model-value="modelValue.headline"
           class="w-full"
           size="xl"
           color="primary"
           variant="subtle"
-          placeholder="Sua headline principal"
+          placeholder="Sua frase de destaque principal"
           @update:model-value="updateField('headline', $event)"
         />
       </UFormField>

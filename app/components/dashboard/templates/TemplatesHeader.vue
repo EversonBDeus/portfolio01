@@ -33,7 +33,7 @@ defineEmits<{
       <div class="space-y-1">
         <h1 class="text-2xl font-semibold">Templates</h1>
         <p class="text-sm text-muted">
-          Escolha o ponto de partida visual do portfólio sem misturar dados do usuário com o template.
+          Escolha a base visual que faz mais sentido para a sua página.
         </p>
       </div>
 

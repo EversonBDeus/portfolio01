@@ -119,7 +119,7 @@ function handleClearDraft() {
     <UAlert
       class="dashboard-note-alert"
       icon="i-lucide-folder-kanban"
-      title="Dados desta etapa"
+      title="Informações principais"
       description="Aqui entram os primeiros projetos, trabalhos ou estudos de caso que depois alimentam o portfólio, os templates e o editor."
       color="neutral"
       variant="outline"
@@ -303,7 +303,7 @@ function handleClearDraft() {
           <div class="space-y-1">
             <h3 class="text-base font-semibold">Panorama da vitrine</h3>
             <p class="text-sm text-muted">
-              Essa etapa é opcional, mas já ajuda a evitar um portfólio vazio na primeira entrada.
+              Essa etapa é opcional, mas já ajuda a deixar sua página mais completa.
             </p>
           </div>
 
@@ -347,7 +347,7 @@ function handleClearDraft() {
         <div class="space-y-1 min-w-0">
           <h3 class="text-base font-semibold">Projetos adicionados</h3>
           <p class="break-words text-sm text-muted [overflow-wrap:anywhere]">
-            Os itens desta lista já representam a primeira vitrine do usuário no fluxo inicial.
+            Os itens desta lista já formam a base inicial dos seus projetos.
           </p>
         </div>
 
