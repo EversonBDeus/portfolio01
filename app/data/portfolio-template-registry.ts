@@ -1,7 +1,4 @@
-import type {
-  AsyncComponentLoader,
-  Component,
-} from 'vue'
+import type { Component } from 'vue'
 import { defineAsyncComponent } from 'vue'
 import {
   DEFAULT_TEMPLATE_PRESET_ID,
@@ -27,7 +24,6 @@ export type PortfolioTemplateRegistryItem = {
   id: PortfolioTemplateId
   componentName: string
   component: Component
-  loader: AsyncComponentLoader
   name: string
   description: string
   category: string
@@ -38,54 +34,49 @@ export type PortfolioTemplateRegistryItem = {
   legacyIds?: string[]
 }
 
-const QuietFrameTemplateLoader: AsyncComponentLoader = () =>
-  import('~/components/templates/QuietFrameTemplate/QuietFrameTemplate.vue')
+const QuietFrameTemplate = defineAsyncComponent(
+  () => import('~/components/templates/QuietFrameTemplate/QuietFrameTemplate.vue'),
+)
 
-const StillFormTemplateLoader: AsyncComponentLoader = () =>
-  import('~/components/templates/StillFormTemplate/StillFormTemplate.vue')
+const StillFormTemplate = defineAsyncComponent(
+  () => import('~/components/templates/StillFormTemplate/StillFormTemplate.vue'),
+)
 
-const AuroraUxTemplateLoader: AsyncComponentLoader = () =>
-  import('~/components/templates/AuroraUx/AuroraUxTemplate.vue')
+const AuroraUxTemplate = defineAsyncComponent(
+  () => import('~/components/templates/AuroraUx/AuroraUxTemplate.vue'),
+)
 
-const VelvetStageTemplateLoader: AsyncComponentLoader = () =>
-  import('~/components/templates/VelvetStageTemplate/VelvetStageTemplate.vue')
+const VelvetStageTemplate = defineAsyncComponent(
+  () => import('~/components/templates/VelvetStageTemplate/VelvetStageTemplate.vue'),
+)
 
-const NeonPulseTemplateLoader: AsyncComponentLoader = () =>
-  import('~/components/templates/NeonPulseTemplate/NeonPulseTemplate.vue')
+const NeonPulseTemplate = defineAsyncComponent(
+  () => import('~/components/templates/NeonPulseTemplate/NeonPulseTemplate.vue'),
+)
 
-const StudioRailTemplateLoader: AsyncComponentLoader = () =>
-  import('~/components/templates/StudioRailTemplate/StudioRailTemplate.vue')
+const StudioRailTemplate = defineAsyncComponent(
+  () => import('~/components/templates/StudioRailTemplate/StudioRailTemplate.vue'),
+)
 
-const ImperialArcTemplateLoader: AsyncComponentLoader = () =>
-  import('~/components/templates/ImperialArcTemplate/ImperialArcTemplate.vue')
+const ImperialArcTemplate = defineAsyncComponent(
+  () => import('~/components/templates/ImperialArcTemplate/ImperialArcTemplate.vue'),
+)
 
-const ObsidianPrimeTemplateLoader: AsyncComponentLoader = () =>
-  import('~/components/templates/ObsidianPrimeTemplate/ObsidianPrimeTemplate.vue')
+const ObsidianPrimeTemplate = defineAsyncComponent(
+  () => import('~/components/templates/ObsidianPrimeTemplate/ObsidianPrimeTemplate.vue'),
+)
 
-const NoirSignalTemplateLoader: AsyncComponentLoader = () =>
-  import('~/components/templates/NoirSignalTemplate/NoirSignalTemplate.vue')
-
-const QuietFrameTemplate = defineAsyncComponent(QuietFrameTemplateLoader)
-const StillFormTemplate = defineAsyncComponent(StillFormTemplateLoader)
-const AuroraUxTemplate = defineAsyncComponent(AuroraUxTemplateLoader)
-const VelvetStageTemplate = defineAsyncComponent(VelvetStageTemplateLoader)
-const NeonPulseTemplate = defineAsyncComponent(NeonPulseTemplateLoader)
-const StudioRailTemplate = defineAsyncComponent(StudioRailTemplateLoader)
-const ImperialArcTemplate = defineAsyncComponent(ImperialArcTemplateLoader)
-const ObsidianPrimeTemplate = defineAsyncComponent(ObsidianPrimeTemplateLoader)
-const NoirSignalTemplate = defineAsyncComponent(NoirSignalTemplateLoader)
+const NoirSignalTemplate = defineAsyncComponent(
+  () => import('~/components/templates/NoirSignalTemplate/NoirSignalTemplate.vue'),
+)
 
 export const PORTFOLIO_TEMPLATE_FALLBACK_ID: PortfolioTemplateId = 'velvet-stage'
-export const PORTFOLIO_TEMPLATE_PRESET_IDS = Object.keys(
-  TEMPLATE_PRESETS,
-) as PortfolioTemplatePresetId[]
 
 export const PORTFOLIO_TEMPLATE_REGISTRY: PortfolioTemplateRegistryItem[] = [
   {
     id: 'quiet-frame',
     componentName: 'QuietFrameTemplate',
     component: QuietFrameTemplate,
-    loader: QuietFrameTemplateLoader,
     name: 'Quiet Frame',
     description: 'Minimalista, tipográfico e editorial com presença silenciosa.',
     category: 'Editorial',
@@ -99,7 +90,6 @@ export const PORTFOLIO_TEMPLATE_REGISTRY: PortfolioTemplateRegistryItem[] = [
     id: 'still-form',
     componentName: 'StillFormTemplate',
     component: StillFormTemplate,
-    loader: StillFormTemplateLoader,
     name: 'Still Form',
     description: 'Calmo, leve e refinado para portfólios autorais com leitura limpa.',
     category: 'Editorial',
@@ -113,7 +103,6 @@ export const PORTFOLIO_TEMPLATE_REGISTRY: PortfolioTemplateRegistryItem[] = [
     id: 'aurora-ux',
     componentName: 'AuroraUxTemplate',
     component: AuroraUxTemplate,
-    loader: AuroraUxTemplateLoader,
     name: 'Aurora UX',
     description: 'Contraste nítido, layout moderno e leitura forte para perfis digitais.',
     category: 'Produto',
@@ -127,7 +116,6 @@ export const PORTFOLIO_TEMPLATE_REGISTRY: PortfolioTemplateRegistryItem[] = [
     id: 'velvet-stage',
     componentName: 'VelvetStageTemplate',
     component: VelvetStageTemplate,
-    loader: VelvetStageTemplateLoader,
     name: 'Velvet Stage',
     description: 'Hero dominante e composição vendável para destaque premium.',
     category: 'Premium',
@@ -141,7 +129,6 @@ export const PORTFOLIO_TEMPLATE_REGISTRY: PortfolioTemplateRegistryItem[] = [
     id: 'neon-pulse',
     componentName: 'NeonPulseTemplate',
     component: NeonPulseTemplate,
-    loader: NeonPulseTemplateLoader,
     name: 'Neon Pulse',
     description: 'Energia luminosa, visual expressivo e presença mobile-first forte.',
     category: 'Expressivo',
@@ -155,7 +142,6 @@ export const PORTFOLIO_TEMPLATE_REGISTRY: PortfolioTemplateRegistryItem[] = [
     id: 'studio-rail',
     componentName: 'StudioRailTemplate',
     component: StudioRailTemplate,
-    loader: StudioRailTemplateLoader,
     name: 'Studio Rail',
     description: 'Composição modular com rail lateral real e leitura de estúdio.',
     category: 'Estúdio',
@@ -169,7 +155,6 @@ export const PORTFOLIO_TEMPLATE_REGISTRY: PortfolioTemplateRegistryItem[] = [
     id: 'imperial-arc',
     componentName: 'ImperialArcTemplate',
     component: ImperialArcTemplate,
-    loader: ImperialArcTemplateLoader,
     name: 'Imperial Arc',
     description: 'Curadoria nobre com moldura premium e leitura mais editorial.',
     category: 'Curado',
@@ -183,7 +168,6 @@ export const PORTFOLIO_TEMPLATE_REGISTRY: PortfolioTemplateRegistryItem[] = [
     id: 'obsidian-prime',
     componentName: 'ObsidianPrimeTemplate',
     component: ObsidianPrimeTemplate,
-    loader: ObsidianPrimeTemplateLoader,
     name: 'Obsidian Prime',
     description: 'Denso, monolítico e escuro para uma presença mais sólida.',
     category: 'Premium',
@@ -197,7 +181,6 @@ export const PORTFOLIO_TEMPLATE_REGISTRY: PortfolioTemplateRegistryItem[] = [
     id: 'noir-signal',
     componentName: 'NoirSignalTemplate',
     component: NoirSignalTemplate,
-    loader: NoirSignalTemplateLoader,
     name: 'Noir Signal',
     description: 'Visual tático, contrastado e técnico sem virar dashboard genérico.',
     category: 'Tático',
@@ -212,6 +195,10 @@ export const PORTFOLIO_TEMPLATE_REGISTRY: PortfolioTemplateRegistryItem[] = [
 export const PORTFOLIO_TEMPLATE_IDS = PORTFOLIO_TEMPLATE_REGISTRY.map(
   template => template.id,
 )
+
+const PORTFOLIO_TEMPLATE_PRESET_IDS = Object.keys(
+  TEMPLATE_PRESETS,
+) as PortfolioTemplatePresetId[]
 
 function normalizeKey(value: string | null | undefined) {
   return (value ?? '')

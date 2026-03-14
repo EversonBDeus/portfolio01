@@ -1,56 +1,68 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue'
+import { computed } from 'vue'
 import {
   getPortfolioTemplateRegistryItem,
-  resolvePortfolioTemplatePresetId
+  resolvePortfolioTemplatePresetId,
 } from '~/data/portfolio-template-registry'
 import type {
   PortfolioPublicViewModel,
-  PortfolioTemplateMode
+  PortfolioTemplateMode,
 } from '~/types/portfolio-public-view-model'
+import { normalizePortfolioPublicViewModel } from '~/utils/normalize-portfolio-public-view-model'
 
-const props = withDefaults(defineProps<{
-  portfolio: PortfolioPublicViewModel
+type Props = {
+  portfolio?: PortfolioPublicViewModel | unknown | null
   templateId?: string | null
   templatePresetId?: string | null
-  templateMode?: PortfolioTemplateMode
-}>(), {
+  templateMode?: PortfolioTemplateMode | null
+}
+
+const props = withDefaults(defineProps<Props>(), {
   templateId: null,
   templatePresetId: null,
-  templateMode: 'dark'
+  templateMode: null,
 })
 
-const resolvedTemplateDefinition = computed(() => {
+const normalizedPortfolio = computed(() => {
+  return normalizePortfolioPublicViewModel(props.portfolio)
+})
+
+const templateDefinition = computed(() => {
   return getPortfolioTemplateRegistryItem(
-    props.templateId ?? props.portfolio.settings.templateId
+    props.templateId ?? normalizedPortfolio.value?.settings.templateId ?? null,
   )
 })
 
 const resolvedTemplatePresetId = computed(() => {
-  const presetIdFromProps = props.templatePresetId
-  const presetIdFromPortfolio = props.portfolio.settings.templatePresetId ?? null
-  const fallbackPresetId = resolvedTemplateDefinition.value.defaultPresetId
-
   return resolvePortfolioTemplatePresetId(
-    presetIdFromProps ?? presetIdFromPortfolio,
-    fallbackPresetId
+    props.templatePresetId ?? normalizedPortfolio.value?.settings.templatePresetId ?? null,
+    templateDefinition.value.defaultPresetId,
   )
 })
 
+const resolvedTemplateMode = computed<PortfolioTemplateMode>(() => {
+  return props.templateMode ?? templateDefinition.value.defaultMode
+})
+
 const resolvedTemplateComponent = computed(() => {
-  return defineAsyncComponent({
-    loader: resolvedTemplateDefinition.value.loader,
-    suspensible: false
-  })
+  return templateDefinition.value.component
 })
 </script>
 
 <template>
   <component
     :is="resolvedTemplateComponent"
-    :portfolio="portfolio"
-    :theme-name="resolvedTemplateDefinition.name"
+    v-if="normalizedPortfolio"
+    :portfolio="normalizedPortfolio"
+    :theme-name="templateDefinition.name"
     :template-preset-id="resolvedTemplatePresetId"
-    :template-mode="templateMode"
+    :template-mode="resolvedTemplateMode"
   />
+
+  <div
+    v-else
+    class="rounded-3xl border border-dashed border-slate-300/70 bg-white/80 p-6 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-300"
+  >
+    Não foi possível renderizar a prévia do template com os dados recebidos.
+  </div>
 </template>
