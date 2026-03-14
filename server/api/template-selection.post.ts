@@ -6,12 +6,63 @@ type TemplateSelectionSaveBody = {
   templateId: string
 }
 
+type ServerSupabaseClient = ReturnType<typeof serverSupabaseClient>
+
+const legacyFallbackSlugPattern = /^portfolio-[a-f0-9]{8}$/i
+
 function normalizeText(value: unknown) {
   return String(value ?? '').trim()
 }
 
-function createFallbackSlug(userId: string) {
-  return `portfolio-${userId.slice(0, 8)}`
+function isLegacyFallbackSlug(value: unknown) {
+  return legacyFallbackSlugPattern.test(normalizeText(value))
+}
+
+function createRandomSegment(length: number) {
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789'
+
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const buffer = new Uint32Array(length)
+    crypto.getRandomValues(buffer)
+
+    return Array.from(buffer, (value) => alphabet[value % alphabet.length]).join('')
+  }
+
+  return Array.from({ length }, () => {
+    return alphabet[Math.floor(Math.random() * alphabet.length)]
+  }).join('')
+}
+
+function createFallbackSlug() {
+  return `portfolio-${createRandomSegment(10)}`
+}
+
+async function createAvailableFallbackSlug(supabase: ServerSupabaseClient) {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const candidate = createFallbackSlug()
+
+    const { data, error } = await supabase
+      .from('portfolio_settings')
+      .select('id')
+      .eq('public_slug', candidate)
+      .maybeSingle()
+
+    if (error) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: error.message
+      })
+    }
+
+    if (!data) {
+      return candidate
+    }
+  }
+
+  throw createError({
+    statusCode: 500,
+    statusMessage: 'Não foi possível gerar um slug interno seguro.'
+  })
 }
 
 export default defineEventHandler(async (event) => {
@@ -61,12 +112,16 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const nextPublicSlug = (!currentSettings?.public_slug || isLegacyFallbackSlug(currentSettings.public_slug))
+    ? await createAvailableFallbackSlug(supabase)
+    : normalizeText(currentSettings.public_slug)
+
   const { error: saveError } = await supabase
     .from('portfolio_settings')
     .upsert({
       id: user.id,
       template_id: templateId,
-      public_slug: currentSettings?.public_slug ?? createFallbackSlug(user.id),
+      public_slug: nextPublicSlug,
       publication_status: currentSettings?.publication_status ?? 'draft'
     }, { onConflict: 'id' })
 

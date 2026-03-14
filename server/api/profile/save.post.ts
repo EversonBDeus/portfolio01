@@ -1,4 +1,5 @@
 import { readBody } from 'h3'
+import { z } from 'zod'
 import type { Json } from '~/types/database.types'
 import {
   buildAboutRecord,
@@ -13,24 +14,26 @@ import {
 } from '~/utils/editor-content'
 import { serverSupabaseClient } from '~/utils/supabase/server'
 
-type ProfileSaveBody = {
-  profile?: {
-    publicName?: string
-    headline?: string
-    bio?: string
-    location?: string
-    publicEmail?: string
-    linkedin?: string
-    github?: string
-    website?: string
-    whatsapp?: string
-    roleTitle?: string
-    professionalSummary?: string
-    workArea?: string
-    experienceLevel?: string
-    mainSkills?: string[]
-  }
-}
+const profileSaveSchema = z.object({
+  profile: z.object({
+    publicName: z.string().optional().default(''),
+    headline: z.string().optional().default(''),
+    bio: z.string().optional().default(''),
+    location: z.string().optional().default(''),
+    publicEmail: z.string().optional().default(''),
+    linkedin: z.string().optional().default(''),
+    github: z.string().optional().default(''),
+    website: z.string().optional().default(''),
+    whatsapp: z.string().optional().default(''),
+    roleTitle: z.string().optional().default(''),
+    professionalSummary: z.string().optional().default(''),
+    workArea: z.string().optional().default(''),
+    experienceLevel: z.string().optional().default(''),
+    mainSkills: z.array(z.string()).optional().default([])
+  })
+})
+
+type ProfileSaveBody = z.infer<typeof profileSaveSchema>
 
 function parseMainSkills(value: Json | null) {
   if (!Array.isArray(value)) {
@@ -70,7 +73,16 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody<ProfileSaveBody>(event)
-  const profile = body?.profile
+  const parsedBody = profileSaveSchema.safeParse(body)
+
+  if (!parsedBody.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Payload de perfil inválido.'
+    })
+  }
+
+  const { profile } = parsedBody.data
 
   const [profileResult, professionalResult] = await Promise.all([
     supabase
@@ -78,15 +90,15 @@ export default defineEventHandler(async (event) => {
       .upsert(
         {
           id: user.id,
-          public_name: normalizeText(profile?.publicName),
-          headline: normalizeText(profile?.headline),
-          bio: normalizeText(profile?.bio),
-          location: normalizeText(profile?.location),
-          public_email: normalizeText(profile?.publicEmail || user.email).toLowerCase(),
-          linkedin: normalizeOptionalUrl(profile?.linkedin),
-          github: normalizeOptionalUrl(profile?.github),
-          website: normalizeOptionalUrl(profile?.website),
-          whatsapp: normalizeText(profile?.whatsapp)
+          public_name: normalizeText(profile.publicName),
+          headline: normalizeText(profile.headline),
+          bio: normalizeText(profile.bio),
+          location: normalizeText(profile.location),
+          public_email: normalizeText(profile.publicEmail || user.email).toLowerCase(),
+          linkedin: normalizeOptionalUrl(profile.linkedin),
+          github: normalizeOptionalUrl(profile.github),
+          website: normalizeOptionalUrl(profile.website),
+          whatsapp: normalizeText(profile.whatsapp)
         },
         { onConflict: 'id' }
       ),
@@ -96,11 +108,11 @@ export default defineEventHandler(async (event) => {
       .upsert(
         {
           id: user.id,
-          role_title: normalizeText(profile?.roleTitle),
-          professional_summary: normalizeText(profile?.professionalSummary),
-          work_area: normalizeText(profile?.workArea),
-          experience_level: normalizeText(profile?.experienceLevel),
-          main_skills: normalizeMainSkills(profile?.mainSkills)
+          role_title: normalizeText(profile.roleTitle),
+          professional_summary: normalizeText(profile.professionalSummary),
+          work_area: normalizeText(profile.workArea),
+          experience_level: normalizeText(profile.experienceLevel),
+          main_skills: normalizeMainSkills(profile.mainSkills)
         },
         { onConflict: 'id' }
       )
@@ -146,11 +158,11 @@ export default defineEventHandler(async (event) => {
       .eq('id', user.id)
       .maybeSingle(),
 
-      supabase
-        .from('portfolio_editor')
-        .select('hero, about, contact')
-        .eq('id', user.id)
-        .maybeSingle()
+    supabase
+      .from('portfolio_editor')
+      .select('hero, about, contact')
+      .eq('id', user.id)
+      .maybeSingle()
   ])
 
   if (accountError || freshProfileError || freshProfessionalError || settingsError || existingEditorError) {
@@ -243,3 +255,4 @@ export default defineEventHandler(async (event) => {
     updatedAt: freshProfessional?.updated_at ?? freshProfile?.updated_at ?? account?.updated_at ?? null
   }
 })
+  
