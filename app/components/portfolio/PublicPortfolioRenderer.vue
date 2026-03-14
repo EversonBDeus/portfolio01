@@ -85,7 +85,17 @@ const resolvedTemplateComponent = computed<Component>(() => {
 })
 
 const forwardedTemplateProps = computed<Record<string, unknown>>(() => {
-  if (!['quiet-frame', 'neon-pulse', 'still-form', 'studio-rail'].includes(templateDefinition.value.id)) {
+  if (
+    ![
+      'quiet-frame',
+      'neon-pulse',
+      'still-form',
+      'studio-rail',
+      'aurora-ux',
+      'obsidian-prime',
+      'noir-signal',
+    ].includes(templateDefinition.value.id)
+  ) {
     return {}
   }
 
