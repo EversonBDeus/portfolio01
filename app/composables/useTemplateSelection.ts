@@ -16,20 +16,33 @@ type TemplateSelectionSaveResult =
       error: string
     }
 
+const LEGACY_TEMPLATE_ID_ALIASES: Record<string, string> = {
+  berlim: 'quiet-frame',
+  toquio: 'neon-pulse',
+  'nova-york': 'aurora-ux',
+  londres: 'obsidian-prime',
+  lisboa: 'still-form',
+  seul: 'noir-signal'
+}
+
 function normalizeTemplateId(value: unknown) {
   const templateId = String(value ?? '').trim()
 
-  return templateId || null
+  if (!templateId) {
+    return null
+  }
+
+  const currentTemplate = PORTFOLIO_TEMPLATES.find((template) => template.id === templateId)
+
+  if (currentTemplate) {
+    return currentTemplate.id
+  }
+
+  return LEGACY_TEMPLATE_ID_ALIASES[templateId] ?? null
 }
 
 export function useTemplateSelection() {
-  //  =========== Dependências da Auth ================
-  //  ----------- Sessão Atual --------------
-
   const { session } = useAuthState()
-
-  //  =========== Estado do Template Atual ================
-  //  ----------- Cookie + State Sincronizados --------------
 
   const selectedTemplateIdCookie = useCookie<string | null>('portfolio-selected-template-id', {
     sameSite: 'lax',
@@ -39,7 +52,7 @@ export function useTemplateSelection() {
 
   const selectedTemplateIdState = useState<string | null>(
     'selected-template-id',
-    () => selectedTemplateIdCookie.value ?? null
+    () => normalizeTemplateId(selectedTemplateIdCookie.value)
   )
 
   const loadingFromServer = useState<boolean>('template-selection-loading-from-server', () => false)
@@ -77,7 +90,7 @@ export function useTemplateSelection() {
   const selectedTemplateId = computed<string | null>({
     get: () => selectedTemplateIdState.value,
     set: (value) => {
-      applySelection(value)
+      applySelection(normalizeTemplateId(value))
     }
   })
 
@@ -156,7 +169,7 @@ export function useTemplateSelection() {
 
       return {
         ok: true,
-        templateId: response.templateId
+        templateId: normalizedTemplateId
       }
     } catch (error) {
       return {
