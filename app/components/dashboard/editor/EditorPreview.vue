@@ -99,7 +99,7 @@ function buildPortfolioFromPreview(
       featured: project.featured,
     })),
     contact: {
-      publicEmail: getLinkValue(preview, 'Email'),
+      publicEmail: getLinkValue(preview, 'E-mail'),
       linkedin: getLinkValue(preview, 'LinkedIn'),
       github: getLinkValue(preview, 'GitHub'),
       website: getLinkValue(preview, 'Website'),

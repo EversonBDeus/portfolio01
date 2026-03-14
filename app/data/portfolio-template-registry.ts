@@ -31,7 +31,7 @@ export type PortfolioTemplateRegistryItem = {
   legacyIds?: string[]
 }
 
-export const PORTFOLIO_TEMPLATE_FALLBACK_ID: PortfolioTemplateId = 'velvet-stage'
+export const PORTFOLIO_TEMPLATE_FALLBACK_ID: PortfolioTemplateId = 'quiet-frame'
 
 const PORTFOLIO_TEMPLATE_PRESET_IDS = Object.keys(
   TEMPLATE_PRESETS,

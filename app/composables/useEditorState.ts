@@ -1,4 +1,4 @@
-import { computed, onMounted, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useAuthState } from '~/composables/useAuthState'
 import {
   EDITOR_SECTIONS,
@@ -300,7 +300,7 @@ export function useEditorState() {
       headline:
         editorBaseContent.value.hero.headline ||
         editorBaseContent.value.hero.roleTitle ||
-        'Sua headline profissional',
+        'Sua frase de destaque profissional',
       roleTitle: editorBaseContent.value.hero.roleTitle || 'Seu cargo principal',
       summary:
         editorBaseContent.value.about.summary ||
@@ -734,10 +734,6 @@ export function useEditorState() {
       immediate: true
     }
   )
-
-  onMounted(() => {
-    void hydrateEditorState(true)
-  })
 
   //  =========== Ações Gerais ================
   //  ----------- Hero, Sobre, Contato e Seção --------------
