@@ -94,6 +94,8 @@ const forwardedTemplateProps = computed<Record<string, unknown>>(() => {
       'aurora-ux',
       'obsidian-prime',
       'noir-signal',
+      'velvet-stage',
+      'imperial-arc',
     ].includes(templateDefinition.value.id)
   ) {
     return {}
