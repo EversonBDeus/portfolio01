@@ -1,159 +1,153 @@
-import type { PortfolioTemplateId } from '~/data/portfolio-template-registry'
+import type { PlanTier } from '~/composables/usePerfilState'
+import {
+  PORTFOLIO_TEMPLATE_REGISTRY,
+  type PortfolioTemplateId,
+  type PortfolioTemplateMode,
+  type PortfolioTemplateTier,
+} from '~/data/portfolio-template-registry'
+import type { PortfolioTemplatePresetId } from '~/types/template-preset'
 
-export type TemplateTier = 'free' | 'plus' | 'pro'
+export type TemplateTier = PortfolioTemplateTier
 
-export type TemplateCategory =
-  | 'Minimalista'
-  | 'Criativo'
-  | 'Profissional'
-  | 'Dark Mode'
-  | 'Editorial'
-
-export type TemplateCategoryFilter = 'Todos' | TemplateCategory
+export type TemplateCategoryFilter = 'Todos' | string
 
 export type TemplateCategoryOption = {
   label: TemplateCategoryFilter
   icon: string
 }
 
-export type PortfolioTemplate = {
+export type TemplateCatalogItem = {
   id: PortfolioTemplateId
+  slug: string
+  templateId: PortfolioTemplateId
+  previewTemplateId: PortfolioTemplateId
   name: string
-  category: TemplateCategory
-  tier: TemplateTier
+  title: string
   description: string
+  category: string
   tags: string[]
+  tier: TemplateTier
+  previewPresetId: PortfolioTemplatePresetId
+  templatePresetId: PortfolioTemplatePresetId
+  previewMode: PortfolioTemplateMode
+  templateMode: PortfolioTemplateMode
+  componentName: string
+  available: boolean
+  isNew: boolean
   gradient: string
   previewTitle: string
   previewSubtitle: string
   statsLabel: string
 }
 
+export type PortfolioTemplate = TemplateCatalogItem
+
+const TEMPLATE_GRADIENTS: Record<PortfolioTemplateId, string> = {
+  'quiet-frame': 'from-stone-200 via-neutral-100 to-zinc-200 dark:from-stone-700 dark:via-zinc-800 dark:to-neutral-900',
+  'still-form': 'from-slate-100 via-stone-100 to-amber-50 dark:from-slate-700 dark:via-neutral-800 dark:to-stone-900',
+  'aurora-ux': 'from-sky-500 via-cyan-400 to-indigo-600',
+  'velvet-stage': 'from-fuchsia-500 via-rose-500 to-orange-400',
+  'neon-pulse': 'from-cyan-400 via-violet-500 to-pink-500',
+  'studio-rail': 'from-emerald-400 via-teal-500 to-cyan-500',
+  'imperial-arc': 'from-amber-300 via-orange-300 to-rose-300 dark:from-amber-700 dark:via-orange-700 dark:to-rose-800',
+  'obsidian-prime': 'from-slate-700 via-zinc-800 to-black',
+  'noir-signal': 'from-lime-400 via-emerald-500 to-teal-600',
+}
+
+const TEMPLATE_CATEGORY_ICONS: Record<string, string> = {
+  Todos: 'i-lucide-layout-template',
+  Editorial: 'i-lucide-book-open-text',
+  Produto: 'i-lucide-monitor-smartphone',
+  Premium: 'i-lucide-crown',
+  Expressivo: 'i-lucide-sparkles',
+  Estúdio: 'i-lucide-panels-left-right',
+  Curado: 'i-lucide-gallery-vertical-end',
+  Tático: 'i-lucide-radar',
+}
+
+function getTemplateCategoryIcon(category: string): string {
+  return TEMPLATE_CATEGORY_ICONS[category] ?? 'i-lucide-tag'
+}
+
+function buildStatsLabel(
+  category: string,
+  tags: string[],
+  tier: TemplateTier,
+): string {
+  const tierLabel = tier === 'free' ? 'Free' : tier === 'plus' ? 'Plus' : 'Pro'
+
+  return `${category} · ${tags.length} tags · ${tierLabel}`
+}
+
+export const TEMPLATE_CATALOG: TemplateCatalogItem[] = PORTFOLIO_TEMPLATE_REGISTRY.map(
+  template => ({
+    id: template.id,
+    slug: template.id,
+    templateId: template.id,
+    previewTemplateId: template.id,
+    name: template.name,
+    title: template.name,
+    description: template.description,
+    category: template.category,
+    tags: template.tags,
+    tier: template.tier,
+    previewPresetId: template.defaultPresetId,
+    templatePresetId: template.defaultPresetId,
+    previewMode: template.defaultMode,
+    templateMode: template.defaultMode,
+    componentName: template.componentName,
+    available: true,
+    isNew: false,
+    gradient: TEMPLATE_GRADIENTS[template.id],
+    previewTitle: template.name,
+    previewSubtitle: template.description,
+    statsLabel: buildStatsLabel(template.category, template.tags, template.tier),
+  }),
+)
+
+export const PORTFOLIO_TEMPLATES = TEMPLATE_CATALOG
+
 export const TEMPLATE_CATEGORIES: TemplateCategoryOption[] = [
-  { label: 'Todos', icon: 'i-lucide-layout-grid' },
-  { label: 'Minimalista', icon: 'i-lucide-circle' },
-  { label: 'Criativo', icon: 'i-lucide-sparkles' },
-  { label: 'Profissional', icon: 'i-lucide-briefcase-business' },
-  { label: 'Dark Mode', icon: 'i-lucide-moon-star' },
-  { label: 'Editorial', icon: 'i-lucide-newspaper' }
+  {
+    label: 'Todos',
+    icon: getTemplateCategoryIcon('Todos'),
+  },
+  ...Array.from(new Set(TEMPLATE_CATALOG.map(template => template.category))).map(category => ({
+    label: category,
+    icon: getTemplateCategoryIcon(category),
+  })),
 ]
 
-export const PORTFOLIO_TEMPLATES: PortfolioTemplate[] = [
-  {
-    id: 'quiet-frame',
-    name: 'Quiet Frame',
-    category: 'Minimalista',
-    tier: 'free',
-    description:
-      'Layout limpo, com foco em tipografia, resumo profissional e projetos organizados.',
-    tags: ['Clean', 'Tipografia', 'Portfólio direto'],
-    gradient: 'from-slate-200 via-zinc-100 to-white',
-    previewTitle: 'Portfólio direto ao ponto',
-    previewSubtitle: 'Ideal para quem quer clareza e leitura rápida.',
-    statsLabel: 'Seções enxutas'
-  },
-  {
-    id: 'still-form',
-    name: 'Still Form',
-    category: 'Editorial',
-    tier: 'free',
-    description:
-      'Estrutura calma e editorial para perfis que valorizam texto, ritmo e leitura elegante.',
-    tags: ['Editorial', 'Calmo', 'Narrativa'],
-    gradient: 'from-stone-200 via-neutral-100 to-zinc-50',
-    previewTitle: 'Leitura tranquila',
-    previewSubtitle: 'Bom para conteúdo, presença autoral e ritmo visual suave.',
-    statsLabel: 'Caderno visual'
-  },
-  {
-    id: 'aurora-ux',
-    name: 'Aurora UX',
-    category: 'Profissional',
-    tier: 'free',
-    description:
-      'Template equilibrado para produto, UX, frontend e perfis com clareza técnica.',
-    tags: ['Produto', 'UX', 'Clareza'],
-    gradient: 'from-cyan-300 via-sky-400 to-blue-500',
-    previewTitle: 'Estrutura objetiva',
-    previewSubtitle: 'Organiza headline, destaque e contato com leitura leve.',
-    statsLabel: 'Foco em produto'
-  },
-  {
-    id: 'velvet-stage',
-    name: 'Velvet Stage',
-    category: 'Criativo',
-    tier: 'plus',
-    description:
-      'Composição dominante para quem quer uma vitrine premium, vendável e com hero forte.',
-    tags: ['Hero dominante', 'Premium', 'Apresentação'],
-    gradient: 'from-fuchsia-500 via-violet-500 to-indigo-600',
-    previewTitle: 'Presença visual forte',
-    previewSubtitle: 'Pensado para causar impacto logo no primeiro bloco.',
-    statsLabel: 'Vitrine premium'
-  },
-  {
-    id: 'neon-pulse',
-    name: 'Neon Pulse',
-    category: 'Criativo',
-    tier: 'plus',
-    description:
-      'Visual mais vibrante e luminoso, ideal para perfis criativos, branding e áreas visuais.',
-    tags: ['Vibrante', 'Visual forte', 'Criativo'],
-    gradient: 'from-fuchsia-500 via-violet-500 to-sky-500',
-    previewTitle: 'Card principal vibrante',
-    previewSubtitle: 'Bom para perfis que querem energia e presença visual.',
-    statsLabel: 'Hero expressivo'
-  },
-  {
-    id: 'studio-rail',
-    name: 'Studio Rail',
-    category: 'Dark Mode',
-    tier: 'plus',
-    description:
-      'Layout com rail lateral e leitura modular, ideal para estúdios, produto e tecnologia.',
-    tags: ['Rail lateral', 'Modular', 'Estúdio'],
-    gradient: 'from-emerald-500 via-teal-500 to-cyan-600',
-    previewTitle: 'Rail de estúdio',
-    previewSubtitle: 'Distribui o conteúdo com apoio lateral e ritmo de painel.',
-    statsLabel: 'Leitura modular'
-  },
-  {
-    id: 'imperial-arc',
-    name: 'Imperial Arc',
-    category: 'Editorial',
-    tier: 'pro',
-    description:
-      'Template com presença nobre, curadoria visual e composição mais cerimonial.',
-    tags: ['Nobre', 'Editorial', 'Curadoria'],
-    gradient: 'from-amber-300 via-rose-400 to-indigo-700',
-    previewTitle: 'Editorial de alto valor',
-    previewSubtitle: 'Pensado para autoridade visual, sofisticação e moldura premium.',
-    statsLabel: 'Composição curada'
-  },
-  {
-    id: 'obsidian-prime',
-    name: 'Obsidian Prime',
-    category: 'Dark Mode',
-    tier: 'pro',
-    description:
-      'Visual sólido, denso e premium para perfis executivos, tecnologia e consultoria.',
-    tags: ['Premium', 'Sólido', 'Executivo'],
-    gradient: 'from-zinc-800 via-slate-900 to-black',
-    previewTitle: 'Estrutura monolítica',
-    previewSubtitle: 'Ideal para uma leitura forte, sóbria e profissional.',
-    statsLabel: 'Leitura executiva'
-  },
-  {
-    id: 'noir-signal',
-    name: 'Noir Signal',
-    category: 'Dark Mode',
-    tier: 'pro',
-    description:
-      'Template tático e contrastado, com linguagem mais aguda para perfis digitais e tech.',
-    tags: ['Tático', 'Contraste', 'Tech'],
-    gradient: 'from-slate-900 via-black to-zinc-950',
-    previewTitle: 'Sinal escuro de alto contraste',
-    previewSubtitle: 'Focado em presença visual forte e leitura orientada por contraste.',
-    statsLabel: 'Leitura tática'
+export const templates = TEMPLATE_CATALOG
+export const portfolioTemplates = TEMPLATE_CATALOG
+
+export function getTemplateById(
+  templateId: string | null | undefined,
+): TemplateCatalogItem | null {
+  if (!templateId) {
+    return null
   }
-]
+
+  return TEMPLATE_CATALOG.find(template => template.id === templateId) ?? null
+}
+
+export function isTemplateAvailableForPlan(
+  template: TemplateCatalogItem,
+  plan: PlanTier,
+): boolean {
+  const planWeight: Record<PlanTier, number> = {
+    free: 0,
+    plus: 1,
+    pro: 2,
+  }
+
+  const templateWeight: Record<TemplateTier, number> = {
+    free: 0,
+    plus: 1,
+    pro: 2,
+  }
+
+  return planWeight[plan] >= templateWeight[template.tier]
+}
+
+export default TEMPLATE_CATALOG

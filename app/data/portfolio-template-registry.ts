@@ -1,163 +1,279 @@
-import type { Component } from 'vue'
-import { DEFAULT_TEMPLATE_PRESET_ID, TEMPLATE_PRESETS } from '~/data/template-presets'
+import type {
+  AsyncComponentLoader,
+  Component,
+} from 'vue'
+import { defineAsyncComponent } from 'vue'
+import {
+  DEFAULT_TEMPLATE_PRESET_ID,
+  TEMPLATE_PRESETS,
+} from '~/data/template-presets'
 import type { PortfolioTemplatePresetId } from '~/types/template-preset'
 
-export const PORTFOLIO_TEMPLATE_IDS = [
-  'velvet-stage',
-  'quiet-frame',
-  'still-form',
-  'aurora-ux',
-  'studio-rail',
-  'neon-pulse',
-  'imperial-arc',
-  'obsidian-prime',
-  'noir-signal'
-] as const
+export type PortfolioTemplateId =
+  | 'quiet-frame'
+  | 'still-form'
+  | 'aurora-ux'
+  | 'velvet-stage'
+  | 'neon-pulse'
+  | 'studio-rail'
+  | 'imperial-arc'
+  | 'obsidian-prime'
+  | 'noir-signal'
 
-export type PortfolioTemplateId = (typeof PORTFOLIO_TEMPLATE_IDS)[number]
-
-export type PortfolioTemplateLoader = () => Promise<{ default: Component }>
+export type PortfolioTemplateMode = 'light' | 'dark'
+export type PortfolioTemplateTier = 'free' | 'plus' | 'pro'
 
 export type PortfolioTemplateRegistryItem = {
   id: PortfolioTemplateId
+  componentName: string
+  component: Component
+  loader: AsyncComponentLoader
   name: string
-  loader: PortfolioTemplateLoader
+  description: string
+  category: string
+  tags: string[]
+  tier: PortfolioTemplateTier
   defaultPresetId: PortfolioTemplatePresetId
-  availablePresetIds: PortfolioTemplatePresetId[]
+  defaultMode: PortfolioTemplateMode
+  legacyIds?: string[]
 }
 
-const ALL_TEMPLATE_PRESET_IDS = Object.keys(TEMPLATE_PRESETS) as PortfolioTemplatePresetId[]
+const QuietFrameTemplateLoader: AsyncComponentLoader = () =>
+  import('~/components/templates/QuietFrameTemplate/QuietFrameTemplate.vue')
 
-export const DEFAULT_PORTFOLIO_TEMPLATE_ID: PortfolioTemplateId = 'velvet-stage'
+const StillFormTemplateLoader: AsyncComponentLoader = () =>
+  import('~/components/templates/StillFormTemplate/StillFormTemplate.vue')
 
-const LEGACY_TEMPLATE_ID_ALIASES: Record<string, PortfolioTemplateId> = {
-  berlim: 'velvet-stage',
-  toquio: 'velvet-stage',
-  'nova-york': 'velvet-stage',
-  londres: 'velvet-stage',
-  lisboa: 'velvet-stage',
-  seul: 'velvet-stage'
-}
+const AuroraUxTemplateLoader: AsyncComponentLoader = () =>
+  import('~/components/templates/AuroraUx/AuroraUxTemplate.vue')
 
-function buildRegistryItem(
-  id: PortfolioTemplateId,
-  name: string,
-  loader: PortfolioTemplateLoader
-): PortfolioTemplateRegistryItem {
-  return {
-    id,
-    name,
-    loader,
+const VelvetStageTemplateLoader: AsyncComponentLoader = () =>
+  import('~/components/templates/VelvetStageTemplate/VelvetStageTemplate.vue')
+
+const NeonPulseTemplateLoader: AsyncComponentLoader = () =>
+  import('~/components/templates/NeonPulseTemplate/NeonPulseTemplate.vue')
+
+const StudioRailTemplateLoader: AsyncComponentLoader = () =>
+  import('~/components/templates/StudioRailTemplate/StudioRailTemplate.vue')
+
+const ImperialArcTemplateLoader: AsyncComponentLoader = () =>
+  import('~/components/templates/ImperialArcTemplate/ImperialArcTemplate.vue')
+
+const ObsidianPrimeTemplateLoader: AsyncComponentLoader = () =>
+  import('~/components/templates/ObsidianPrimeTemplate/ObsidianPrimeTemplate.vue')
+
+const NoirSignalTemplateLoader: AsyncComponentLoader = () =>
+  import('~/components/templates/NoirSignalTemplate/NoirSignalTemplate.vue')
+
+const QuietFrameTemplate = defineAsyncComponent(QuietFrameTemplateLoader)
+const StillFormTemplate = defineAsyncComponent(StillFormTemplateLoader)
+const AuroraUxTemplate = defineAsyncComponent(AuroraUxTemplateLoader)
+const VelvetStageTemplate = defineAsyncComponent(VelvetStageTemplateLoader)
+const NeonPulseTemplate = defineAsyncComponent(NeonPulseTemplateLoader)
+const StudioRailTemplate = defineAsyncComponent(StudioRailTemplateLoader)
+const ImperialArcTemplate = defineAsyncComponent(ImperialArcTemplateLoader)
+const ObsidianPrimeTemplate = defineAsyncComponent(ObsidianPrimeTemplateLoader)
+const NoirSignalTemplate = defineAsyncComponent(NoirSignalTemplateLoader)
+
+export const PORTFOLIO_TEMPLATE_FALLBACK_ID: PortfolioTemplateId = 'velvet-stage'
+export const PORTFOLIO_TEMPLATE_PRESET_IDS = Object.keys(
+  TEMPLATE_PRESETS,
+) as PortfolioTemplatePresetId[]
+
+export const PORTFOLIO_TEMPLATE_REGISTRY: PortfolioTemplateRegistryItem[] = [
+  {
+    id: 'quiet-frame',
+    componentName: 'QuietFrameTemplate',
+    component: QuietFrameTemplate,
+    loader: QuietFrameTemplateLoader,
+    name: 'Quiet Frame',
+    description: 'Minimalista, tipográfico e editorial com presença silenciosa.',
+    category: 'Editorial',
+    tags: ['minimalista', 'tipografia', 'clean', 'editorial'],
+    tier: 'free',
     defaultPresetId: DEFAULT_TEMPLATE_PRESET_ID,
-    availablePresetIds: [...ALL_TEMPLATE_PRESET_IDS]
-  }
-}
+    defaultMode: 'light',
+    legacyIds: ['quietframe', 'quiet_frame'],
+  },
+  {
+    id: 'still-form',
+    componentName: 'StillFormTemplate',
+    component: StillFormTemplate,
+    loader: StillFormTemplateLoader,
+    name: 'Still Form',
+    description: 'Calmo, leve e refinado para portfólios autorais com leitura limpa.',
+    category: 'Editorial',
+    tags: ['calmo', 'editorial', 'clean', 'premium'],
+    tier: 'free',
+    defaultPresetId: DEFAULT_TEMPLATE_PRESET_ID,
+    defaultMode: 'light',
+    legacyIds: ['stillform', 'still_form'],
+  },
+  {
+    id: 'aurora-ux',
+    componentName: 'AuroraUxTemplate',
+    component: AuroraUxTemplate,
+    loader: AuroraUxTemplateLoader,
+    name: 'Aurora UX',
+    description: 'Contraste nítido, layout moderno e leitura forte para perfis digitais.',
+    category: 'Produto',
+    tags: ['ux', 'produto', 'moderno', 'tech'],
+    tier: 'plus',
+    defaultPresetId: DEFAULT_TEMPLATE_PRESET_ID,
+    defaultMode: 'dark',
+    legacyIds: ['auroraux', 'aurora_ux'],
+  },
+  {
+    id: 'velvet-stage',
+    componentName: 'VelvetStageTemplate',
+    component: VelvetStageTemplate,
+    loader: VelvetStageTemplateLoader,
+    name: 'Velvet Stage',
+    description: 'Hero dominante e composição vendável para destaque premium.',
+    category: 'Premium',
+    tags: ['hero', 'premium', 'dominante', 'vendável'],
+    tier: 'pro',
+    defaultPresetId: DEFAULT_TEMPLATE_PRESET_ID,
+    defaultMode: 'dark',
+    legacyIds: ['velvetstage', 'velvet_stage'],
+  },
+  {
+    id: 'neon-pulse',
+    componentName: 'NeonPulseTemplate',
+    component: NeonPulseTemplate,
+    loader: NeonPulseTemplateLoader,
+    name: 'Neon Pulse',
+    description: 'Energia luminosa, visual expressivo e presença mobile-first forte.',
+    category: 'Expressivo',
+    tags: ['vibrante', 'neon', 'criativo', 'mobile'],
+    tier: 'plus',
+    defaultPresetId: DEFAULT_TEMPLATE_PRESET_ID,
+    defaultMode: 'dark',
+    legacyIds: ['neonpulse', 'neon_pulse'],
+  },
+  {
+    id: 'studio-rail',
+    componentName: 'StudioRailTemplate',
+    component: StudioRailTemplate,
+    loader: StudioRailTemplateLoader,
+    name: 'Studio Rail',
+    description: 'Composição modular com rail lateral real e leitura de estúdio.',
+    category: 'Estúdio',
+    tags: ['rail', 'modular', 'estúdio', 'layout'],
+    tier: 'plus',
+    defaultPresetId: DEFAULT_TEMPLATE_PRESET_ID,
+    defaultMode: 'light',
+    legacyIds: ['studiorail', 'studio_rail'],
+  },
+  {
+    id: 'imperial-arc',
+    componentName: 'ImperialArcTemplate',
+    component: ImperialArcTemplate,
+    loader: ImperialArcTemplateLoader,
+    name: 'Imperial Arc',
+    description: 'Curadoria nobre com moldura premium e leitura mais editorial.',
+    category: 'Curado',
+    tags: ['editorial', 'nobre', 'curado', 'premium'],
+    tier: 'pro',
+    defaultPresetId: DEFAULT_TEMPLATE_PRESET_ID,
+    defaultMode: 'light',
+    legacyIds: ['imperialarc', 'imperial_arc'],
+  },
+  {
+    id: 'obsidian-prime',
+    componentName: 'ObsidianPrimeTemplate',
+    component: ObsidianPrimeTemplate,
+    loader: ObsidianPrimeTemplateLoader,
+    name: 'Obsidian Prime',
+    description: 'Denso, monolítico e escuro para uma presença mais sólida.',
+    category: 'Premium',
+    tags: ['monolítico', 'escuro', 'sólido', 'premium'],
+    tier: 'pro',
+    defaultPresetId: DEFAULT_TEMPLATE_PRESET_ID,
+    defaultMode: 'dark',
+    legacyIds: ['obsidianprime', 'obsidian_prime'],
+  },
+  {
+    id: 'noir-signal',
+    componentName: 'NoirSignalTemplate',
+    component: NoirSignalTemplate,
+    loader: NoirSignalTemplateLoader,
+    name: 'Noir Signal',
+    description: 'Visual tático, contrastado e técnico sem virar dashboard genérico.',
+    category: 'Tático',
+    tags: ['tático', 'tech', 'contraste', 'dark'],
+    tier: 'plus',
+    defaultPresetId: DEFAULT_TEMPLATE_PRESET_ID,
+    defaultMode: 'dark',
+    legacyIds: ['noirsignal', 'noir_signal'],
+  },
+]
 
-export const PORTFOLIO_TEMPLATE_REGISTRY: Record<PortfolioTemplateId, PortfolioTemplateRegistryItem> = {
-  'velvet-stage': buildRegistryItem(
-    'velvet-stage',
-    'Velvet Stage',
-    () => import('~/components/templates/VelvetStageTemplate/VelvetStageTemplate.vue')
-  ),
+export const PORTFOLIO_TEMPLATE_IDS = PORTFOLIO_TEMPLATE_REGISTRY.map(
+  template => template.id,
+)
 
-  'quiet-frame': buildRegistryItem(
-    'quiet-frame',
-    'Quiet Frame',
-    () => import('~/components/templates/QuietFrameTemplate/QuietFrameTemplate.vue')
-  ),
-
-  'still-form': buildRegistryItem(
-    'still-form',
-    'Still Form',
-    () => import('~/components/templates/StillFormTemplate/StillFormTemplate.vue')
-  ),
-
-  'aurora-ux': buildRegistryItem(
-    'aurora-ux',
-    'Aurora UX',
-    () => import('~/components/templates/AuroraUx/AuroraUxTemplate.vue')
-  ),
-
-  'studio-rail': buildRegistryItem(
-    'studio-rail',
-    'Studio Rail',
-    () => import('~/components/templates/StudioRailTemplate/StudioRailTemplate.vue')
-  ),
-
-  'neon-pulse': buildRegistryItem(
-    'neon-pulse',
-    'Neon Pulse',
-    () => import('~/components/templates/NeonPulseTemplate/NeonPulseTemplate.vue')
-  ),
-
-  'imperial-arc': buildRegistryItem(
-    'imperial-arc',
-    'Imperial Arc',
-    () => import('~/components/templates/ImperialArcTemplate/ImperialArcTemplate.vue')
-  ),
-
-  'obsidian-prime': buildRegistryItem(
-    'obsidian-prime',
-    'Obsidian Prime',
-    () => import('~/components/templates/ObsidianPrimeTemplate/ObsidianPrimeTemplate.vue')
-  ),
-
-  'noir-signal': buildRegistryItem(
-    'noir-signal',
-    'Noir Signal',
-    () => import('~/components/templates/NoirSignalTemplate/NoirSignalTemplate.vue')
-  )
-}
-
-export function isPortfolioTemplateId(value: string | null | undefined): value is PortfolioTemplateId {
-  if (!value) {
-    return false
-  }
-
-  return value in PORTFOLIO_TEMPLATE_REGISTRY
+function normalizeKey(value: string | null | undefined) {
+  return (value ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[_\s]+/g, '-')
 }
 
 export function isPortfolioTemplatePresetId(
-  value: string | null | undefined
+  value: string,
 ): value is PortfolioTemplatePresetId {
-  if (!value) {
-    return false
-  }
-
-  return value in TEMPLATE_PRESETS
-}
-
-export function resolvePortfolioTemplateId(
-  templateId: string | null | undefined
-): PortfolioTemplateId {
-  const candidate = String(templateId ?? '').trim()
-
-  if (isPortfolioTemplateId(candidate)) {
-    return candidate
-  }
-
-  return LEGACY_TEMPLATE_ID_ALIASES[candidate] ?? DEFAULT_PORTFOLIO_TEMPLATE_ID
-}
-
-export function getPortfolioTemplateRegistryItem(
-  templateId: string | null | undefined
-): PortfolioTemplateRegistryItem {
-  const resolvedTemplateId = resolvePortfolioTemplateId(templateId)
-
-  return PORTFOLIO_TEMPLATE_REGISTRY[resolvedTemplateId]
+  return PORTFOLIO_TEMPLATE_PRESET_IDS.includes(value as PortfolioTemplatePresetId)
 }
 
 export function resolvePortfolioTemplatePresetId(
-  templatePresetId: string | null | undefined,
-  fallbackPresetId?: PortfolioTemplatePresetId
+  value: string | null | undefined,
+  fallback: PortfolioTemplatePresetId = DEFAULT_TEMPLATE_PRESET_ID,
 ): PortfolioTemplatePresetId {
-  if (isPortfolioTemplatePresetId(templatePresetId)) {
-    return templatePresetId
+  const normalizedValue = typeof value === 'string' ? value.trim() : ''
+
+  if (normalizedValue && isPortfolioTemplatePresetId(normalizedValue)) {
+    return normalizedValue
   }
 
-  if (fallbackPresetId && isPortfolioTemplatePresetId(fallbackPresetId)) {
-    return fallbackPresetId
+  return isPortfolioTemplatePresetId(fallback)
+    ? fallback
+    : DEFAULT_TEMPLATE_PRESET_ID
+}
+
+export function normalizePortfolioTemplateId(
+  value: string | null | undefined,
+): PortfolioTemplateId {
+  const normalizedValue = normalizeKey(value)
+
+  const directMatch = PORTFOLIO_TEMPLATE_REGISTRY.find(
+    template => template.id === normalizedValue,
+  )
+
+  if (directMatch) {
+    return directMatch.id
   }
 
-  return DEFAULT_TEMPLATE_PRESET_ID
+  const legacyMatch = PORTFOLIO_TEMPLATE_REGISTRY.find(template =>
+    template.legacyIds?.some(legacyId => normalizeKey(legacyId) === normalizedValue),
+  )
+
+  return legacyMatch?.id ?? PORTFOLIO_TEMPLATE_FALLBACK_ID
+}
+
+export function getPortfolioTemplateEntry(
+  value: string | null | undefined,
+): PortfolioTemplateRegistryItem {
+  const templateId = normalizePortfolioTemplateId(value)
+
+  return (
+    PORTFOLIO_TEMPLATE_REGISTRY.find(template => template.id === templateId)
+    ?? PORTFOLIO_TEMPLATE_REGISTRY[0]!
+  )
+}
+
+export function getPortfolioTemplateRegistryItem(
+  value: string | null | undefined,
+): PortfolioTemplateRegistryItem {
+  return getPortfolioTemplateEntry(value)
 }
