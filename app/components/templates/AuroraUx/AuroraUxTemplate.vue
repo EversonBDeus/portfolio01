@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { usePortfolioTemplateTheme } from '~/composables/usePortfolioTemplateTheme'
-import type { PortfolioPublicViewModel } from '~/types/portfolio-public-view-model'
-
-type TemplateMode = 'light' | 'dark'
+import type {
+  PortfolioPublicViewModel,
+  PortfolioTemplateMode
+} from '~/types/portfolio-public-view-model'
 
 type TemplateContactItem = {
   key: 'publicEmail' | 'linkedin' | 'github' | 'website' | 'whatsapp'
@@ -18,7 +19,7 @@ const props = withDefaults(defineProps<{
   portfolio: PortfolioPublicViewModel
   themeName?: string
   templatePresetId?: string | null
-  templateMode?: TemplateMode
+  templateMode?: PortfolioTemplateMode
 }>(), {
   themeName: 'Aurora UX',
   templatePresetId: null,
@@ -27,12 +28,20 @@ const props = withDefaults(defineProps<{
 
 const { themeVars } = usePortfolioTemplateTheme(() => props.templatePresetId)
 
-const templateName = computed(() => props.themeName.trim())
-const isPublished = computed(() => props.portfolio.settings.publicationStatus === 'published')
+const publicName = computed(() => {
+  return props.portfolio.hero.publicName.trim() || 'Perfil público'
+})
+
+const headline = computed(() => {
+  return props.portfolio.hero.headline.trim() || 'Template clean, direto e preparado para leitura de produto e UX.'
+})
 
 const summary = computed(() => {
   return props.portfolio.about.summary.trim() || 'O resumo profissional ainda não foi preenchido.'
 })
+
+const roleTitle = computed(() => props.portfolio.hero.roleTitle.trim())
+const location = computed(() => props.portfolio.hero.location.trim())
 
 const skills = computed(() => {
   return [...new Set(
@@ -49,7 +58,9 @@ const featuredProjects = computed(() => {
 
 const leadProject = computed(() => featuredProjects.value[0] ?? null)
 const secondaryProjects = computed(() => featuredProjects.value.slice(1, 4))
-const featuredCount = computed(() => props.portfolio.projects.filter((project) => project.featured).length)
+const featuredCount = computed(() => {
+  return props.portfolio.projects.filter((project) => project.featured).length
+})
 
 const stats = computed(() => {
   return [
@@ -139,7 +150,7 @@ const extraContacts = computed(() => contactItems.value.slice(3))
 
 <template>
   <article
-    class="lumio-template lumio-template--aurora"
+    class="lumio-template lumio-template--aurora-ux"
     :class="`lumio-template--mode-${props.templateMode}`"
     :style="themeVars"
   >
@@ -149,46 +160,29 @@ const extraContacts = computed(() => contactItems.value.slice(3))
           class="lumio-template__hero-main"
           v-reveal="{ distance: '14px', duration: 500 }"
         >
-          <div class="lumio-template__pill-row">
-            <span class="lumio-template__pill lumio-template__pill--primary">
-              {{ templateName }}
-            </span>
-
-            <span
-              class="lumio-template__pill"
-              :class="isPublished ? 'lumio-template__pill--success' : 'lumio-template__pill--warning'"
-            >
-              {{ isPublished ? 'Publicado' : 'Rascunho' }}
-            </span>
-          </div>
-
-          <p class="lumio-template__slug">
-            /{{ portfolio.settings.publicSlug }}
-          </p>
-
           <h1 class="lumio-template__name">
-            {{ portfolio.hero.publicName }}
+            {{ publicName }}
           </h1>
 
           <p class="lumio-template__headline">
-            {{ portfolio.hero.headline }}
+            {{ headline }}
           </p>
 
           <div class="lumio-template__meta">
             <span
-              v-if="portfolio.hero.roleTitle"
+              v-if="roleTitle"
               class="lumio-template__meta-pill"
             >
               <UIcon name="i-lucide-briefcase-business" />
-              {{ portfolio.hero.roleTitle }}
+              {{ roleTitle }}
             </span>
 
             <span
-              v-if="portfolio.hero.location"
+              v-if="location"
               class="lumio-template__meta-pill"
             >
               <UIcon name="i-lucide-map-pin" />
-              {{ portfolio.hero.location }}
+              {{ location }}
             </span>
           </div>
 
@@ -223,7 +217,10 @@ const extraContacts = computed(() => contactItems.value.slice(3))
           </div>
 
           <div class="lumio-template__card">
-            <p class="lumio-template__section-kicker">Resumo</p>
+            <p class="lumio-template__section-kicker">
+              Resumo
+            </p>
+
             <p class="lumio-template__copy lumio-template__copy--compact">
               {{ summary }}
             </p>
@@ -238,15 +235,16 @@ const extraContacts = computed(() => contactItems.value.slice(3))
           class="lumio-template__card"
           v-reveal="{ distance: '14px', duration: 500 }"
         >
-          <p class="lumio-template__section-kicker">Direção</p>
+          <p class="lumio-template__section-kicker">
+            Sobre
+          </p>
 
           <h2 class="lumio-template__section-title">
-            Preview isolado com hero amplo, leitura limpa e preset local.
+            {{ headline }}
           </h2>
 
           <p class="lumio-template__copy">
-            Aurora UX fica como template-base mais claro do Lumio: direto, comercial e preparado
-            para o fluxo público real sem contaminar o tema global do sistema.
+            {{ summary }}
           </p>
         </article>
 
@@ -254,7 +252,9 @@ const extraContacts = computed(() => contactItems.value.slice(3))
           class="lumio-template__card"
           v-reveal="{ delay: 60, distance: '14px', duration: 500 }"
         >
-          <p class="lumio-template__section-kicker">Contato principal</p>
+          <p class="lumio-template__section-kicker">
+            Contato principal
+          </p>
 
           <div
             v-if="primaryContacts.length"
@@ -294,8 +294,13 @@ const extraContacts = computed(() => contactItems.value.slice(3))
       >
         <div class="lumio-template__feature-header">
           <div>
-            <p class="lumio-template__section-kicker">Projeto principal</p>
-            <h2 class="lumio-template__section-title">Peça central da vitrine pública</h2>
+            <p class="lumio-template__section-kicker">
+              Projeto principal
+            </p>
+
+            <h2 class="lumio-template__section-title">
+              {{ leadProject ? leadProject.title : 'Projetos em destaque' }}
+            </h2>
           </div>
 
           <span
@@ -306,14 +311,14 @@ const extraContacts = computed(() => contactItems.value.slice(3))
           </span>
         </div>
 
-        <div class="lumio-template__feature-grid">
-          <article
-            v-if="leadProject"
-            class="lumio-template__feature-card"
-          >
+        <div
+          v-if="leadProject"
+          class="lumio-template__feature-grid"
+        >
+          <article class="lumio-template__feature-card">
             <div class="lumio-template__tag-row">
               <span class="lumio-template__tag">
-                {{ leadProject.category }}
+                {{ leadProject.category || 'Projeto selecionado' }}
               </span>
 
               <span
@@ -329,7 +334,7 @@ const extraContacts = computed(() => contactItems.value.slice(3))
             </h3>
 
             <p class="lumio-template__copy">
-              {{ leadProject.summary }}
+              {{ leadProject.summary || 'Projeto ainda sem descrição pública.' }}
             </p>
 
             <a
@@ -339,85 +344,66 @@ const extraContacts = computed(() => contactItems.value.slice(3))
               rel="noreferrer noopener"
               class="lumio-template__action"
             >
-              <UIcon name="i-lucide-arrow-up-right" />
               Abrir projeto
             </a>
           </article>
 
           <div
             v-if="secondaryProjects.length"
-            class="lumio-template__project-list"
+            class="lumio-template__support-list"
           >
             <article
               v-for="project in secondaryProjects"
               :key="project.id"
-              class="lumio-template__project-card"
+              class="lumio-template__support-card"
             >
-              <div class="lumio-template__tag-row">
-                <span class="lumio-template__tag">
-                  {{ project.category }}
-                </span>
-
-                <span
-                  v-if="project.featured"
-                  class="lumio-template__tag lumio-template__tag--highlight"
-                >
-                  Destaque
-                </span>
-              </div>
+              <p class="lumio-template__project-category">
+                {{ project.category || 'Projeto selecionado' }}
+              </p>
 
               <h3 class="lumio-template__project-card-title">
                 {{ project.title }}
               </h3>
 
               <p class="lumio-template__copy lumio-template__copy--compact">
-                {{ project.summary }}
+                {{ project.summary || 'Projeto ainda sem descrição pública.' }}
               </p>
             </article>
           </div>
         </div>
+
+        <div
+          v-else
+          class="lumio-template__empty-state"
+        >
+          <p class="lumio-template__copy">
+            Nenhum projeto público disponível no momento.
+          </p>
+        </div>
       </section>
 
       <section
+        v-if="extraContacts.length"
         class="lumio-template__card"
         v-reveal="{ distance: '14px', duration: 500 }"
       >
-        <div class="lumio-template__feature-header">
-          <div>
-            <p class="lumio-template__section-kicker">Canais públicos</p>
-            <h2 class="lumio-template__section-title">Grade pronta para integração futura</h2>
-          </div>
-        </div>
+        <p class="lumio-template__section-kicker">
+          Mais canais
+        </p>
 
-        <div
-          v-if="contactItems.length"
-          class="lumio-template__contact-grid"
-        >
+        <div class="lumio-template__footer-contacts">
           <a
-            v-for="item in contactItems"
-            :key="`contact-${item.key}`"
+            v-for="item in extraContacts"
+            :key="`extra-${item.key}`"
             :href="item.href"
             :target="item.external ? '_blank' : undefined"
             :rel="item.external ? 'noreferrer noopener' : undefined"
-            class="lumio-template__contact-card"
+            class="lumio-template__footer-contact"
           >
-            <span class="lumio-template__contact-icon">
-              <UIcon :name="item.icon" />
-            </span>
-
-            <span class="lumio-template__contact-copy">
-              <span class="lumio-template__contact-label">{{ item.label }}</span>
-              <span class="lumio-template__contact-value">{{ item.value }}</span>
-            </span>
+            <UIcon :name="item.icon" />
+            <span>{{ item.value }}</span>
           </a>
         </div>
-
-        <p
-          v-if="extraContacts.length"
-          class="lumio-template__footnote"
-        >
-          {{ extraContacts.length }} canal(is) adicional(is) seguem disponíveis no conjunto completo.
-        </p>
       </section>
     </div>
   </article>
@@ -425,60 +411,78 @@ const extraContacts = computed(() => contactItems.value.slice(3))
 
 <style scoped>
 .lumio-template {
+  --aurora-outline-light: color-mix(in srgb, var(--template-color-secondary) 14%, rgba(15, 23, 42, 0.12));
+  --aurora-outline-dark: color-mix(in srgb, var(--template-border) 84%, rgba(255, 255, 255, 0.08));
+  --aurora-text-strong-light: color-mix(in srgb, var(--template-color-secondary) 24%, #08111c);
+  --aurora-text-soft-light: color-mix(in srgb, var(--template-color-secondary) 14%, #334155);
+  --aurora-text-muted-light: color-mix(in srgb, var(--template-color-primary) 14%, #64748b);
+  --aurora-surface-light: color-mix(in srgb, var(--template-color-primary) 4%, #ffffff);
+  --aurora-surface-light-elevated: color-mix(in srgb, var(--template-color-secondary) 5%, #ffffff);
+  --aurora-surface-dark: color-mix(in srgb, var(--template-surface) 90%, #030712);
+  --aurora-surface-dark-elevated: color-mix(in srgb, var(--template-surface-elevated) 94%, #02060b);
   font-family: var(--template-font-body);
-  color: var(--template-text);
-}
-
-.lumio-template :is(h1, h2, h3) {
-  font-family: var(--template-font-heading);
-}
-
-.lumio-template--aurora {
-  --aurora-surface: #ffffff;
-  --aurora-surface-soft: rgba(255, 255, 255, 0.76);
-  --aurora-surface-muted: rgba(15, 23, 42, 0.04);
-  --aurora-border: rgba(15, 23, 42, 0.08);
-  --aurora-copy: rgba(15, 23, 42, 0.72);
-  --aurora-copy-soft: rgba(15, 23, 42, 0.52);
-  border: 1px solid var(--aurora-border);
   border-radius: 2rem;
   overflow: hidden;
-  background: var(--aurora-surface);
-  box-shadow: 0 28px 90px -48px rgba(15, 23, 42, 0.18);
+  min-width: 0;
 }
 
-.lumio-template--aurora.lumio-template--mode-dark {
-  --aurora-surface: #08111b;
-  --aurora-surface-soft: rgba(8, 17, 27, 0.88);
-  --aurora-surface-muted: rgba(255, 255, 255, 0.04);
-  --aurora-border: rgba(255, 255, 255, 0.1);
-  --aurora-copy: rgba(255, 255, 255, 0.74);
-  --aurora-copy-soft: rgba(255, 255, 255, 0.52);
-  box-shadow: 0 28px 90px -48px rgba(15, 23, 42, 0.42);
+.lumio-template--mode-light {
+  color: var(--aurora-text-soft-light);
+  border: 1px solid var(--aurora-outline-light);
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--template-color-primary) 16%, transparent), transparent 24%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--template-color-secondary) 14%, transparent), transparent 28%),
+    linear-gradient(180deg, color-mix(in srgb, var(--template-color-primary) 3%, #f8fbff), #ffffff 58%);
+  box-shadow: 0 32px 100px -56px rgba(15, 23, 42, 0.14);
+}
+
+.lumio-template--mode-dark {
+  color: var(--template-text);
+  border: 1px solid var(--aurora-outline-dark);
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--template-color-primary) 22%, transparent), transparent 24%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--template-color-secondary) 18%, transparent), transparent 26%),
+    linear-gradient(180deg, #061018, #08121d 52%, #0a1622);
+  box-shadow: 0 32px 100px -56px rgba(15, 23, 42, 0.48);
+}
+
+.lumio-template--mode-light :is(h1, h2, h3) {
+  font-family: var(--template-font-heading);
+  color: var(--aurora-text-strong-light);
+}
+
+.lumio-template--mode-dark :is(h1, h2, h3) {
+  font-family: var(--template-font-heading);
+  color: var(--template-hero-text);
 }
 
 .lumio-template__hero {
   padding: 1.35rem;
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--template-color-primary) 16%, transparent), transparent 45%),
-    linear-gradient(180deg, var(--aurora-surface-soft), transparent);
-  border-bottom: 1px solid var(--aurora-border);
+}
+
+.lumio-template--mode-light .lumio-template__hero {
+  border-bottom: 1px solid var(--aurora-outline-light);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--template-color-primary) 8%, transparent), transparent);
+}
+
+.lumio-template--mode-dark .lumio-template__hero {
+  border-bottom: 1px solid var(--aurora-outline-dark);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--template-color-primary) 14%, transparent), transparent);
 }
 
 .lumio-template__body {
   display: grid;
   gap: 1rem;
   padding: 1rem;
-  background: var(--aurora-surface);
 }
 
 .lumio-template__hero-grid,
 .lumio-template__grid,
 .lumio-template__feature-grid,
-.lumio-template__project-list,
-.lumio-template__contact-grid,
+.lumio-template__contact-stack,
 .lumio-template__stat-grid,
-.lumio-template__contact-stack {
+.lumio-template__support-list,
+.lumio-template__footer-contacts {
   display: grid;
   gap: 1rem;
 }
@@ -487,12 +491,28 @@ const extraContacts = computed(() => contactItems.value.slice(3))
 .lumio-template__hero-side,
 .lumio-template__card,
 .lumio-template__feature-card,
-.lumio-template__project-card,
-.lumio-template__contact-card {
+.lumio-template__support-card,
+.lumio-template__contact-card,
+.lumio-template__stat-card,
+.lumio-template__empty-state {
   min-width: 0;
 }
 
-.lumio-template__pill-row,
+.lumio-template__hero-main,
+.lumio-template__hero-side {
+  align-content: start;
+}
+
+.lumio-template__hero-main {
+  display: grid;
+  gap: 1rem;
+}
+
+.lumio-template__hero-side {
+  display: grid;
+  gap: 0.9rem;
+}
+
 .lumio-template__meta,
 .lumio-template__skills,
 .lumio-template__tag-row {
@@ -501,44 +521,63 @@ const extraContacts = computed(() => contactItems.value.slice(3))
   gap: 0.65rem;
 }
 
-.lumio-template__pill,
+.lumio-template__skills {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 .lumio-template__meta-pill,
 .lumio-template__skill,
-.lumio-template__tag {
+.lumio-template__tag,
+.lumio-template__footer-contact {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
+  min-height: 2.45rem;
   padding: 0.64rem 0.88rem;
   border-radius: 999px;
-  border: 1px solid var(--aurora-border);
-  background: var(--aurora-surface-muted);
   font-size: 0.8rem;
   font-weight: 600;
+  text-decoration: none;
 }
 
-.lumio-template__pill--primary,
+.lumio-template--mode-light .lumio-template__meta-pill,
+.lumio-template--mode-light .lumio-template__skill,
+.lumio-template--mode-light .lumio-template__tag,
+.lumio-template--mode-light .lumio-template__footer-contact {
+  border: 1px solid var(--aurora-outline-light);
+  background: color-mix(in srgb, var(--template-color-primary) 10%, #ffffff);
+  color: var(--aurora-text-strong-light);
+}
+
+.lumio-template--mode-dark .lumio-template__meta-pill,
+.lumio-template--mode-dark .lumio-template__skill,
+.lumio-template--mode-dark .lumio-template__tag,
+.lumio-template--mode-dark .lumio-template__footer-contact {
+  border: 1px solid var(--aurora-outline-dark);
+  background: color-mix(in srgb, var(--template-color-primary) 10%, var(--aurora-surface-dark-elevated));
+  color: var(--template-text);
+}
+
 .lumio-template__tag--highlight {
-  color: color-mix(in srgb, var(--template-color-primary) 70%, var(--template-text));
-  border-color: color-mix(in srgb, var(--template-color-primary) 30%, transparent);
-  background: color-mix(in srgb, var(--template-color-primary) 12%, transparent);
+  font-weight: 700;
 }
 
-.lumio-template__pill--success {
-  color: #166534;
-  background: rgba(34, 197, 94, 0.12);
-  border-color: rgba(34, 197, 94, 0.18);
+.lumio-template--mode-light .lumio-template__tag--highlight {
+  color: color-mix(in srgb, var(--template-color-primary) 64%, #1e293b);
+  background: color-mix(in srgb, var(--template-color-primary) 16%, #ffffff);
 }
 
-.lumio-template__pill--warning {
-  color: #b45309;
-  background: rgba(245, 158, 11, 0.12);
-  border-color: rgba(245, 158, 11, 0.18);
+.lumio-template--mode-dark .lumio-template__tag--highlight {
+  color: var(--template-hero-text);
+  background: color-mix(in srgb, var(--template-color-primary) 18%, var(--aurora-surface-dark-elevated));
 }
 
-.lumio-template__slug,
 .lumio-template__section-kicker,
 .lumio-template__contact-label,
-.lumio-template__stat-label {
+.lumio-template__stat-label,
+.lumio-template__project-category {
   margin: 0;
   font-size: 0.74rem;
   font-weight: 700;
@@ -546,106 +585,217 @@ const extraContacts = computed(() => contactItems.value.slice(3))
   text-transform: uppercase;
 }
 
-.lumio-template__slug {
-  margin-top: 1rem;
-  color: var(--aurora-copy-soft);
+.lumio-template--mode-light .lumio-template__section-kicker,
+.lumio-template--mode-light .lumio-template__contact-label,
+.lumio-template--mode-light .lumio-template__stat-label,
+.lumio-template--mode-light .lumio-template__project-category {
+  color: var(--aurora-text-muted-light);
 }
 
-.lumio-template__section-kicker {
-  color: var(--template-color-secondary);
+.lumio-template--mode-dark .lumio-template__section-kicker,
+.lumio-template--mode-dark .lumio-template__contact-label,
+.lumio-template--mode-dark .lumio-template__stat-label,
+.lumio-template--mode-dark .lumio-template__project-category {
+  color: var(--template-text-muted);
+}
+
+.lumio-template__name,
+.lumio-template__section-title,
+.lumio-template__project-title,
+.lumio-template__project-card-title {
+  margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .lumio-template__name {
-  margin: 0.9rem 0 0;
-  font-size: clamp(2.25rem, 5vw, 4.75rem);
-  line-height: 0.96;
+  font-size: clamp(2.6rem, 5.8vw, 5rem);
+  line-height: 0.94;
   letter-spacing: -0.05em;
 }
 
 .lumio-template__headline,
 .lumio-template__copy,
-.lumio-template__footnote {
-  margin: 0.95rem 0 0;
-  color: var(--aurora-copy);
-  font-size: 0.97rem;
-  line-height: 1.8;
+.lumio-template__contact-value {
+  margin: 0;
+  line-height: 1.78;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.lumio-template__headline {
+  max-width: 25ch;
+  font-size: 1rem;
 }
 
 .lumio-template__copy--compact {
   font-size: 0.92rem;
-  line-height: 1.7;
+  line-height: 1.72;
 }
 
-.lumio-template__stat-card,
+.lumio-template--mode-light .lumio-template__headline,
+.lumio-template--mode-light .lumio-template__copy,
+.lumio-template--mode-light .lumio-template__contact-value {
+  color: var(--aurora-text-soft-light);
+  opacity: 1;
+}
+
+.lumio-template--mode-dark .lumio-template__headline,
+.lumio-template--mode-dark .lumio-template__copy,
+.lumio-template--mode-dark .lumio-template__contact-value {
+  color: var(--template-text);
+  opacity: 0.86;
+}
+
 .lumio-template__card,
+.lumio-template__feature-shell,
 .lumio-template__feature-card,
-.lumio-template__project-card,
+.lumio-template__support-card,
 .lumio-template__contact-card,
-.lumio-template__feature-shell {
+.lumio-template__stat-card,
+.lumio-template__empty-state {
   padding: 1.05rem;
-  border-radius: 1.6rem;
-  border: 1px solid var(--aurora-border);
-  background: var(--aurora-surface-muted);
+  border-radius: 1.55rem;
+  backdrop-filter: blur(12px);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+.lumio-template--mode-light .lumio-template__card,
+.lumio-template--mode-light .lumio-template__feature-shell,
+.lumio-template--mode-light .lumio-template__feature-card,
+.lumio-template--mode-light .lumio-template__support-card,
+.lumio-template--mode-light .lumio-template__contact-card,
+.lumio-template--mode-light .lumio-template__stat-card,
+.lumio-template--mode-light .lumio-template__empty-state {
+  border: 1px solid var(--aurora-outline-light);
+  background: var(--aurora-surface-light-elevated);
+  box-shadow: 0 18px 48px -36px rgba(15, 23, 42, 0.18);
+}
+
+.lumio-template--mode-dark .lumio-template__card,
+.lumio-template--mode-dark .lumio-template__feature-shell,
+.lumio-template--mode-dark .lumio-template__feature-card,
+.lumio-template--mode-dark .lumio-template__support-card,
+.lumio-template--mode-dark .lumio-template__contact-card,
+.lumio-template--mode-dark .lumio-template__stat-card,
+.lumio-template--mode-dark .lumio-template__empty-state {
+  border: 1px solid var(--aurora-outline-dark);
+  background: color-mix(in srgb, var(--template-surface) 74%, rgba(4, 10, 16, 0.94));
+  box-shadow: 0 24px 56px -42px rgba(2, 6, 23, 0.42);
+}
+
+.lumio-template--mode-light .lumio-template__feature-shell {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--template-color-secondary) 8%, transparent), transparent),
+    linear-gradient(180deg, color-mix(in srgb, var(--template-color-primary) 4%, #ffffff), #ffffff 68%);
+}
+
+.lumio-template--mode-dark .lumio-template__feature-shell {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--template-color-secondary) 12%, transparent), transparent),
+    color-mix(in srgb, var(--template-surface-elevated) 82%, rgba(4, 10, 16, 0.96));
+}
+
+.lumio-template--mode-light .lumio-template__stat-card {
+  background: color-mix(in srgb, var(--template-color-primary) 10%, #ffffff);
+}
+
+.lumio-template--mode-dark .lumio-template__stat-card {
+  background: color-mix(in srgb, var(--template-color-primary) 12%, var(--aurora-surface-dark-elevated));
 }
 
 .lumio-template__stat-value {
   display: block;
-  margin-top: 0.55rem;
-  font-size: 1.35rem;
+  margin-top: 0.35rem;
+  font-size: 1.3rem;
   line-height: 1;
 }
 
-.lumio-template__feature-shell {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--template-color-primary) 6%, transparent), transparent),
-    var(--aurora-surface-muted);
+.lumio-template--mode-light .lumio-template__stat-value,
+.lumio-template--mode-light .lumio-template__support-count,
+.lumio-template--mode-light .lumio-template__project-title,
+.lumio-template--mode-light .lumio-template__project-card-title {
+  color: var(--aurora-text-strong-light);
+}
+
+.lumio-template--mode-dark .lumio-template__stat-value,
+.lumio-template--mode-dark .lumio-template__support-count,
+.lumio-template--mode-dark .lumio-template__project-title,
+.lumio-template--mode-dark .lumio-template__project-card-title {
+  color: var(--template-hero-text);
 }
 
 .lumio-template__feature-header {
-  display: grid;
-  gap: 0.8rem;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .lumio-template__support-count {
-  color: var(--aurora-copy-soft);
-  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.4rem;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lumio-template--mode-light .lumio-template__support-count {
+  border: 1px solid var(--aurora-outline-light);
+  background: color-mix(in srgb, var(--template-color-secondary) 10%, #ffffff);
+}
+
+.lumio-template--mode-dark .lumio-template__support-count {
+  border: 1px solid var(--aurora-outline-dark);
+  background: color-mix(in srgb, var(--template-color-secondary) 12%, var(--aurora-surface-dark-elevated));
 }
 
 .lumio-template__section-title {
-  margin: 0.55rem 0 0;
-  font-size: clamp(1.45rem, 3vw, 2.25rem);
+  margin-top: 0.55rem;
+  font-size: clamp(1.42rem, 3vw, 2.24rem);
   line-height: 1.08;
   letter-spacing: -0.04em;
 }
 
 .lumio-template__project-title,
 .lumio-template__project-card-title {
-  margin: 0.85rem 0 0;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   line-height: 1.18;
 }
 
 .lumio-template__project-card-title {
-  font-size: 1.02rem;
+  font-size: 1rem;
 }
 
 .lumio-template__action {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  margin-top: 1rem;
-  padding: 0.88rem 1rem;
+  justify-content: center;
+  width: fit-content;
+  min-height: 2.8rem;
+  margin-top: 0.8rem;
+  padding: 0 1rem;
   border-radius: 999px;
-  background: var(--template-color-primary);
-  color: #07111b;
+  background: linear-gradient(90deg, var(--template-color-primary), var(--template-color-secondary));
+  color: #ffffff;
   text-decoration: none;
   font-weight: 700;
+  box-shadow: 0 18px 34px -22px color-mix(in srgb, var(--template-color-primary) 56%, transparent);
 }
 
 .lumio-template__contact-card {
   display: flex;
   align-items: flex-start;
-  gap: 0.85rem;
+  gap: 0.8rem;
+  color: inherit;
   text-decoration: none;
 }
 
@@ -656,9 +806,25 @@ const extraContacts = computed(() => contactItems.value.slice(3))
   width: 2.7rem;
   height: 2.7rem;
   border-radius: 1rem;
-  background: color-mix(in srgb, var(--template-color-primary) 14%, transparent);
-  color: var(--template-color-primary);
   flex-shrink: 0;
+}
+
+.lumio-template--mode-light .lumio-template__contact-icon {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--template-color-primary) 14%, #ffffff),
+    color-mix(in srgb, var(--template-color-secondary) 16%, #ffffff)
+  );
+  color: var(--aurora-text-strong-light);
+}
+
+.lumio-template--mode-dark .lumio-template__contact-icon {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--template-color-primary) 18%, transparent),
+    color-mix(in srgb, var(--template-color-secondary) 20%, transparent)
+  );
+  color: var(--template-hero-text);
 }
 
 .lumio-template__contact-copy {
@@ -667,44 +833,144 @@ const extraContacts = computed(() => contactItems.value.slice(3))
   min-width: 0;
 }
 
-.lumio-template__contact-label {
-  color: var(--aurora-copy-soft);
+@media (hover: hover) {
+  .lumio-template__action:hover,
+  .lumio-template__contact-card:hover,
+  .lumio-template__support-card:hover,
+  .lumio-template__footer-contact:hover {
+    transform: translateY(-1px);
+  }
 }
 
-.lumio-template__contact-value {
-  color: var(--template-text);
-  font-size: 0.94rem;
-  line-height: 1.6;
-  word-break: break-word;
-}
+@media (max-width: 767px) {
+  .lumio-template {
+    border-radius: 1.45rem;
+  }
 
-@media (min-width: 48rem) {
+  .lumio-template__hero {
+    padding: 0.88rem;
+  }
+
+  .lumio-template__body {
+    gap: 0.8rem;
+    padding: 0.76rem;
+  }
+
+  .lumio-template__hero-grid,
+  .lumio-template__grid,
+  .lumio-template__feature-grid,
+  .lumio-template__contact-stack,
   .lumio-template__stat-grid,
-  .lumio-template__contact-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .lumio-template__support-list,
+  .lumio-template__footer-contacts {
+    gap: 0.78rem;
+  }
+
+  .lumio-template__name {
+    font-size: clamp(1.8rem, 10vw, 2.85rem);
+  }
+
+  .lumio-template__headline {
+    max-width: none;
+    font-size: 0.92rem;
+    line-height: 1.65;
+  }
+
+  .lumio-template__section-title {
+    font-size: clamp(1.18rem, 7vw, 1.56rem);
+  }
+
+  .lumio-template__project-title {
+    font-size: 1.05rem;
+  }
+
+  .lumio-template__project-card-title {
+    font-size: 0.96rem;
+  }
+
+  .lumio-template__copy,
+  .lumio-template__contact-value {
+    font-size: 0.92rem;
+    line-height: 1.66;
+  }
+
+  .lumio-template__copy--compact {
+    font-size: 0.88rem;
+  }
+
+  .lumio-template__meta,
+  .lumio-template__skills,
+  .lumio-template__tag-row {
+    gap: 0.5rem;
+  }
+
+  .lumio-template__meta-pill,
+  .lumio-template__skill,
+  .lumio-template__tag,
+  .lumio-template__footer-contact {
+    min-height: 2.15rem;
+    padding: 0.5rem 0.72rem;
+    font-size: 0.72rem;
+  }
+
+  .lumio-template__card,
+  .lumio-template__feature-shell,
+  .lumio-template__feature-card,
+  .lumio-template__support-card,
+  .lumio-template__contact-card,
+  .lumio-template__stat-card,
+  .lumio-template__empty-state {
+    padding: 0.88rem;
+    border-radius: 1.2rem;
+  }
+
+  .lumio-template__contact-card {
+    gap: 0.72rem;
+  }
+
+  .lumio-template__contact-icon {
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: 0.85rem;
+  }
+
+  .lumio-template__feature-header {
+    flex-direction: column;
+    align-items: start;
+    gap: 0.75rem;
+  }
+
+  .lumio-template__support-count {
+    min-height: 2.15rem;
+    padding: 0 0.78rem;
+    font-size: 0.76rem;
   }
 }
 
-@media (min-width: 64rem) {
+@media (min-width: 900px) {
   .lumio-template__hero-grid {
-    grid-template-columns: minmax(0, 1.08fr) 21rem;
-    gap: 1.25rem;
-  }
-
-  .lumio-template__grid--intro {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .lumio-template__feature-grid {
-    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
-  }
-
-  .lumio-template__contact-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1.14fr) minmax(340px, 0.86fr);
+    align-items: start;
   }
 
   .lumio-template__stat-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .lumio-template__grid--intro {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .lumio-template__feature-grid {
+    grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
+  }
+
+  .lumio-template__contact-stack {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .lumio-template__footer-contacts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>
