@@ -1,31 +1,34 @@
-    export function useAdmin() {
-  /**
-   * ✅ Agora: admin local por env (sem Supabase ainda).
-   * Depois: vira "role" no banco (RLS).
-   *
-   * Como usar:
-   * - No Windows PowerShell: $env:NUXT_ADMIN_EMAIL="seu@email.com"
-   * - Ou no .env: NUXT_ADMIN_EMAIL=seu@email.com
-   */
-  const adminEmail = useRuntimeConfig().public.adminEmail as string | undefined
+import { computed } from 'vue'
 
-  // mock de usuário até o Supabase entrar:
-  // no futuro vamos ler o email da sessão.
-  const currentEmail = ref<string | undefined>(undefined)
+type AuthMeResponse = {
+  isAdmin?: boolean
+}
 
-  const isAdmin = computed(() => {
-    if (!adminEmail) return false
-    if (!currentEmail.value) return false
-    return currentEmail.value.toLowerCase() === adminEmail.toLowerCase()
-  })
+export function useAdmin() {
+  const isAdminState = useState<boolean>('admin:is-admin', () => false)
+  const isLoadingState = useState<boolean>('admin:is-loading', () => false)
+  const hasResolvedState = useState<boolean>('admin:has-resolved', () => false)
 
-  // helper pra testar sem auth (você seta o email manualmente)
-  function setCurrentEmailForDev(email: string) {
-    currentEmail.value = email
+  async function refreshAdminState() {
+    isLoadingState.value = true
+
+    try {
+      const response = await $fetch<AuthMeResponse>('/api/auth/me')
+      isAdminState.value = Boolean(response?.isAdmin)
+    }
+    catch {
+      isAdminState.value = false
+    }
+    finally {
+      isLoadingState.value = false
+      hasResolvedState.value = true
+    }
   }
 
   return {
-    isAdmin,
-    setCurrentEmailForDev
+    isAdmin: computed(() => isAdminState.value),
+    isLoadingAdmin: computed(() => isLoadingState.value),
+    hasResolvedAdmin: computed(() => hasResolvedState.value),
+    refreshAdminState
   }
 }

@@ -34,12 +34,51 @@ function nowLabel() {
   }).format(new Date())
 }
 
+function randomSegment() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID().replace(/-/g, '').slice(0, 10).toUpperCase()
+  }
+
+  return Math.random().toString(36).slice(2, 12).toUpperCase()
+}
+
+function createVerificationToken() {
+  return `lumio-verify=${randomSegment()}`
+}
+
+function resolvePlatformUrl() {
+  const runtimeConfig = useRuntimeConfig()
+  const configuredHost = String(runtimeConfig.public.platformUrl ?? '').trim()
+
+  if (configuredHost) {
+    return configuredHost
+      .replace(/^https?:\/\//, '')
+      .replace(/\/.*$/, '')
+      .replace(/^www\./, '')
+  }
+
+  if (import.meta.client && window.location.host) {
+    return window.location.host.replace(/^www\./, '')
+  }
+
+  return 'lumio.app'
+}
+
+function resolveDomainTarget(platformUrl: string) {
+  const cleanHost = platformUrl
+    .replace(/^https?:\/\//, '')
+    .replace(/\/.*$/, '')
+    .replace(/^www\./, '')
+
+  return cleanHost.startsWith('domains.') ? cleanHost : `domains.${cleanHost}`
+}
+
 export function useDomainState() {
   const domain = reactive({
     planTier: 'plus' as PlanTier,
-    platformUrl: 'everson.folioforge.app',
+    platformUrl: resolvePlatformUrl(),
     customDomain: '',
-    verificationToken: 'folioforge-verify=8J4K2P9M',
+    verificationToken: '',
     status: 'draft' as DomainConnectionStatus,
     lastCheckedAt: '—'
   })
@@ -62,7 +101,7 @@ export function useDomainState() {
   })
 
   const dnsRecords = computed<DnsRecord[]>(() => {
-    if (!normalizedDomain.value) return []
+    if (!normalizedDomain.value || !domain.verificationToken) return []
 
     const isValid = effectiveStatus.value === 'active'
 
@@ -70,7 +109,7 @@ export function useDomainState() {
       {
         type: 'CNAME',
         host: 'www',
-        value: 'domains.folioforge.app',
+        value: resolveDomainTarget(domain.platformUrl),
         ttl: 'Auto',
         isValid
       },
@@ -128,6 +167,12 @@ export function useDomainState() {
     }
   })
 
+  function ensureVerificationToken() {
+    if (!domain.verificationToken) {
+      domain.verificationToken = createVerificationToken()
+    }
+  }
+
   function setPlanTier(tier: PlanTier) {
     domain.planTier = tier
 
@@ -141,6 +186,7 @@ export function useDomainState() {
       return
     }
 
+    ensureVerificationToken()
     domain.status = domain.status === 'active' ? 'active' : 'pending_dns'
   }
 
@@ -149,7 +195,15 @@ export function useDomainState() {
 
     domain.customDomain = normalizedDomain.value
     domain.lastCheckedAt = nowLabel()
-    domain.status = domain.customDomain ? 'pending_dns' : 'draft'
+
+    if (!domain.customDomain) {
+      domain.verificationToken = ''
+      domain.status = 'draft'
+      return true
+    }
+
+    domain.verificationToken = createVerificationToken()
+    domain.status = 'pending_dns'
 
     return true
   }
@@ -157,6 +211,7 @@ export function useDomainState() {
   function validateDns() {
     if (!isPaidPlan.value || !normalizedDomain.value) return false
 
+    ensureVerificationToken()
     domain.status = 'active'
     domain.lastCheckedAt = nowLabel()
 
@@ -166,6 +221,7 @@ export function useDomainState() {
   function simulateDnsError() {
     if (!isPaidPlan.value || !normalizedDomain.value) return false
 
+    ensureVerificationToken()
     domain.status = 'error'
     domain.lastCheckedAt = nowLabel()
 
@@ -174,6 +230,7 @@ export function useDomainState() {
 
   function removeDomain() {
     domain.customDomain = ''
+    domain.verificationToken = ''
     domain.lastCheckedAt = '—'
     domain.status = isPaidPlan.value ? 'draft' : 'locked'
   }

@@ -15,7 +15,7 @@ import {
   resolveContactRecord,
   resolveHeroRecord
 } from '~/utils/editor-content'
-import { serverSupabaseAdmin } from '~/utils/supabase/admin'
+import { serverSupabaseClient } from '~/utils/supabase/server'
 
 function sanitizePortfolioSlug(value: unknown) {
   return String(value ?? '')
@@ -180,7 +180,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const supabase = serverSupabaseAdmin()
+  const supabase = serverSupabaseClient(event)
 
   const { data: settings, error: settingsError } = await supabase
     .from('portfolio_settings')

@@ -2,6 +2,7 @@ import { serverSupabaseClient } from '~/utils/supabase/server'
 
 export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseClient(event)
+  const config = useRuntimeConfig(event)
 
   const {
     data: { user },
@@ -18,7 +19,8 @@ export default defineEventHandler(async (event) => {
   if (!user) {
     return {
       user: null,
-      account: null
+      account: null,
+      isAdmin: false
     }
   }
 
@@ -35,6 +37,10 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const adminEmail = String(config.adminEmail ?? '').trim().toLowerCase()
+  const currentEmail = String(user.email ?? '').trim().toLowerCase()
+  const isAdmin = Boolean(adminEmail && currentEmail && adminEmail === currentEmail)
+
   return {
     user: {
       id: user.id,
@@ -45,6 +51,7 @@ export default defineEventHandler(async (event) => {
           : '',
       verified: Boolean(user.email_confirmed_at)
     },
-    account
+    account,
+    isAdmin
   }
 })

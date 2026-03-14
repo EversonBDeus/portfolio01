@@ -1,18 +1,18 @@
 export default defineAppConfig({
   ui: {
     colors: {
-      // Você pode apontar pra cores padrão (ex: 'emerald') OU custom (ex: 'brand')
-primary: 'neonspectrum-lime',
-  secondary: 'neonspectrum-azure',
-  tertiary: 'neonspectrum-cyan',
-  success: 'neonspectrum-green',
-  info: 'aquatech-electric',
-  warning: 'sunrise-amber',
-  error: 'uxred',
-  neutral: 'combo04-charcoal' // Cinza carvão para um visual industrial
+      primary: 'neonspectrum-lime',
+      secondary: 'neonspectrum-azure',
+      tertiary: 'neonspectrum-cyan',
+      success: 'neonspectrum-green',
+      info: 'aquatech-electric',
+      warning: 'sunrise-amber',
+      error: 'uxred',
+      neutral: 'combo04-charcoal'
     }
   }
 })
+
 
 
 /* Isso é um comentário
