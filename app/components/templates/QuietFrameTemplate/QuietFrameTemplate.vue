@@ -70,7 +70,9 @@ const featuredProjects = computed(() => {
 })
 
 const leadProject = computed(() => featuredProjects.value[0] ?? null)
-const secondaryProjects = computed(() => featuredProjects.value.slice(1, 4))
+const secondaryProjects = computed(() => {
+  return visibleSections.value.projects ? featuredProjects.value.slice(1, 4) : []
+})
 const featuredCount = computed(() => {
   return props.portfolio.projects.filter(project => project.featured).length
 })
@@ -166,8 +168,12 @@ const contactItems = computed(() => {
   return items.filter(item => Boolean(item.value && item.href))
 })
 
-const primaryContacts = computed(() => contactItems.value.slice(0, 3))
-const extraContacts = computed(() => contactItems.value.slice(3))
+const primaryContacts = computed(() => {
+  return visibleSections.value.contact ? contactItems.value.slice(0, 3) : []
+})
+const extraContacts = computed(() => {
+  return visibleSections.value.contact ? contactItems.value.slice(3) : []
+})
 
 const heroVisible = computed(() => {
   return visibleSections.value.hero && Boolean(

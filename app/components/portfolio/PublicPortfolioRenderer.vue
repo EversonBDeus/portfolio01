@@ -81,7 +81,7 @@ const resolvedTemplateMode = computed<PortfolioTemplateMode>(() => {
 })
 
 const resolvedTemplateComponent = computed<Component>(() => {
-  return TEMPLATE_COMPONENTS[templateDefinition.value.id] ?? VelvetStageTemplate
+  return TEMPLATE_COMPONENTS[templateDefinition.value.id] ?? QuietFrameTemplate
 })
 
 const forwardedTemplateProps = computed<Record<string, unknown>>(() => {
