@@ -1,7 +1,18 @@
 <script setup lang="ts">
+import type { Component } from 'vue'
 import { computed } from 'vue'
+import AuroraUxTemplate from '~/components/templates/AuroraUx/AuroraUxTemplate.vue'
+import ImperialArcTemplate from '~/components/templates/ImperialArcTemplate/ImperialArcTemplate.vue'
+import NeonPulseTemplate from '~/components/templates/NeonPulseTemplate/NeonPulseTemplate.vue'
+import NoirSignalTemplate from '~/components/templates/NoirSignalTemplate/NoirSignalTemplate.vue'
+import ObsidianPrimeTemplate from '~/components/templates/ObsidianPrimeTemplate/ObsidianPrimeTemplate.vue'
+import QuietFrameTemplate from '~/components/templates/QuietFrameTemplate/QuietFrameTemplate.vue'
+import StillFormTemplate from '~/components/templates/StillFormTemplate/StillFormTemplate.vue'
+import StudioRailTemplate from '~/components/templates/StudioRailTemplate/StudioRailTemplate.vue'
+import VelvetStageTemplate from '~/components/templates/VelvetStageTemplate/VelvetStageTemplate.vue'
 import {
   getPortfolioTemplateRegistryItem,
+  type PortfolioTemplateId,
   resolvePortfolioTemplatePresetId,
 } from '~/data/portfolio-template-registry'
 import type {
@@ -22,6 +33,18 @@ const props = withDefaults(defineProps<Props>(), {
   templatePresetId: null,
   templateMode: null,
 })
+
+const TEMPLATE_COMPONENTS: Record<PortfolioTemplateId, Component> = {
+  'quiet-frame': QuietFrameTemplate,
+  'still-form': StillFormTemplate,
+  'aurora-ux': AuroraUxTemplate,
+  'velvet-stage': VelvetStageTemplate,
+  'neon-pulse': NeonPulseTemplate,
+  'studio-rail': StudioRailTemplate,
+  'imperial-arc': ImperialArcTemplate,
+  'obsidian-prime': ObsidianPrimeTemplate,
+  'noir-signal': NoirSignalTemplate,
+}
 
 const normalizedPortfolio = computed(() => {
   return normalizePortfolioPublicViewModel(props.portfolio)
@@ -44,8 +67,8 @@ const resolvedTemplateMode = computed<PortfolioTemplateMode>(() => {
   return props.templateMode ?? templateDefinition.value.defaultMode
 })
 
-const resolvedTemplateComponent = computed(() => {
-  return templateDefinition.value.component
+const resolvedTemplateComponent = computed<Component>(() => {
+  return TEMPLATE_COMPONENTS[templateDefinition.value.id] ?? VelvetStageTemplate
 })
 </script>
 
