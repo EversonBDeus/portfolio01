@@ -39,10 +39,19 @@ const props = defineProps<Props>()
 const safeDevice = computed<EditorDevice>(() => props.device ?? 'desktop')
 const safeActiveSection = computed<EditorSectionId>(() => props.activeSection ?? 'hero')
 
+const effectiveVisibility = computed<EditorSectionVisibility>(() => {
+  return {
+    hero: props.visibility?.hero ?? true,
+    about: props.visibility?.about ?? true,
+    projects: props.visibility?.projects ?? true,
+    contact: props.visibility?.contact ?? true,
+  }
+})
+
 const frameClass = computed(() => {
   return safeDevice.value === 'mobile'
-    ? 'mx-auto max-w-[440px]'
-    : 'mx-auto max-w-6xl'
+    ? 'mx-auto w-full max-w-[430px]'
+    : 'mx-auto w-full max-w-6xl'
 })
 
 const activeSectionLabel = computed(() => {
@@ -115,6 +124,18 @@ const templateDefinition = computed(() => {
   )
 })
 
+const resolvedTemplatePresetId = computed(() => {
+  return resolvePortfolioTemplatePresetId(
+    props.templatePresetId
+    ?? props.selectedTemplatePresetId
+    ?? props.template?.previewPresetId
+    ?? props.template?.templatePresetId
+    ?? normalizedInputPortfolio.value?.settings.templatePresetId
+    ?? null,
+    templateDefinition.value.defaultPresetId,
+  )
+})
+
 const previewPortfolio = computed<PortfolioPublicViewModel>(() => {
   const basePortfolio = props.preview
     ? buildPortfolioFromPreview(props.preview, templateDefinition.value.id)
@@ -125,13 +146,7 @@ const previewPortfolio = computed<PortfolioPublicViewModel>(() => {
     settings: {
       ...basePortfolio.settings,
       templateId: templateDefinition.value.id,
-      templatePresetId: resolvePortfolioTemplatePresetId(
-        props.templatePresetId
-        ?? props.selectedTemplatePresetId
-        ?? basePortfolio.settings.templatePresetId
-        ?? null,
-        templateDefinition.value.defaultPresetId,
-      ),
+      templatePresetId: resolvedTemplatePresetId.value,
     },
   }
 })
@@ -139,6 +154,8 @@ const previewPortfolio = computed<PortfolioPublicViewModel>(() => {
 const resolvedTemplateMode = computed<PortfolioTemplateMode>(() => {
   return props.templateMode
     ?? props.selectedTemplateMode
+    ?? props.template?.previewMode
+    ?? props.template?.templateMode
     ?? templateDefinition.value.defaultMode
 })
 
@@ -190,8 +207,10 @@ const loading = computed(() => props.loading ?? false)
           <PublicPortfolioRenderer
             :portfolio="previewPortfolio"
             :template-id="templateDefinition.id"
-            :template-preset-id="previewPortfolio.settings.templatePresetId"
+            :template-preset-id="resolvedTemplatePresetId"
             :template-mode="resolvedTemplateMode"
+            :preview-device="safeDevice"
+            :section-visibility="effectiveVisibility"
           />
         </div>
       </div>

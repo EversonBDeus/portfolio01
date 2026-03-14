@@ -2,6 +2,9 @@ import type { PortfolioPublicationStatus } from '~/types/portfolio'
 import type { PortfolioTemplatePresetId } from '~/types/template-preset'
 
 export type PortfolioTemplateMode = 'light' | 'dark'
+export type PortfolioTemplatePreviewDevice = 'desktop' | 'mobile'
+export type PortfolioTemplateSectionId = 'hero' | 'about' | 'projects' | 'contact'
+export type PortfolioTemplateSectionVisibility = Partial<Record<PortfolioTemplateSectionId, boolean>>
 
 export type PortfolioPublicPublicationStatus = PortfolioPublicationStatus
 

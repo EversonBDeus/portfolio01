@@ -21,17 +21,30 @@ import type {
 } from '~/types/portfolio-public-view-model'
 import { normalizePortfolioPublicViewModel } from '~/utils/normalize-portfolio-public-view-model'
 
+type TemplateSectionVisibility = {
+  hero?: boolean
+  about?: boolean
+  projects?: boolean
+  contact?: boolean
+}
+
+type PreviewDevice = 'desktop' | 'mobile'
+
 type Props = {
   portfolio?: PortfolioPublicViewModel | unknown | null
   templateId?: string | null
   templatePresetId?: string | null
   templateMode?: PortfolioTemplateMode | null
+  previewDevice?: PreviewDevice | null
+  sectionVisibility?: TemplateSectionVisibility | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   templateId: null,
   templatePresetId: null,
   templateMode: null,
+  previewDevice: null,
+  sectionVisibility: null,
 })
 
 const TEMPLATE_COMPONENTS: Record<PortfolioTemplateId, Component> = {
@@ -70,12 +83,24 @@ const resolvedTemplateMode = computed<PortfolioTemplateMode>(() => {
 const resolvedTemplateComponent = computed<Component>(() => {
   return TEMPLATE_COMPONENTS[templateDefinition.value.id] ?? VelvetStageTemplate
 })
+
+const forwardedTemplateProps = computed<Record<string, unknown>>(() => {
+  if (!['quiet-frame', 'neon-pulse', 'still-form', 'studio-rail'].includes(templateDefinition.value.id)) {
+    return {}
+  }
+
+  return {
+    previewDevice: props.previewDevice ?? 'desktop',
+    sectionVisibility: props.sectionVisibility ?? null,
+  }
+})
 </script>
 
 <template>
   <component
     :is="resolvedTemplateComponent"
     v-if="normalizedPortfolio"
+    v-bind="forwardedTemplateProps"
     :portfolio="normalizedPortfolio"
     :theme-name="templateDefinition.name"
     :template-preset-id="resolvedTemplatePresetId"

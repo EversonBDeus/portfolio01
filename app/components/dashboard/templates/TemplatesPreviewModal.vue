@@ -53,6 +53,17 @@ const templateDefinition = computed(() => {
   )
 })
 
+const resolvedTemplatePresetId = computed(() => {
+  return resolvePortfolioTemplatePresetId(
+    props.templatePresetId
+    ?? props.selectedTemplatePresetId
+    ?? props.template?.previewPresetId
+    ?? props.template?.templatePresetId
+    ?? null,
+    templateDefinition.value.defaultPresetId,
+  )
+})
+
 const previewPortfolio = computed<PortfolioPublicViewModel>(() => {
   const basePortfolio
     = normalizePortfolioPublicViewModel(props.portfolio ?? props.previewData)
@@ -63,13 +74,7 @@ const previewPortfolio = computed<PortfolioPublicViewModel>(() => {
     settings: {
       ...basePortfolio.settings,
       templateId: templateDefinition.value.id,
-      templatePresetId: resolvePortfolioTemplatePresetId(
-        props.templatePresetId
-        ?? props.selectedTemplatePresetId
-        ?? basePortfolio.settings.templatePresetId
-        ?? null,
-        templateDefinition.value.defaultPresetId,
-      ),
+      templatePresetId: resolvedTemplatePresetId.value,
     },
   }
 })
@@ -77,6 +82,8 @@ const previewPortfolio = computed<PortfolioPublicViewModel>(() => {
 const resolvedTemplateMode = computed<PortfolioTemplateMode>(() => {
   return props.templateMode
     ?? props.selectedTemplateMode
+    ?? props.template?.previewMode
+    ?? props.template?.templateMode
     ?? templateDefinition.value.defaultMode
 })
 
@@ -174,8 +181,9 @@ function selectTemplate() {
               <PublicPortfolioRenderer
                 :portfolio="previewPortfolio"
                 :template-id="templateDefinition.id"
-                :template-preset-id="previewPortfolio.settings.templatePresetId"
+                :template-preset-id="resolvedTemplatePresetId"
                 :template-mode="resolvedTemplateMode"
+                :preview-device="props.device ?? 'desktop'"
               />
             </div>
           </div>
