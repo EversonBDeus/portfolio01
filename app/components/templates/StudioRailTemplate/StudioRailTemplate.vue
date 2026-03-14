@@ -109,12 +109,7 @@ function formatWhatsappValue(value: string) {
   }
 
   const digits = trimmed.replace(/\D/g, '')
-
-  if (!digits) {
-    return trimmed
-  }
-
-  return `+${digits}`
+  return digits ? `+${digits}` : trimmed
 }
 
 const contactItems = computed(() => {
@@ -169,12 +164,14 @@ const contactItems = computed(() => {
 const primaryContacts = computed(() => contactItems.value.slice(0, 3))
 const extraContacts = computed(() => contactItems.value.slice(3))
 
-const hasHeroContent = computed(() => {
-  return Boolean(publicName.value || headline.value || roleTitle.value || location.value || skills.value.length)
-})
-
 const heroVisible = computed(() => {
-  return visibleSections.value.hero && hasHeroContent.value
+  return visibleSections.value.hero && Boolean(
+    publicName.value
+    || headline.value
+    || roleTitle.value
+    || location.value
+    || skills.value.length,
+  )
 })
 
 const aboutVisible = computed(() => {
@@ -334,7 +331,7 @@ const lowerGridCount = computed(() => {
 
           <p
             v-if="leadProject?.summary"
-            class="lumio-template__copy"
+            class="lumio-template__copy lumio-template__copy--lead"
           >
             {{ leadProject.summary }}
           </p>
@@ -371,7 +368,7 @@ const lowerGridCount = computed(() => {
           </article>
 
           <article
-            v-if="extraContacts.length"
+            v-if="extraContacts.length > 0"
             class="lumio-template__panel"
           >
             <p class="lumio-template__section-kicker">
@@ -407,21 +404,8 @@ const lowerGridCount = computed(() => {
           </p>
         </div>
 
-        <article
-          v-if="aboutVisible"
-          class="lumio-template__rail-card lumio-template__rail-card--summary"
-        >
-          <p class="lumio-template__section-kicker">
-            Sobre
-          </p>
-
-          <p class="lumio-template__copy lumio-template__copy--compact">
-            {{ summary }}
-          </p>
-        </article>
-
         <div
-          v-if="stats.length"
+          v-if="stats.length > 0"
           class="lumio-template__stat-grid"
         >
           <article
@@ -435,7 +419,7 @@ const lowerGridCount = computed(() => {
         </div>
 
         <div
-          v-if="secondaryProjects.length"
+          v-if="secondaryProjects.length > 0"
           class="lumio-template__rail-projects"
         >
           <article
@@ -464,7 +448,7 @@ const lowerGridCount = computed(() => {
         </div>
 
         <div
-          v-if="primaryContacts.length"
+          v-if="primaryContacts.length > 0"
           class="lumio-template__contact-stack"
         >
           <a
@@ -605,7 +589,7 @@ const lowerGridCount = computed(() => {
 .lumio-template--mode-light .lumio-template__name,
 .lumio-template--mode-light .lumio-template__section-title,
 .lumio-template--mode-light .lumio-template__mini-title {
-  color: color-mix(in srgb, var(--template-color-secondary) 26%, #111827);
+  color: color-mix(in srgb, var(--template-text) 96%, #16212f);
 }
 
 .lumio-template__headline,
@@ -621,7 +605,7 @@ const lowerGridCount = computed(() => {
 .lumio-template--mode-light .lumio-template__headline,
 .lumio-template--mode-light .lumio-template__copy,
 .lumio-template--mode-light .lumio-template__contact-value {
-  color: color-mix(in srgb, var(--template-text) 86%, #475569);
+  color: color-mix(in srgb, var(--template-text) 90%, #334155);
 }
 
 .lumio-template__headline {
@@ -632,6 +616,16 @@ const lowerGridCount = computed(() => {
 .lumio-template__copy--compact {
   font-size: 0.92rem;
   line-height: 1.66;
+}
+
+.lumio-template__copy--lead,
+.lumio-template__section-title {
+  color: color-mix(in srgb, var(--template-hero-text) 96%, white);
+}
+
+.lumio-template--mode-light .lumio-template__copy--lead,
+.lumio-template--mode-light .lumio-template__section-title {
+  color: color-mix(in srgb, var(--template-text) 98%, #0f172a);
 }
 
 .lumio-template__meta-row,
@@ -720,19 +714,6 @@ const lowerGridCount = computed(() => {
   letter-spacing: -0.045em;
 }
 
-.lumio-template__action {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  width: fit-content;
-  padding: 0.84rem 1rem;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--template-color-primary), var(--template-color-secondary));
-  color: var(--template-hero-text);
-  text-decoration: none;
-  font-weight: 700;
-}
-
 .lumio-template__lower-grid,
 .lumio-template__stat-grid,
 .lumio-template__contact-stack,
@@ -762,11 +743,11 @@ const lowerGridCount = computed(() => {
   margin-top: 0.35rem;
   font-size: 1.35rem;
   line-height: 1;
-  color: var(--template-hero-text);
+  color: color-mix(in srgb, var(--template-hero-text) 96%, white);
 }
 
 .lumio-template--mode-light .lumio-template__stat-value {
-  color: color-mix(in srgb, var(--template-color-secondary) 26%, #111827);
+  color: color-mix(in srgb, var(--template-text) 96%, #16212f);
 }
 
 .lumio-template__contact-card,
@@ -786,19 +767,32 @@ const lowerGridCount = computed(() => {
   height: 2.45rem;
   border-radius: 0.92rem;
   flex-shrink: 0;
-  background: color-mix(in srgb, var(--template-color-primary) 14%, transparent);
-  color: var(--template-hero-text);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--template-color-primary) 18%, transparent);
+  background: color-mix(in srgb, var(--template-color-primary) 18%, transparent);
+  color: color-mix(in srgb, var(--template-hero-text) 96%, white);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--template-color-primary) 22%, transparent);
 }
 
 .lumio-template--mode-light .lumio-template__contact-icon {
-  color: color-mix(in srgb, var(--template-color-secondary) 28%, #111827);
+  color: color-mix(in srgb, var(--template-text) 96%, #16212f);
 }
 
 .lumio-template__contact-copy {
   display: grid;
   gap: 0.16rem;
   min-width: 0;
+}
+
+.lumio-template__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: fit-content;
+  padding: 0.84rem 1rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--template-color-primary), var(--template-color-secondary));
+  color: var(--template-hero-text);
+  text-decoration: none;
+  font-weight: 700;
 }
 
 @media (max-width: 767px) {

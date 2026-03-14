@@ -3,8 +3,16 @@ import { projects } from '~/data/projects'
 import { toPublicPath } from '~/utils/format'
 
 const route = useRoute()
-const slug = computed(() => String(route.params.slug || ''))
-const project = computed(() => projects.find((p) => p.slug === slug.value) || null)
+const projectKey = computed(() => String(route.params.slug || '').trim().toLowerCase())
+const project = computed(() => {
+  if (!projectKey.value) {
+    return null
+  }
+
+  return projects.find((p) => {
+    return p.slug.toLowerCase() === projectKey.value || p.id.toLowerCase() === projectKey.value
+  }) || null
+})
 
 useHead(() => ({
   title: project.value ? `${project.value.title} | Screenshots` : 'Projeto | Screenshots'

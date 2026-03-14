@@ -41,8 +41,17 @@ const props = withDefaults(defineProps<{
 
 const { themeVars } = usePortfolioTemplateTheme(() => props.templatePresetId)
 
-const heroName = computed(() => props.portfolio.hero.publicName.trim())
-const heroHeadline = computed(() => props.portfolio.hero.headline.trim())
+const visibleSections = computed(() => {
+  return {
+    hero: props.sectionVisibility?.hero ?? true,
+    about: props.sectionVisibility?.about ?? true,
+    projects: props.sectionVisibility?.projects ?? true,
+    contact: props.sectionVisibility?.contact ?? true,
+  }
+})
+
+const publicName = computed(() => props.portfolio.hero.publicName.trim())
+const headline = computed(() => props.portfolio.hero.headline.trim())
 const aboutSummary = computed(() => props.portfolio.about.summary.trim())
 const roleTitle = computed(() => props.portfolio.hero.roleTitle.trim())
 const location = computed(() => props.portfolio.hero.location.trim())
@@ -157,27 +166,17 @@ const contactItems = computed(() => {
   return items.filter(item => Boolean(item.value && item.href))
 })
 
-const visibleSections = computed(() => {
-  return {
-    hero: props.sectionVisibility?.hero ?? true,
-    about: props.sectionVisibility?.about ?? true,
-    projects: props.sectionVisibility?.projects ?? true,
-    contact: props.sectionVisibility?.contact ?? true,
-  }
-})
+const primaryContacts = computed(() => contactItems.value.slice(0, 3))
+const extraContacts = computed(() => contactItems.value.slice(3))
 
-const hasHeroContent = computed(() => {
-  return Boolean(
-    heroName.value
-    || heroHeadline.value
+const heroVisible = computed(() => {
+  return visibleSections.value.hero && Boolean(
+    publicName.value
+    || headline.value
     || roleTitle.value
     || location.value
     || skills.value.length,
   )
-})
-
-const heroVisible = computed(() => {
-  return visibleSections.value.hero && hasHeroContent.value
 })
 
 const aboutVisible = computed(() => {
@@ -210,32 +209,20 @@ const stats = computed(() => {
   return items
 })
 
-const primaryContacts = computed(() => {
-  return contactVisible.value ? contactItems.value.slice(0, 3) : []
+const topVisible = computed(() => {
+  return heroVisible.value || aboutVisible.value || stats.value.length > 0 || primaryContacts.value.length > 0
 })
 
-const extraContacts = computed(() => {
-  return contactVisible.value ? contactItems.value.slice(3) : []
+const topSingle = computed(() => {
+  return !(heroVisible.value || aboutVisible.value) || !(stats.value.length > 0 || primaryContacts.value.length > 0)
 })
 
-const hasSideColumn = computed(() => {
-  return stats.value.length > 0 || primaryContacts.value.length > 0
+const bodyVisible = computed(() => {
+  return projectsVisible.value || aboutVisible.value || extraContacts.value.length > 0
 })
 
-const frameVisible = computed(() => {
-  return heroVisible.value || aboutVisible.value || hasSideColumn.value
-})
-
-const frameSingleColumn = computed(() => {
-  return !(heroVisible.value || aboutVisible.value) || !hasSideColumn.value
-})
-
-const hasFooterPanels = computed(() => {
-  return aboutVisible.value || extraContacts.value.length > 0
-})
-
-const footerSingleColumn = computed(() => {
-  return Number(aboutVisible.value) + Number(extraContacts.value.length > 0) <= 1
+const bodyCount = computed(() => {
+  return Number(projectsVisible.value) + Number(aboutVisible.value) + Number(extraContacts.value.length > 0)
 })
 </script>
 
@@ -249,15 +236,15 @@ const footerSingleColumn = computed(() => {
     :style="themeVars"
   >
     <section
-      v-if="frameVisible"
-      class="lumio-template__frame-shell"
-      :class="{ 'lumio-template__frame-shell--single': frameSingleColumn }"
+      v-if="topVisible"
+      class="lumio-template__top"
+      :class="{ 'lumio-template__top--single': topSingle }"
     >
       <div
         v-if="heroVisible || aboutVisible"
-        class="lumio-template__frame-main"
+        class="lumio-template__main"
       >
-        <div
+        <section
           v-if="heroVisible"
           class="lumio-template__hero-card"
           v-reveal="{ distance: '18px', duration: 520 }"
@@ -267,14 +254,14 @@ const footerSingleColumn = computed(() => {
           </div>
 
           <h1 class="lumio-template__name">
-            {{ heroName || 'Perfil público' }}
+            {{ publicName }}
           </h1>
 
           <p
-            v-if="heroHeadline"
+            v-if="headline"
             class="lumio-template__headline"
           >
-            {{ heroHeadline }}
+            {{ headline }}
           </p>
 
           <div
@@ -309,9 +296,9 @@ const footerSingleColumn = computed(() => {
               {{ skill }}
             </li>
           </ul>
-        </div>
+        </section>
 
-        <div
+        <section
           v-if="aboutVisible"
           class="lumio-template__about-card"
           v-reveal="{ delay: 50, distance: '18px', duration: 520 }"
@@ -323,16 +310,16 @@ const footerSingleColumn = computed(() => {
           <p class="lumio-template__copy">
             {{ aboutSummary }}
           </p>
-        </div>
+        </section>
       </div>
 
       <aside
-        v-if="hasSideColumn"
-        class="lumio-template__frame-side"
+        v-if="stats.length > 0 || primaryContacts.length > 0"
+        class="lumio-template__side"
         v-reveal="{ delay: 90, distance: '18px', duration: 520 }"
       >
         <div
-          v-if="stats.length"
+          v-if="stats.length > 0"
           class="lumio-template__stat-grid"
         >
           <article
@@ -346,7 +333,7 @@ const footerSingleColumn = computed(() => {
         </div>
 
         <div
-          v-if="primaryContacts.length"
+          v-if="primaryContacts.length > 0"
           class="lumio-template__contact-stack"
         >
           <a
@@ -370,16 +357,20 @@ const footerSingleColumn = computed(() => {
       </aside>
     </section>
 
-    <div
-      v-if="projectsVisible || hasFooterPanels"
+    <section
+      v-if="bodyVisible"
       class="lumio-template__body"
+      :class="{
+        'lumio-template__body--single': bodyCount <= 1,
+        'lumio-template__body--double': bodyCount === 2,
+      }"
+      v-reveal="{ delay: 70, distance: '14px', duration: 500 }"
     >
-      <section
+      <article
         v-if="projectsVisible"
-        class="lumio-template__projects-shell"
-        v-reveal="{ distance: '14px', duration: 500 }"
+        class="lumio-template__panel lumio-template__panel--project"
       >
-        <div class="lumio-template__projects-head">
+        <div class="lumio-template__panel-head">
           <div>
             <p class="lumio-template__section-kicker">
               Projeto principal
@@ -392,7 +383,7 @@ const footerSingleColumn = computed(() => {
 
           <div
             v-if="leadProject"
-            class="lumio-template__projects-badges"
+            class="lumio-template__project-badges"
           >
             <UBadge
               v-if="leadProject.category"
@@ -410,97 +401,90 @@ const footerSingleColumn = computed(() => {
           </div>
         </div>
 
-        <div class="lumio-template__projects-grid">
-          <article class="lumio-template__lead-card">
-            <p
-              v-if="leadProject?.summary"
-              class="lumio-template__copy"
-            >
-              {{ leadProject.summary }}
-            </p>
+        <p
+          v-if="leadProject?.summary"
+          class="lumio-template__copy"
+        >
+          {{ leadProject.summary }}
+        </p>
 
-            <a
-              v-if="leadProject?.link"
-              :href="leadProject.link"
-              target="_blank"
-              rel="noreferrer noopener"
-              class="lumio-template__action"
-            >
-              <UIcon name="i-lucide-arrow-up-right" />
-              Abrir projeto
-            </a>
-          </article>
+        <a
+          v-if="leadProject?.link"
+          :href="leadProject.link"
+          target="_blank"
+          rel="noreferrer noopener"
+          class="lumio-template__action"
+        >
+          <UIcon name="i-lucide-arrow-up-right" />
+          Abrir projeto
+        </a>
 
-          <div
-            v-if="secondaryProjects.length"
-            class="lumio-template__secondary-list"
+        <div
+          v-if="secondaryProjects.length > 0"
+          class="lumio-template__secondary-list"
+        >
+          <article
+            v-for="project in secondaryProjects"
+            :key="project.id"
+            class="lumio-template__secondary-card"
           >
-            <article
-              v-for="project in secondaryProjects"
-              :key="project.id"
-              class="lumio-template__secondary-card"
-            >
-              <UBadge
-                v-if="project.category"
-                class="lumio-template__badge lumio-template__badge--outline"
-              >
-                {{ project.category }}
-              </UBadge>
-
-              <h3 class="lumio-template__mini-title">
-                {{ project.title }}
-              </h3>
-
-              <p
-                v-if="project.summary"
-                class="lumio-template__copy lumio-template__copy--compact"
-              >
-                {{ project.summary }}
-              </p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section
-        v-if="hasFooterPanels"
-        class="lumio-template__footer-grid"
-        :class="{ 'lumio-template__footer-grid--single': footerSingleColumn }"
-        v-reveal="{ delay: 60, distance: '14px', duration: 500 }"
-      >
-        <article
-          v-if="aboutVisible"
-          class="lumio-template__panel"
-        >
-          <p class="lumio-template__section-kicker">
-            Resumo
-          </p>
-
-          <p class="lumio-template__copy">
-            {{ aboutSummary }}
-          </p>
-        </article>
-
-        <article
-          v-if="extraContacts.length"
-          class="lumio-template__panel"
-        >
-          <p class="lumio-template__section-kicker">
-            Contato
-          </p>
-
-          <div class="lumio-template__extra-contacts">
             <UBadge
-              v-for="item in extraContacts"
-              :key="`extra-${item.key}`"
+              v-if="project.category"
               class="lumio-template__badge lumio-template__badge--outline"
             >
-              {{ item.label }} · {{ item.value }}
+              {{ project.category }}
             </UBadge>
-          </div>
-        </article>
-      </section>
-    </div>
+
+            <h3 class="lumio-template__mini-title">
+              {{ project.title }}
+            </h3>
+
+            <p
+              v-if="project.summary"
+              class="lumio-template__copy lumio-template__copy--compact"
+            >
+              {{ project.summary }}
+            </p>
+          </article>
+        </div>
+      </article>
+
+      <article
+        v-if="aboutVisible"
+        class="lumio-template__panel"
+      >
+        <p class="lumio-template__section-kicker">
+          Resumo
+        </p>
+
+        <p class="lumio-template__copy">
+          {{ aboutSummary }}
+        </p>
+      </article>
+
+      <article
+        v-if="extraContacts.length > 0"
+        class="lumio-template__panel"
+      >
+        <p class="lumio-template__section-kicker">
+          Contato
+        </p>
+
+        <div class="lumio-template__extra-contacts">
+          <a
+            v-for="item in extraContacts"
+            :key="`extra-${item.key}`"
+            :href="item.href"
+            :target="item.external ? '_blank' : undefined"
+            :rel="item.external ? 'noreferrer noopener' : undefined"
+            class="lumio-template__inline-contact"
+          >
+            <UIcon :name="item.icon" />
+            <span>{{ item.label }} · {{ item.value }}</span>
+          </a>
+        </div>
+      </article>
+    </section>
   </article>
 </template>
 
@@ -531,15 +515,20 @@ const footerSingleColumn = computed(() => {
     inset 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
-.lumio-template__frame-shell,
+.lumio-template__top,
 .lumio-template__body {
   display: grid;
   gap: 1rem;
   padding: 1rem;
 }
 
-.lumio-template__frame-main,
-.lumio-template__frame-side {
+.lumio-template__top--single,
+.lumio-template__body--single {
+  grid-template-columns: 1fr;
+}
+
+.lumio-template__main,
+.lumio-template__side {
   display: grid;
   gap: 1rem;
   align-content: start;
@@ -548,11 +537,9 @@ const footerSingleColumn = computed(() => {
 .lumio-template__hero-card,
 .lumio-template__about-card,
 .lumio-template__stat-card,
-.lumio-template__projects-shell,
-.lumio-template__lead-card,
-.lumio-template__secondary-card,
 .lumio-template__panel,
-.lumio-template__contact-card {
+.lumio-template__contact-card,
+.lumio-template__secondary-card {
   border-radius: 1.45rem;
   border: 1px solid color-mix(in srgb, var(--template-border) 84%, transparent);
   background:
@@ -561,17 +548,16 @@ const footerSingleColumn = computed(() => {
   box-shadow:
     0 18px 38px -38px rgba(15, 23, 42, 0.1),
     inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+  padding: 1rem;
 }
 
 .lumio-template--mode-dark :is(
   .lumio-template__hero-card,
   .lumio-template__about-card,
   .lumio-template__stat-card,
-  .lumio-template__projects-shell,
-  .lumio-template__lead-card,
-  .lumio-template__secondary-card,
   .lumio-template__panel,
-  .lumio-template__contact-card
+  .lumio-template__contact-card,
+  .lumio-template__secondary-card
 ) {
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--template-color-primary) 4%, transparent), transparent),
@@ -579,17 +565,6 @@ const footerSingleColumn = computed(() => {
   box-shadow:
     0 22px 46px -42px rgba(2, 6, 23, 0.34),
     inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-}
-
-.lumio-template__hero-card,
-.lumio-template__about-card,
-.lumio-template__stat-card,
-.lumio-template__projects-shell,
-.lumio-template__lead-card,
-.lumio-template__secondary-card,
-.lumio-template__panel,
-.lumio-template__contact-card {
-  padding: 1rem;
 }
 
 .lumio-template__hero-card {
@@ -620,7 +595,7 @@ const footerSingleColumn = computed(() => {
   font-size: clamp(2.7rem, 8vw, 4.9rem);
   line-height: 0.94;
   letter-spacing: -0.065em;
-  color: var(--template-text);
+  color: color-mix(in srgb, var(--template-text) 96%, #16212f);
 }
 
 .lumio-template--mode-dark .lumio-template__name,
@@ -633,7 +608,7 @@ const footerSingleColumn = computed(() => {
 .lumio-template__copy,
 .lumio-template__contact-value {
   margin: 0;
-  color: color-mix(in srgb, var(--template-text) 86%, #475569);
+  color: color-mix(in srgb, var(--template-text) 88%, #475569);
   line-height: 1.78;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -656,7 +631,7 @@ const footerSingleColumn = computed(() => {
 }
 
 .lumio-template__meta-row,
-.lumio-template__projects-badges,
+.lumio-template__project-badges,
 .lumio-template__extra-contacts {
   display: flex;
   align-items: center;
@@ -735,65 +710,35 @@ const footerSingleColumn = computed(() => {
   margin-top: 0.35rem;
   font-size: 1.35rem;
   line-height: 1;
-  color: color-mix(in srgb, var(--template-color-secondary) 24%, #1f2937);
+  color: color-mix(in srgb, var(--template-text) 92%, #1f2937);
 }
 
 .lumio-template--mode-dark .lumio-template__stat-value {
   color: var(--template-hero-text);
 }
 
-.lumio-template__projects-shell {
+.lumio-template__panel {
   display: grid;
   gap: 1rem;
+  align-content: start;
 }
 
-.lumio-template__projects-head {
+.lumio-template__panel-head {
   display: flex;
-  align-items: end;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .lumio-template__section-title {
-  margin-top: 0.45rem;
   font-size: clamp(1.45rem, 3vw, 2.2rem);
   line-height: 1.08;
   letter-spacing: -0.045em;
 }
 
-.lumio-template__projects-grid,
-.lumio-template__footer-grid {
-  display: grid;
-  gap: 1rem;
-}
-
-.lumio-template__lead-card {
-  display: grid;
-  gap: 0.9rem;
-  align-content: start;
-  min-height: 0;
-}
-
-.lumio-template__action {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  width: fit-content;
-  padding: 0.84rem 1rem;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--template-color-primary), var(--template-color-secondary));
-  color: var(--template-hero-text);
-  text-decoration: none;
-  font-weight: 700;
-  box-shadow: 0 16px 30px -22px color-mix(in srgb, var(--template-color-primary) 48%, transparent);
-}
-
-.lumio-template__mini-title {
-  font-size: 1rem;
-  line-height: 1.18;
-}
-
-.lumio-template__contact-card {
+.lumio-template__contact-card,
+.lumio-template__inline-contact {
   display: flex;
   align-items: flex-start;
   gap: 0.8rem;
@@ -810,7 +755,7 @@ const footerSingleColumn = computed(() => {
   border-radius: 0.95rem;
   flex-shrink: 0;
   background: color-mix(in srgb, var(--template-color-primary) 16%, transparent);
-  color: color-mix(in srgb, var(--template-color-secondary) 30%, #1f2937);
+  color: color-mix(in srgb, var(--template-text) 90%, #1f2937);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--template-color-primary) 18%, transparent);
 }
 
@@ -824,16 +769,18 @@ const footerSingleColumn = computed(() => {
   min-width: 0;
 }
 
-.lumio-template__frame-shell--single,
-.lumio-template__footer-grid--single {
-  grid-template-columns: 1fr;
-}
-
-@media (hover: hover) {
-  .lumio-template__action:hover,
-  .lumio-template__contact-card:hover {
-    transform: translateY(-1px);
-  }
+.lumio-template__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: fit-content;
+  padding: 0.84rem 1rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--template-color-primary), var(--template-color-secondary));
+  color: var(--template-hero-text);
+  text-decoration: none;
+  font-weight: 700;
+  box-shadow: 0 16px 30px -22px color-mix(in srgb, var(--template-color-primary) 48%, transparent);
 }
 
 @media (max-width: 767px) {
@@ -841,7 +788,7 @@ const footerSingleColumn = computed(() => {
     border-radius: 1.45rem;
   }
 
-  .lumio-template__frame-shell,
+  .lumio-template__top,
   .lumio-template__body {
     padding: 0.82rem;
   }
@@ -849,11 +796,9 @@ const footerSingleColumn = computed(() => {
   .lumio-template__hero-card,
   .lumio-template__about-card,
   .lumio-template__stat-card,
-  .lumio-template__projects-shell,
-  .lumio-template__lead-card,
-  .lumio-template__secondary-card,
   .lumio-template__panel,
-  .lumio-template__contact-card {
+  .lumio-template__contact-card,
+  .lumio-template__secondary-card {
     padding: 0.9rem;
   }
 
@@ -866,41 +811,33 @@ const footerSingleColumn = computed(() => {
     font-size: 0.94rem;
     line-height: 1.68;
   }
-
-  .lumio-template__section-title {
-    font-size: clamp(1.16rem, 6.4vw, 1.52rem);
-  }
-
-  .lumio-template__projects-head {
-    flex-direction: column;
-    align-items: flex-start;
-  }
 }
 
 @media (min-width: 900px) {
-  .lumio-template__frame-shell {
+  .lumio-template__top {
     grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
-    align-items: start;
   }
 
-  .lumio-template__stat-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .lumio-template__top--single {
+    grid-template-columns: 1fr;
   }
 
-  .lumio-template__projects-grid {
-    grid-template-columns: minmax(0, 1.02fr) minmax(320px, 0.98fr);
-  }
-
-  .lumio-template__footer-grid {
+  .lumio-template__body--double {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
+
+  .lumio-template__body {
+    grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr) minmax(0, 0.92fr);
+  }
 }
 
-.lumio-template--device-mobile {
-  border-radius: 1.45rem;
+.lumio-template--device-mobile .lumio-template__top,
+.lumio-template--device-mobile .lumio-template__body,
+.lumio-template--device-mobile .lumio-template__stat-grid {
+  grid-template-columns: 1fr;
 }
 
-.lumio-template--device-mobile .lumio-template__frame-shell,
+.lumio-template--device-mobile .lumio-template__top,
 .lumio-template--device-mobile .lumio-template__body {
   padding: 0.82rem;
 }
@@ -908,11 +845,9 @@ const footerSingleColumn = computed(() => {
 .lumio-template--device-mobile .lumio-template__hero-card,
 .lumio-template--device-mobile .lumio-template__about-card,
 .lumio-template--device-mobile .lumio-template__stat-card,
-.lumio-template--device-mobile .lumio-template__projects-shell,
-.lumio-template--device-mobile .lumio-template__lead-card,
-.lumio-template--device-mobile .lumio-template__secondary-card,
 .lumio-template--device-mobile .lumio-template__panel,
-.lumio-template--device-mobile .lumio-template__contact-card {
+.lumio-template--device-mobile .lumio-template__contact-card,
+.lumio-template--device-mobile .lumio-template__secondary-card {
   padding: 0.9rem;
 }
 
@@ -924,21 +859,5 @@ const footerSingleColumn = computed(() => {
   max-width: none;
   font-size: 0.94rem;
   line-height: 1.68;
-}
-
-.lumio-template--device-mobile .lumio-template__section-title {
-  font-size: clamp(1.16rem, 6.4vw, 1.52rem);
-}
-
-.lumio-template--device-mobile .lumio-template__projects-head {
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.lumio-template--device-mobile .lumio-template__frame-shell,
-.lumio-template--device-mobile .lumio-template__projects-grid,
-.lumio-template--device-mobile .lumio-template__footer-grid,
-.lumio-template--device-mobile .lumio-template__stat-grid {
-  grid-template-columns: 1fr;
 }
 </style>
